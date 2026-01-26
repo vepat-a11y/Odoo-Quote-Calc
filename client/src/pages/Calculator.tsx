@@ -89,6 +89,7 @@ export default function Calculator() {
   const [users, setUsers] = useState(10);
   const [plan, setPlan] = useState<'standard' | 'custom'>('standard');
   const [implementation, setImplementation] = useState<string>('none');
+  const [implMultiplier, setImplMultiplier] = useState<number>(1);
   const [showDiscounts, setShowDiscounts] = useState(false);
 
   const [termDiscounts, setTermDiscounts] = useState<TermDiscounts>({
@@ -155,14 +156,14 @@ export default function Calculator() {
     }
 
     const implData = currentImplementations[implementation as keyof typeof currentImplementations];
-    let implementationCost = implData?.price || 0;
+    let implementationCost = (implData?.price || 0) * implMultiplier;
     implementationCost = implementationCost * (1 - implDiscount / 100);
 
     const totalCost = totalSoftwareCost + implementationCost;
     const amortizedMonthly = totalCost / months;
 
     const comparisonMonthlyRate = currentPricing[plan].monthly.year1;
-    const comparisonTotal = (users * comparisonMonthlyRate * months) + (implData?.price || 0);
+    const comparisonTotal = (users * comparisonMonthlyRate * months) + ((implData?.price || 0) * implMultiplier);
     const totalSavings = Math.max(0, comparisonTotal - totalCost);
     
     return {
@@ -332,18 +333,55 @@ export default function Calculator() {
                 <label className="text-sm font-medium text-white/80 flex items-center gap-2">
                   <Package className="w-4 h-4 text-cyan-400" /> Implementation Pack
                 </label>
-                <Select
-                  options={Object.entries(currentImplementations).map(([key, val]) => ({
-                    value: key,
-                    label: val.label
-                  }))}
-                  value={implementation}
-                  onChange={(e) => setImplementation(e.target.value)}
-                  data-testid="select-implementation"
-                />
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <Select
+                      options={Object.entries(currentImplementations).map(([key, val]) => ({
+                        value: key,
+                        label: val.label
+                      }))}
+                      value={implementation}
+                      onChange={(e) => setImplementation(e.target.value)}
+                      data-testid="select-implementation"
+                    />
+                  </div>
+                  <div className="w-24">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="0.1"
+                        max="10"
+                        step="0.1"
+                        value={implMultiplier}
+                        onChange={(e) => setImplMultiplier(parseFloat(e.target.value) || 1)}
+                        disabled={implementation === 'none'}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-center focus:border-primary/50 outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                        data-testid="input-impl-multiplier"
+                      />
+                      <span className="absolute right-2 top-2.5 text-white/30 text-xs">x</span>
+                    </div>
+                  </div>
+                </div>
                 <div className="flex items-center justify-between text-xs text-white/40 px-1">
-                  <span>Includes {currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0} hours</span>
-                  <span className="text-white/60 font-mono">{formatCurrency(currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0)}</span>
+                  <span>
+                    {implMultiplier !== 1 && implementation !== 'none' ? (
+                      <>
+                        {(currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0)} x {implMultiplier} = {' '}
+                        <span className="text-cyan-400 font-medium">
+                          {((currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0) * implMultiplier).toFixed(0)} hours
+                        </span>
+                      </>
+                    ) : (
+                      <>Includes {currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0} hours</>
+                    )}
+                  </span>
+                  <span className="text-white/60 font-mono">
+                    {implMultiplier !== 1 && implementation !== 'none' ? (
+                      <span className="text-cyan-400">{formatCurrency((currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0) * implMultiplier)}</span>
+                    ) : (
+                      formatCurrency(currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0)
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
