@@ -176,8 +176,9 @@ export default function Calculator() {
     const amortizedMonthly = totalCost / months;
 
     // === SAVINGS CALCULATION ===
-    // Formula: [Full monthly price across term + Full impl] - [Yearly cost + Discounted impl]
-    // Or equivalently: [monthly_total + impl_full] - [yearly_total - impl_discount]
+    // Plan savings = (Monthly Year2+ rate - Yearly rate) across term
+    // Implementation savings = impl price * discount %
+    // Total savings = Plan savings + Implementation discount savings
     let totalSavings = 0;
 
     if (isMonthly) {
@@ -186,30 +187,26 @@ export default function Calculator() {
       const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
       totalSavings = planDiscountSavings + implDiscountSavings;
     } else {
-      // Yearly terms: compare to what they'd pay on monthly (full price year 2+ rate)
-      
-      // Full monthly cost = Year 2+ monthly rate (full price) * total months * users
+      // Plan savings: compare monthly Year2+ rate (full price) to yearly rates
+      // Full monthly cost = Year 2+ monthly rate * total months * users
       const fullMonthlyTotal = monthlyPlanYear2Plus * months * users;
       
-      // Full implementation price (before any discount)
-      const fullImplPrice = implCostBeforeDiscount;
-      
-      // Yearly software cost (what they actually pay for software)
-      // Year 1: yearlyY1 rate * 12 * users
-      // Year 2+: yearlyY2+ rate * remaining months * users
+      // Yearly software cost
       const yearlyYear1Cost = yearlyPlanYear1 * 12 * users;
       const yearlyYear2PlusCost = years > 1 ? yearlyPlanYear2Plus * 12 * (years - 1) * users : 0;
       const yearlyTotalSoftware = yearlyYear1Cost + yearlyYear2PlusCost;
       
-      // Apply plan discount to yearly software cost
-      const yearlyTotalWithPlanDiscount = yearlyTotalSoftware * (1 - planDiscount / 100);
+      // Plan savings = difference between monthly and yearly rates
+      const planSavings = fullMonthlyTotal - yearlyTotalSoftware;
       
-      // Implementation discount amount
-      const implDiscountAmount = implCostBeforeDiscount * (implDiscount / 100);
+      // Add any plan discount savings (if additional plan discount applied)
+      const planDiscountSavings = yearlyTotalSoftware * (planDiscount / 100);
       
-      // Savings = [Full monthly + Full impl] - [Yearly with plan discount - Impl discount]
-      // Which equals: (fullMonthlyTotal + fullImplPrice) - (yearlyTotalWithPlanDiscount - implDiscountAmount)
-      totalSavings = (fullMonthlyTotal + fullImplPrice) - (yearlyTotalWithPlanDiscount - implDiscountAmount);
+      // Implementation discount savings (simple: impl price * discount %)
+      const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
+      
+      // Total savings = plan rate savings + plan discount + impl discount
+      totalSavings = planSavings + planDiscountSavings + implDiscountSavings;
     }
     
     return {
