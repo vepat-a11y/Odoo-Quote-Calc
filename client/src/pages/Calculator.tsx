@@ -137,34 +137,76 @@ export default function Calculator() {
     const years = isMonthly ? 1 : parseInt(termKey.replace('year', ''));
     const months = isMonthly ? 1 : years * 12;
 
-    const basePrice = currentPricing[plan][isMonthly ? 'monthly' : 'yearly'];
-    const monthlyRateYear1 = basePrice.year1;
-    const monthlyRateYear2Plus = basePrice.year2plus;
+    // Get pricing rates
+    const monthlyPlanYear1 = currentPricing[plan].monthly.year1;
+    const monthlyPlanYear2Plus = currentPricing[plan].monthly.year2plus;
+    const yearlyPlanYear1 = currentPricing[plan].yearly.year1;
+    const yearlyPlanYear2Plus = currentPricing[plan].yearly.year2plus;
 
+    // Calculate software cost based on term type
     let totalSoftwareCost = 0;
+    let softwareCostBeforeDiscount = 0;
     
-    const year1Months = isMonthly ? 1 : 12;
-    let year1Software = users * monthlyRateYear1 * year1Months;
-    year1Software = year1Software * (1 - planDiscount / 100);
-    totalSoftwareCost += year1Software;
-
-    if (!isMonthly && years > 1) {
-      const remainingYears = years - 1;
-      let subsequentYearsSoftware = users * monthlyRateYear2Plus * 12 * remainingYears;
-      subsequentYearsSoftware = subsequentYearsSoftware * (1 - planDiscount / 100);
-      totalSoftwareCost += subsequentYearsSoftware;
+    if (isMonthly) {
+      // Monthly: use monthly rates
+      softwareCostBeforeDiscount = users * monthlyPlanYear1 * 1;
+      totalSoftwareCost = softwareCostBeforeDiscount * (1 - planDiscount / 100);
+    } else {
+      // Yearly terms: use yearly rates
+      // Year 1
+      const year1CostBeforeDiscount = users * yearlyPlanYear1 * 12;
+      softwareCostBeforeDiscount = year1CostBeforeDiscount;
+      
+      // Year 2+ (if applicable)
+      if (years > 1) {
+        const remainingYears = years - 1;
+        const year2PlusCostBeforeDiscount = users * yearlyPlanYear2Plus * 12 * remainingYears;
+        softwareCostBeforeDiscount += year2PlusCostBeforeDiscount;
+      }
+      
+      totalSoftwareCost = softwareCostBeforeDiscount * (1 - planDiscount / 100);
     }
 
+    // Implementation cost
     const implData = currentImplementations[implementation as keyof typeof currentImplementations];
-    let implementationCost = (implData?.price || 0) * implMultiplier;
-    implementationCost = implementationCost * (1 - implDiscount / 100);
+    const implCostBeforeDiscount = (implData?.price || 0) * implMultiplier;
+    const implementationCost = implCostBeforeDiscount * (1 - implDiscount / 100);
 
     const totalCost = totalSoftwareCost + implementationCost;
     const amortizedMonthly = totalCost / months;
 
-    const comparisonMonthlyRate = currentPricing[plan].monthly.year1;
-    const comparisonTotal = (users * comparisonMonthlyRate * months) + ((implData?.price || 0) * implMultiplier);
-    const totalSavings = Math.max(0, comparisonTotal - totalCost);
+    // === SAVINGS CALCULATION ===
+    let totalSavings = 0;
+
+    if (isMonthly) {
+      // Monthly: savings only come from discounts
+      const planDiscountSavings = softwareCostBeforeDiscount * (planDiscount / 100);
+      const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
+      totalSavings = planDiscountSavings + implDiscountSavings;
+    } else {
+      // Yearly terms: savings = (monthly rate - yearly rate) comparison + any discounts
+      
+      // Year 1 savings: compare yearly Y1 rate to monthly Y1 rate
+      const year1RateSavingsPerUser = (monthlyPlanYear1 - yearlyPlanYear1) * 12;
+      const year1Savings = year1RateSavingsPerUser * users;
+      
+      // Year 2+ savings: compare yearly Y2+ rate to monthly Y2+ rate
+      let year2PlusSavings = 0;
+      if (years > 1) {
+        const remainingMonths = (years - 1) * 12;
+        const year2PlusRateSavingsPerUser = (monthlyPlanYear2Plus - yearlyPlanYear2Plus) * remainingMonths;
+        year2PlusSavings = year2PlusRateSavingsPerUser * users;
+      }
+      
+      // Rate savings (yearly vs monthly comparison)
+      const rateSavings = year1Savings + year2PlusSavings;
+      
+      // Discount savings on top
+      const planDiscountSavings = softwareCostBeforeDiscount * (planDiscount / 100);
+      const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
+      
+      totalSavings = rateSavings + planDiscountSavings + implDiscountSavings;
+    }
     
     return {
       termLabel: isMonthly ? 'Monthly' : `${years} Year${years > 1 ? 's' : ''}`,
