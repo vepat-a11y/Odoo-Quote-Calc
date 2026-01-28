@@ -54,7 +54,7 @@ const PRICING = {
 const IMPLEMENTATIONS = {
   US: {
     none: { label: 'None (Self-Service)', hours: 0, price: 0 },
-    express: { label: 'Express (4h)', hours: 4, price: 540 },
+    express: { label: 'Express (4h)', hours: 4, price: 580 },
     starter: { label: 'Starter (25h)', hours: 25, price: 3600 },
     basic: { label: 'Basic (50h)', hours: 50, price: 7000 },
     standard: { label: 'Standard (100h)', hours: 100, price: 12500 },
@@ -149,22 +149,28 @@ export default function Calculator() {
     
     if (isMonthly) {
       // Monthly: use monthly rates
-      softwareCostBeforeDiscount = users * monthlyPlanYear1 * 1;
-      totalSoftwareCost = softwareCostBeforeDiscount * (1 - planDiscount / 100);
+      // Year 1 at year1 rate (no discount applies to year 1)
+      const year1Cost = users * monthlyPlanYear1 * 1;
+      // Plan discount only applies to Year 2+ pricing, but monthly is per-month
+      // So no discount applies to the monthly quote (it's just 1 month at a time)
+      softwareCostBeforeDiscount = year1Cost;
+      totalSoftwareCost = year1Cost; // No plan discount on monthly Year 1 rate
     } else {
       // Yearly terms: use yearly rates
-      // Year 1
-      const year1CostBeforeDiscount = users * yearlyPlanYear1 * 12;
-      softwareCostBeforeDiscount = year1CostBeforeDiscount;
+      // Year 1 at year1 rate (no discount - already discounted)
+      const year1Cost = users * yearlyPlanYear1 * 12;
       
-      // Year 2+ (if applicable)
+      // Year 2+ (if applicable) - plan discount ONLY applies here
+      let year2PlusCost = 0;
+      let year2PlusCostBeforeDiscount = 0;
       if (years > 1) {
         const remainingYears = years - 1;
-        const year2PlusCostBeforeDiscount = users * yearlyPlanYear2Plus * 12 * remainingYears;
-        softwareCostBeforeDiscount += year2PlusCostBeforeDiscount;
+        year2PlusCostBeforeDiscount = users * yearlyPlanYear2Plus * 12 * remainingYears;
+        year2PlusCost = year2PlusCostBeforeDiscount * (1 - planDiscount / 100);
       }
       
-      totalSoftwareCost = softwareCostBeforeDiscount * (1 - planDiscount / 100);
+      softwareCostBeforeDiscount = year1Cost + year2PlusCostBeforeDiscount;
+      totalSoftwareCost = year1Cost + year2PlusCost;
     }
 
     // Implementation cost
@@ -199,8 +205,9 @@ export default function Calculator() {
       // Plan savings = difference between monthly and yearly rates
       const planSavings = fullMonthlyTotal - yearlyTotalSoftware;
       
-      // Add any plan discount savings (if additional plan discount applied)
-      const planDiscountSavings = yearlyTotalSoftware * (planDiscount / 100);
+      // Add any plan discount savings (only on Year 2+ portion)
+      const year2PlusCostForDiscount = years > 1 ? yearlyPlanYear2Plus * 12 * (years - 1) * users : 0;
+      const planDiscountSavings = year2PlusCostForDiscount * (planDiscount / 100);
       
       // Implementation discount savings (simple: impl price * discount %)
       const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
