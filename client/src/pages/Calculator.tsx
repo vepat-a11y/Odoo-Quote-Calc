@@ -8,13 +8,14 @@ import {
   Code, 
   Cpu, 
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   Save,
   Info,
-  Globe
+  Globe,
+  Server,
+  HardDrive,
+  Layers
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { GlassCard, Button, InputField, Select } from '@/components/ui-custom';
 import { useCreateQuote } from '@/hooks/use-quotes';
 import { useToast } from '@/hooks/use-toast';
@@ -70,7 +71,56 @@ const IMPLEMENTATIONS = {
   }
 };
 
+// Odoo SH Pricing (USD only)
+const ODOO_SH_PRICING = {
+  shared: {
+    yearly: {
+      worker: 57.60,
+      storage: 0.20,
+      staging: 14.40,
+      base: 0
+    },
+    monthly: {
+      worker: 72.00,
+      storage: 0.25,
+      staging: 18.00,
+      base: 0
+    },
+    limits: {
+      workerMin: 1,
+      workerMax: 8,
+      storageMin: 1,
+      storageMax: 512,
+      stagingMin: 0,
+      stagingMax: 20
+    }
+  },
+  dedicated: {
+    yearly: {
+      worker: 57.60,
+      storage: 0.20,
+      staging: 14.40,
+      base: 480.00
+    },
+    monthly: {
+      worker: 57.60,
+      storage: 0.20,
+      staging: 14.40,
+      base: 600.00
+    },
+    limits: {
+      workerMin: 4,
+      workerMax: 256,
+      storageMin: 1,
+      storageMax: 4096,
+      stagingMin: 0,
+      stagingMax: 20
+    }
+  }
+};
+
 type TermKey = 'monthly' | '1year' | '2year' | '3year' | '4year' | '5year';
+type ShHostingType = 'shared' | 'dedicated';
 
 interface TermDiscounts {
   [key: string]: { plan: number; impl: number };
@@ -90,7 +140,13 @@ export default function Calculator() {
   const [plan, setPlan] = useState<'standard' | 'custom'>('standard');
   const [implementation, setImplementation] = useState<string>('none');
   const [implMultiplier, setImplMultiplier] = useState<number>(1);
-  const [showDiscounts, setShowDiscounts] = useState(false);
+
+  // Odoo SH State (USD only)
+  const [shEnabled, setShEnabled] = useState(false);
+  const [shHostingType, setShHostingType] = useState<ShHostingType>('shared');
+  const [shWorkers, setShWorkers] = useState(1);
+  const [shStorage, setShStorage] = useState(1);
+  const [shStaging, setShStaging] = useState(0);
 
   const [termDiscounts, setTermDiscounts] = useState<TermDiscounts>({
     monthly: { plan: 0, impl: 0 },
@@ -125,10 +181,28 @@ export default function Calculator() {
     }).format(amount);
   };
 
-  // Reset implementation when country changes
+  // Reset implementation and SH when country changes
   const handleCountryChange = (newCountry: Country) => {
     setCountry(newCountry);
     setImplementation('none');
+    // Disable SH for Canada (only available for US)
+    if (newCountry === 'CA') {
+      setShEnabled(false);
+    }
+  };
+
+  // Get SH limits based on hosting type
+  const shLimits = ODOO_SH_PRICING[shHostingType].limits;
+
+  // Calculate SH monthly cost
+  const calculateShMonthlyCost = (isYearly: boolean) => {
+    if (!shEnabled || country !== 'US') return 0;
+    const pricing = isYearly ? ODOO_SH_PRICING[shHostingType].yearly : ODOO_SH_PRICING[shHostingType].monthly;
+    const workerCost = shWorkers * pricing.worker;
+    const storageCost = shStorage * pricing.storage;
+    const stagingCost = shStaging * pricing.staging;
+    const baseCost = pricing.base;
+    return baseCost + workerCost + storageCost + stagingCost;
   };
 
   // Calculation Logic
@@ -178,7 +252,11 @@ export default function Calculator() {
     const implCostBeforeDiscount = (implData?.price || 0) * implMultiplier;
     const implementationCost = implCostBeforeDiscount * (1 - implDiscount / 100);
 
-    const totalCost = totalSoftwareCost + implementationCost;
+    // Odoo SH cost (USD only, no discounts)
+    const shMonthlyCost = calculateShMonthlyCost(!isMonthly);
+    const shTotalCost = shMonthlyCost * months;
+
+    const totalCost = totalSoftwareCost + implementationCost + shTotalCost;
     const amortizedMonthly = totalCost / months;
 
     // === SAVINGS CALCULATION ===
@@ -220,6 +298,7 @@ export default function Calculator() {
       termLabel: isMonthly ? 'Monthly' : `${years} Year${years > 1 ? 's' : ''}`,
       totalSoftwareCost,
       implementationCost,
+      shTotalCost,
       totalCost,
       amortizedMonthly,
       totalSavings,
