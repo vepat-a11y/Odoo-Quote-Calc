@@ -143,6 +143,7 @@ export default function Calculator() {
 
   // Odoo SH State (USD only)
   const [shEnabled, setShEnabled] = useState(false);
+  const [shBillingCycle, setShBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [shHostingType, setShHostingType] = useState<ShHostingType>('shared');
   const [shWorkers, setShWorkers] = useState(1);
   const [shStorage, setShStorage] = useState(1);
@@ -194,10 +195,11 @@ export default function Calculator() {
   // Get SH limits based on hosting type
   const shLimits = ODOO_SH_PRICING[shHostingType].limits;
 
-  // Calculate SH monthly cost
-  const calculateShMonthlyCost = (isYearly: boolean) => {
+  // Calculate SH monthly cost (uses its own billing cycle, independent of plan term)
+  const calculateShMonthlyCost = () => {
     if (!shEnabled || country !== 'US') return 0;
-    const pricing = isYearly ? ODOO_SH_PRICING[shHostingType].yearly : ODOO_SH_PRICING[shHostingType].monthly;
+    const isAnnual = shBillingCycle === 'annual';
+    const pricing = isAnnual ? ODOO_SH_PRICING[shHostingType].yearly : ODOO_SH_PRICING[shHostingType].monthly;
     const workerCost = shWorkers * pricing.worker;
     const storageCost = shStorage * pricing.storage;
     const stagingCost = shStaging * pricing.staging;
@@ -252,8 +254,8 @@ export default function Calculator() {
     const implCostBeforeDiscount = (implData?.price || 0) * implMultiplier;
     const implementationCost = implCostBeforeDiscount * (1 - implDiscount / 100);
 
-    // Odoo SH cost (USD only, no discounts)
-    const shMonthlyCost = calculateShMonthlyCost(!isMonthly);
+    // Odoo SH cost (USD only, no discounts, uses its own billing cycle)
+    const shMonthlyCost = calculateShMonthlyCost();
     const shTotalCost = shMonthlyCost * months;
 
     const totalCost = totalSoftwareCost + implementationCost + shTotalCost;
@@ -532,6 +534,30 @@ export default function Calculator() {
                   
                   {shEnabled && (
                     <div className="space-y-4 bg-black/20 rounded-xl p-4 border border-orange-500/20">
+                      {/* Billing Cycle Toggle */}
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs text-white/40">Billing:</span>
+                        <div className="flex rounded-lg overflow-hidden border border-white/10">
+                          <button
+                            onClick={() => setShBillingCycle('monthly')}
+                            data-testid="button-sh-billing-monthly"
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${shBillingCycle === 'monthly' ? 'bg-orange-500/30 text-orange-300' : 'bg-transparent text-white/50 hover:bg-white/5'}`}
+                          >
+                            Monthly
+                          </button>
+                          <button
+                            onClick={() => setShBillingCycle('annual')}
+                            data-testid="button-sh-billing-annual"
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${shBillingCycle === 'annual' ? 'bg-orange-500/30 text-orange-300' : 'bg-transparent text-white/50 hover:bg-white/5'}`}
+                          >
+                            Annual
+                          </button>
+                        </div>
+                        <span className="text-xs text-white/40">
+                          {shBillingCycle === 'annual' ? '(Save with yearly commitment)' : '(Pay as you go)'}
+                        </span>
+                      </div>
+
                       {/* Hosting Type Toggle */}
                       <div className="flex items-center gap-4">
                         <span className="text-xs text-white/40">Hosting Type:</span>
@@ -559,7 +585,7 @@ export default function Calculator() {
                           </button>
                         </div>
                         {shHostingType === 'dedicated' && (
-                          <span className="text-xs text-orange-400">+$480/mo (yearly) or +$600/mo (monthly)</span>
+                          <span className="text-xs text-orange-400">+${shBillingCycle === 'annual' ? '480' : '600'}/mo base</span>
                         )}
                       </div>
                       
@@ -617,7 +643,7 @@ export default function Calculator() {
                       </div>
                       
                       <div className="text-xs text-white/50 pt-2 border-t border-white/5">
-                        Monthly cost: <span className="text-orange-400 font-mono">{formatCurrency(calculateShMonthlyCost(true))}/mo</span> (yearly) | <span className="text-orange-400 font-mono">{formatCurrency(calculateShMonthlyCost(false))}/mo</span> (monthly)
+                        Odoo SH ({shBillingCycle === 'annual' ? 'Annual' : 'Monthly'} billing): <span className="text-orange-400 font-mono">{formatCurrency(calculateShMonthlyCost())}/mo</span>
                       </div>
                     </div>
                   )}
