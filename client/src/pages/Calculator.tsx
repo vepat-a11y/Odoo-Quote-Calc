@@ -513,37 +513,132 @@ export default function Calculator() {
                   </span>
                 </div>
               </div>
+
+              {/* Odoo SH Section (USD Only) */}
+              {country === 'US' && (
+                <div className="md:col-span-3 mt-6 pt-6 border-t border-white/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-sm font-medium text-white/80 flex items-center gap-2">
+                      <Server className="w-4 h-4 text-orange-400" /> Odoo SH (Dedicated Hosting)
+                    </label>
+                    <button
+                      onClick={() => setShEnabled(!shEnabled)}
+                      data-testid="button-toggle-sh"
+                      className={`relative w-12 h-6 rounded-full transition-colors ${shEnabled ? 'bg-orange-500' : 'bg-white/10'}`}
+                    >
+                      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${shEnabled ? 'left-7' : 'left-1'}`} />
+                    </button>
+                  </div>
+                  
+                  {shEnabled && (
+                    <div className="space-y-4 bg-black/20 rounded-xl p-4 border border-orange-500/20">
+                      {/* Hosting Type Toggle */}
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs text-white/40">Hosting Type:</span>
+                        <div className="flex rounded-lg overflow-hidden border border-white/10">
+                          <button
+                            onClick={() => {
+                              setShHostingType('shared');
+                              setShWorkers(Math.min(Math.max(shWorkers, 1), 8));
+                              setShStorage(Math.min(shStorage, 512));
+                            }}
+                            data-testid="button-sh-shared"
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${shHostingType === 'shared' ? 'bg-orange-500/30 text-orange-300' : 'bg-transparent text-white/50 hover:bg-white/5'}`}
+                          >
+                            Shared
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShHostingType('dedicated');
+                              setShWorkers(Math.max(shWorkers, 4));
+                            }}
+                            data-testid="button-sh-dedicated"
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${shHostingType === 'dedicated' ? 'bg-orange-500/30 text-orange-300' : 'bg-transparent text-white/50 hover:bg-white/5'}`}
+                          >
+                            Dedicated
+                          </button>
+                        </div>
+                        {shHostingType === 'dedicated' && (
+                          <span className="text-xs text-orange-400">+$480/mo (yearly) or +$600/mo (monthly)</span>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {/* Workers */}
+                        <div className="space-y-2">
+                          <label className="text-xs text-white/40 flex items-center gap-1">
+                            <Cpu className="w-3 h-3" /> Workers
+                          </label>
+                          <input
+                            type="number"
+                            min={shLimits.workerMin}
+                            max={shLimits.workerMax}
+                            value={shWorkers}
+                            onChange={(e) => setShWorkers(Math.min(Math.max(parseInt(e.target.value) || shLimits.workerMin, shLimits.workerMin), shLimits.workerMax))}
+                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-orange-500/50 outline-none"
+                            data-testid="input-sh-workers"
+                          />
+                          <div className="text-xs text-white/30">{shLimits.workerMin}-{shLimits.workerMax} workers</div>
+                        </div>
+                        
+                        {/* Storage */}
+                        <div className="space-y-2">
+                          <label className="text-xs text-white/40 flex items-center gap-1">
+                            <HardDrive className="w-3 h-3" /> Storage (GB)
+                          </label>
+                          <input
+                            type="number"
+                            min={shLimits.storageMin}
+                            max={shLimits.storageMax}
+                            value={shStorage}
+                            onChange={(e) => setShStorage(Math.min(Math.max(parseInt(e.target.value) || shLimits.storageMin, shLimits.storageMin), shLimits.storageMax))}
+                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-orange-500/50 outline-none"
+                            data-testid="input-sh-storage"
+                          />
+                          <div className="text-xs text-white/30">{shLimits.storageMin}-{shLimits.storageMax} GB</div>
+                        </div>
+                        
+                        {/* Staging Environments */}
+                        <div className="space-y-2">
+                          <label className="text-xs text-white/40 flex items-center gap-1">
+                            <Layers className="w-3 h-3" /> Staging Env.
+                          </label>
+                          <input
+                            type="number"
+                            min={shLimits.stagingMin}
+                            max={shLimits.stagingMax}
+                            value={shStaging}
+                            onChange={(e) => setShStaging(Math.min(Math.max(parseInt(e.target.value) || 0, shLimits.stagingMin), shLimits.stagingMax))}
+                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-orange-500/50 outline-none"
+                            data-testid="input-sh-staging"
+                          />
+                          <div className="text-xs text-white/30">0-{shLimits.stagingMax} environments</div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs text-white/50 pt-2 border-t border-white/5">
+                        Monthly cost: <span className="text-orange-400 font-mono">{formatCurrency(calculateShMonthlyCost(true))}/mo</span> (yearly) | <span className="text-orange-400 font-mono">{formatCurrency(calculateShMonthlyCost(false))}/mo</span> (monthly)
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </GlassCard>
         </motion.section>
 
-        {/* Section 2: Discounts - Full Width */}
+        {/* Section 2: Advanced Pricing & Discounts - Full Width (Always Visible) */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <GlassCard className="overflow-visible">
-            <button 
-              onClick={() => setShowDiscounts(!showDiscounts)}
-              className="flex items-center justify-between w-full text-left"
-              data-testid="button-toggle-discounts"
-            >
-              <span className="font-bold text-white/90 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-green-400" /> Advanced Pricing & Discounts
-              </span>
-              {showDiscounts ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-
-            <AnimatePresence>
-              {showDiscounts && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="pt-6 space-y-4">
+          <GlassCard 
+            title="Advanced Pricing & Discounts"
+            description="Configure term visibility and optional discounts"
+            className="overflow-visible"
+          >
+            <div className="space-y-6">
                     <div className="text-xs text-white/40 uppercase tracking-wider font-semibold mb-2">Select Terms to Display</div>
                     <div className="flex flex-wrap gap-2 mb-6">
                       {Object.keys(selectedTerms).map((term) => (
@@ -615,10 +710,7 @@ export default function Calculator() {
                         </div>
                       ))}
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            </div>
           </GlassCard>
         </motion.section>
 
@@ -702,6 +794,16 @@ function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: stri
               </div>
               <span className="text-sm font-mono text-white/80">{formatCurrency(data.implementationCost)}</span>
             </div>
+
+            {data.shTotalCost > 0 && (
+              <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                  <Server className="w-4 h-4 text-orange-400" />
+                  <span className="text-sm text-white/80">Odoo SH</span>
+                </div>
+                <span className="text-sm font-mono text-white/80">{formatCurrency(data.shTotalCost)}</span>
+              </div>
+            )}
 
             {!isMonthly && data.totalSavings > 0 && (
               <div className="flex justify-between items-center py-2 bg-green-500/10 rounded-lg px-3 border border-green-500/20">
