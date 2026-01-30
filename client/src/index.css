@@ -1,89 +1,108 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-display: 'Outfit', sans-serif;
-  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
 
-  /* Premium Dark Theme Palette */
-  --background: 240 10% 4%;
-  --foreground: 0 0% 98%;
+  /* Odoo Light Theme Palette */
+  --background: 0 0% 98%;
+  --foreground: 340 32% 18%;
 
-  --card: 240 10% 6%;
-  --card-foreground: 0 0% 98%;
+  --card: 0 0% 100%;
+  --card-foreground: 340 32% 18%;
 
-  --popover: 240 10% 6%;
-  --popover-foreground: 0 0% 98%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 340 32% 18%;
 
-  /* Vibrant Purple/Pink/Cyan Gradient Source Colors */
-  --primary: 262 80% 50%;
-  --primary-foreground: 210 40% 98%;
+  /* Odoo Primary - #714B67 */
+  --primary: 318 20% 37%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 240 4% 16%;
-  --secondary-foreground: 210 40% 98%;
+  /* Odoo Secondary - #017E84 */
+  --secondary: 182 99% 26%;
+  --secondary-foreground: 0 0% 100%;
 
-  --muted: 240 4% 16%;
-  --muted-foreground: 240 5% 65%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
 
-  --accent: 310 80% 50%; /* Pink accent */
-  --accent-foreground: 210 40% 98%;
+  /* Odoo Teal as accent */
+  --accent: 182 99% 26%;
+  --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 240 4% 16%;
-  --input: 240 4% 16%;
-  --ring: 262 80% 50%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 318 20% 37%;
+
+  /* Odoo brand colors for direct use */
+  --odoo-primary: #714B67;
+  --odoo-secondary: #017E84;
+  --odoo-gray: #8F8F8F;
 }
 
 @layer base {
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-white;
+    @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(124, 58, 237, 0.15), transparent 25%), 
-      radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.15), transparent 25%);
-    background-attachment: fixed;
+    background-color: #FAFAFA;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply font-bold tracking-tight;
+    @apply font-semibold tracking-tight;
   }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl;
+    @apply bg-white border border-gray-200 shadow-sm;
   }
   
   .glass-card {
-    @apply bg-card/60 backdrop-blur-md border border-white/5 shadow-lg transition-all duration-300 hover:bg-card/80 hover:border-primary/20 hover:shadow-primary/5;
+    @apply bg-white border border-gray-100 shadow-sm rounded-2xl transition-all duration-200 hover:shadow-md hover:border-gray-200;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#714B67] to-[#017E84];
   }
 
   .input-premium {
-    @apply bg-black/20 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all duration-200;
+    @apply bg-gray-50 border-gray-200 focus:border-[#714B67] focus:ring-[#714B67]/20 transition-all duration-200;
+  }
+
+  .odoo-primary-bg {
+    background-color: var(--odoo-primary);
+  }
+
+  .odoo-secondary-bg {
+    background-color: var(--odoo-secondary);
   }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+  background: #F5F5F5;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
-  border-radius: 4px;
+  background: #D1D5DB;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  background: #9CA3AF;
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white !important;
+  }
 }

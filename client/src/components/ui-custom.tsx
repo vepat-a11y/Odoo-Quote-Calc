@@ -2,23 +2,27 @@ import { ReactNode, InputHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-// --- Beautiful Card ---
+// --- Card Component ---
 interface GlassCardProps {
   children: ReactNode;
   className?: string;
   title?: string;
   description?: string;
   headerAction?: ReactNode;
+  "data-testid"?: string;
 }
 
-export function GlassCard({ children, className, title, description, headerAction }: GlassCardProps) {
+export function GlassCard({ children, className, title, description, headerAction, "data-testid": dataTestId }: GlassCardProps) {
   return (
-    <div className={cn("glass-panel rounded-2xl overflow-hidden flex flex-col h-full", className)}>
+    <div 
+      className={cn("bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full", className)}
+      data-testid={dataTestId}
+    >
       {(title || description) && (
-        <div className="p-6 border-b border-white/5 flex items-start justify-between bg-white/[0.02]">
+        <div className="p-6 border-b border-gray-100 flex items-start justify-between">
           <div>
-            {title && <h3 className="text-xl font-bold text-white/90">{title}</h3>}
-            {description && <p className="mt-1 text-sm text-white/50">{description}</p>}
+            {title && <h3 className="text-lg font-semibold text-gray-800">{title}</h3>}
+            {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
           </div>
           {headerAction && <div>{headerAction}</div>}
         </div>
@@ -37,23 +41,23 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function InputField({ label, error, className, ...props }: InputProps) {
   return (
     <div className="space-y-2">
-      {label && <label className="text-sm font-medium text-white/70 ml-1">{label}</label>}
+      {label && <label className="text-sm font-medium text-gray-700 ml-1">{label}</label>}
       <input
         className={cn(
-          "w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white placeholder:text-white/20",
-          "focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20",
+          "w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-400",
+          "focus:outline-none focus:border-[#714B67] focus:ring-2 focus:ring-[#714B67]/20",
           "transition-all duration-200",
-          error && "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20",
+          error && "border-red-300 focus:border-red-400 focus:ring-red-100",
           className
         )}
         {...props}
       />
-      {error && <p className="text-xs text-red-400 ml-1">{error}</p>}
+      {error && <p className="text-xs text-red-500 ml-1">{error}</p>}
     </div>
   );
 }
 
-// --- Gradient Button ---
+// --- Button ---
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
@@ -70,10 +74,10 @@ export function Button({
   ...props 
 }: ButtonProps) {
   const variants = {
-    primary: "bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-primary/20 border border-white/10",
-    secondary: "bg-white/10 hover:bg-white/15 text-white border border-white/5",
-    outline: "bg-transparent border border-white/20 text-white/80 hover:bg-white/5 hover:text-white hover:border-white/40",
-    ghost: "bg-transparent text-white/60 hover:text-white hover:bg-white/5"
+    primary: "bg-[#714B67] hover:bg-[#5d3d55] text-white shadow-sm",
+    secondary: "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200",
+    outline: "bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400",
+    ghost: "bg-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-100"
   };
 
   const sizes = {
@@ -86,7 +90,7 @@ export function Button({
     <button
       disabled={isLoading || disabled}
       className={cn(
-        "relative overflow-hidden transition-all duration-300 active:scale-[0.98]",
+        "relative overflow-hidden transition-all duration-200 active:scale-[0.98]",
         "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none",
         variants[variant],
         sizes[size],
@@ -99,7 +103,7 @@ export function Button({
       </span>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-gray-300 border-t-[#714B67] rounded-full animate-spin" />
         </div>
       )}
     </button>
@@ -122,8 +126,8 @@ export function Switch({ checked, onCheckedChange, label }: SwitchProps) {
         aria-checked={checked}
         onClick={() => onCheckedChange(!checked)}
         className={cn(
-          "w-12 h-7 rounded-full p-1 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary/20",
-          checked ? "bg-gradient-to-r from-violet-600 to-fuchsia-600" : "bg-white/10"
+          "w-12 h-7 rounded-full p-1 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#714B67]/20",
+          checked ? "bg-[#714B67]" : "bg-gray-200"
         )}
       >
         <motion.div
@@ -132,12 +136,12 @@ export function Switch({ checked, onCheckedChange, label }: SwitchProps) {
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
         />
       </button>
-      {label && <span className="text-sm font-medium text-white/80 cursor-pointer" onClick={() => onCheckedChange(!checked)}>{label}</span>}
+      {label && <span className="text-sm font-medium text-gray-700 cursor-pointer" onClick={() => onCheckedChange(!checked)}>{label}</span>}
     </div>
   );
 }
 
-// --- Select Component (Simple implementation for design) ---
+// --- Select Component ---
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   options: { value: string; label: string }[];
@@ -146,24 +150,24 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 export function Select({ label, options, className, ...props }: SelectProps) {
   return (
     <div className="space-y-2">
-      {label && <label className="text-sm font-medium text-white/70 ml-1">{label}</label>}
+      {label && <label className="text-sm font-medium text-gray-700 ml-1">{label}</label>}
       <div className="relative">
         <select
           className={cn(
-            "w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-white appearance-none cursor-pointer",
-            "focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20",
+            "w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 appearance-none cursor-pointer",
+            "focus:outline-none focus:border-[#714B67] focus:ring-2 focus:ring-[#714B67]/20",
             "transition-all duration-200",
             className
           )}
           {...props}
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value} className="bg-zinc-900 text-white">
+            <option key={opt.value} value={opt.value} className="bg-white text-gray-800">
               {opt.label}
             </option>
           ))}
         </select>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>

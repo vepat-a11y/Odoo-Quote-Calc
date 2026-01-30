@@ -333,41 +333,41 @@ export default function Calculator() {
   const activeTerms = Object.keys(selectedTerms).filter(k => selectedTerms[k as TermKey]) as TermKey[];
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 bg-[#FAFAFA]">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-white/5">
-        <div className="w-full px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-primary/25">
-              <CalcIcon className="text-white w-6 h-6" />
+            <div className="w-9 h-9 rounded-lg bg-[#714B67] flex items-center justify-center">
+              <CalcIcon className="text-white w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold font-display bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+              <h1 className="text-xl font-semibold text-[#714B67]">
                 Odoo Estimator
               </h1>
-              <p className="text-xs text-white/40 font-medium tracking-wider uppercase">Enterprise Pricing Calculator</p>
+              <p className="text-xs text-gray-500 font-medium">Enterprise Pricing Calculator</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {/* Country Selector */}
-            <div className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2 border border-white/10">
-              <Globe className="w-4 h-4 text-white/50" />
+            <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
+              <Globe className="w-4 h-4 text-gray-400" />
               <select
                 value={country}
                 onChange={(e) => handleCountryChange(e.target.value as Country)}
-                className="bg-transparent text-white text-sm font-medium outline-none cursor-pointer"
+                className="bg-transparent text-gray-700 text-sm font-medium outline-none cursor-pointer"
                 data-testid="select-country"
               >
-                <option value="US" className="bg-gray-900">🇺🇸 USD</option>
-                <option value="CA" className="bg-gray-900">🇨🇦 CAD</option>
+                <option value="US">USD</option>
+                <option value="CA">CAD</option>
               </select>
             </div>
             
-            <Button variant="secondary" onClick={() => window.print()} className="hidden md:flex">
+            <Button variant="secondary" onClick={() => window.print()} className="hidden md:flex text-gray-600 bg-gray-100 hover:bg-gray-200 border-0">
               Export PDF
             </Button>
-            <Button onClick={handleSaveQuote} isLoading={createQuote.isPending} className="shadow-primary/25">
+            <Button onClick={handleSaveQuote} isLoading={createQuote.isPending} className="bg-[#714B67] hover:bg-[#5d3d55] text-white">
               <Save className="w-4 h-4 mr-2" />
               Save Quote
             </Button>
@@ -386,15 +386,13 @@ export default function Calculator() {
           <GlassCard 
             title="Configuration" 
             description={`Set your user count and plan details • Prices in ${countryConfig.currency}`}
-            className="relative overflow-hidden"
+            className="relative overflow-hidden bg-white"
           >
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
               {/* Users Input */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-white/80 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" /> Number of Users
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#714B67]" /> Number of Users
                 </label>
                 <div className="relative">
                   <input
@@ -403,7 +401,7 @@ export default function Calculator() {
                     max="500"
                     value={users}
                     onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
-                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#714B67]"
                     data-testid="slider-users"
                   />
                   <div className="mt-4 flex items-center gap-4">
@@ -412,10 +410,10 @@ export default function Calculator() {
                       min="1" 
                       value={users} 
                       onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
-                      className="font-mono text-lg text-center"
+                      className="font-mono text-lg text-center bg-gray-50 border-gray-200 text-gray-800"
                       data-testid="input-users"
                     />
-                    <div className="text-xs text-white/40">
+                    <div className="text-xs text-gray-500">
                       {users < 5 ? 'Small Team' : users < 50 ? 'Growing Business' : 'Enterprise'}
                     </div>
                   </div>
@@ -424,43 +422,43 @@ export default function Calculator() {
 
               {/* Plan Selection */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-white/80 flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-fuchsia-400" /> Odoo Plan
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-[#017E84]" /> Odoo Plan
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setPlan('standard')}
                     data-testid="button-plan-standard"
-                    className={`p-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group ${
+                    className={`p-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden ${
                       plan === 'standard' 
-                        ? 'bg-primary/20 border-primary/50 text-white' 
-                        : 'bg-black/20 border-white/10 text-white/60 hover:bg-white/5'
+                        ? 'bg-[#714B67]/10 border-[#714B67] text-gray-800' 
+                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                     }`}
                   >
                     <div className="font-semibold mb-1">Standard</div>
                     <div className="text-xs opacity-70">Core modules + Online</div>
-                    {plan === 'standard' && <motion.div layoutId="plan-active" className="absolute inset-0 border-2 border-primary rounded-xl pointer-events-none" />}
+                    {plan === 'standard' && <motion.div layoutId="plan-active" className="absolute inset-0 border-2 border-[#714B67] rounded-xl pointer-events-none" />}
                   </button>
                   <button
                     onClick={() => setPlan('custom')}
                     data-testid="button-plan-custom"
-                    className={`p-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden group ${
+                    className={`p-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden ${
                       plan === 'custom' 
-                        ? 'bg-fuchsia-500/20 border-fuchsia-500/50 text-white' 
-                        : 'bg-black/20 border-white/10 text-white/60 hover:bg-white/5'
+                        ? 'bg-[#017E84]/10 border-[#017E84] text-gray-800' 
+                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                     }`}
                   >
                     <div className="font-semibold mb-1">Custom</div>
                     <div className="text-xs opacity-70">Odoo Studio + API</div>
-                    {plan === 'custom' && <motion.div layoutId="plan-active" className="absolute inset-0 border-2 border-fuchsia-500 rounded-xl pointer-events-none" />}
+                    {plan === 'custom' && <motion.div layoutId="plan-active" className="absolute inset-0 border-2 border-[#017E84] rounded-xl pointer-events-none" />}
                   </button>
                 </div>
               </div>
 
               {/* Implementation Selection */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-white/80 flex items-center gap-2">
-                  <Package className="w-4 h-4 text-cyan-400" /> Implementation Pack
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Package className="w-4 h-4 text-[#017E84]" /> Implementation Pack
                 </label>
                 <div className="flex gap-3">
                   <div className="flex-1">
@@ -484,19 +482,19 @@ export default function Calculator() {
                         value={implMultiplier}
                         onChange={(e) => setImplMultiplier(parseFloat(e.target.value) || 1)}
                         disabled={implementation === 'none'}
-                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-center focus:border-primary/50 outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-center text-gray-800 focus:border-[#714B67] outline-none disabled:opacity-40 disabled:cursor-not-allowed"
                         data-testid="input-impl-multiplier"
                       />
-                      <span className="absolute right-2 top-2.5 text-white/30 text-xs">x</span>
+                      <span className="absolute right-2 top-2.5 text-gray-400 text-xs">x</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-xs text-white/40 px-1">
+                <div className="flex items-center justify-between text-xs text-gray-500 px-1">
                   <span>
                     {implMultiplier !== 1 && implementation !== 'none' ? (
                       <>
                         {(currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0)} x {implMultiplier} = {' '}
-                        <span className="text-cyan-400 font-medium">
+                        <span className="text-[#017E84] font-medium">
                           {((currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0) * implMultiplier).toFixed(0)} hours
                         </span>
                       </>
@@ -504,9 +502,9 @@ export default function Calculator() {
                       <>Includes {currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0} hours</>
                     )}
                   </span>
-                  <span className="text-white/60 font-mono">
+                  <span className="text-gray-700 font-mono">
                     {implMultiplier !== 1 && implementation !== 'none' ? (
-                      <span className="text-cyan-400">{formatCurrency((currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0) * implMultiplier)}</span>
+                      <span className="text-[#017E84]">{formatCurrency((currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0) * implMultiplier)}</span>
                     ) : (
                       formatCurrency(currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0)
                     )}
@@ -516,26 +514,26 @@ export default function Calculator() {
 
               {/* Odoo SH Section (USD Only) */}
               {country === 'US' && (
-                <div className="md:col-span-3 mt-6 pt-6 border-t border-white/10">
+                <div className="md:col-span-3 mt-6 pt-6 border-t border-gray-200">
                   <div className="flex items-center justify-between mb-4">
-                    <label className="text-sm font-medium text-white/80 flex items-center gap-2">
-                      <Server className="w-4 h-4 text-orange-400" /> Odoo SH (Dedicated Hosting)
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Server className="w-4 h-4 text-[#714B67]" /> Odoo SH (Dedicated Hosting)
                     </label>
                     <button
                       onClick={() => setShEnabled(!shEnabled)}
                       data-testid="button-toggle-sh"
-                      className={`relative w-12 h-6 rounded-full transition-colors ${shEnabled ? 'bg-orange-500' : 'bg-white/10'}`}
+                      className={`relative w-12 h-6 rounded-full transition-colors ${shEnabled ? 'bg-[#714B67]' : 'bg-gray-200'}`}
                     >
-                      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${shEnabled ? 'left-7' : 'left-1'}`} />
+                      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${shEnabled ? 'left-7' : 'left-1'}`} />
                     </button>
                   </div>
                   
                   {shEnabled && (
-                    <div className="space-y-4 bg-black/20 rounded-xl p-4 border border-orange-500/20">
+                    <div className="space-y-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
                       {/* Hosting Type Toggle */}
                       <div className="flex items-center gap-4">
-                        <span className="text-xs text-white/40">Hosting Type:</span>
-                        <div className="flex rounded-lg overflow-hidden border border-white/10">
+                        <span className="text-xs text-gray-500">Hosting Type:</span>
+                        <div className="flex rounded-lg overflow-hidden border border-gray-200">
                           <button
                             onClick={() => {
                               setShHostingType('shared');
@@ -543,7 +541,7 @@ export default function Calculator() {
                               setShStorage(Math.min(shStorage, 512));
                             }}
                             data-testid="button-sh-shared"
-                            className={`px-4 py-2 text-sm font-medium transition-colors ${shHostingType === 'shared' ? 'bg-orange-500/30 text-orange-300' : 'bg-transparent text-white/50 hover:bg-white/5'}`}
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${shHostingType === 'shared' ? 'bg-[#714B67] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                           >
                             Shared
                           </button>
@@ -553,20 +551,20 @@ export default function Calculator() {
                               setShWorkers(Math.max(shWorkers, 4));
                             }}
                             data-testid="button-sh-dedicated"
-                            className={`px-4 py-2 text-sm font-medium transition-colors ${shHostingType === 'dedicated' ? 'bg-orange-500/30 text-orange-300' : 'bg-transparent text-white/50 hover:bg-white/5'}`}
+                            className={`px-4 py-2 text-sm font-medium transition-colors ${shHostingType === 'dedicated' ? 'bg-[#714B67] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                           >
                             Dedicated
                           </button>
                         </div>
                         {shHostingType === 'dedicated' && (
-                          <span className="text-xs text-orange-400">+$480/mo (annual) or +$600/mo (monthly)</span>
+                          <span className="text-xs text-[#714B67]">+$480/mo (annual) or +$600/mo (monthly)</span>
                         )}
                       </div>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* Workers */}
                         <div className="space-y-2">
-                          <label className="text-xs text-white/40 flex items-center gap-1">
+                          <label className="text-xs text-gray-500 flex items-center gap-1">
                             <Cpu className="w-3 h-3" /> Workers
                           </label>
                           <input
@@ -575,15 +573,15 @@ export default function Calculator() {
                             max={shLimits.workerMax}
                             value={shWorkers}
                             onChange={(e) => setShWorkers(Math.min(Math.max(parseInt(e.target.value) || shLimits.workerMin, shLimits.workerMin), shLimits.workerMax))}
-                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-orange-500/50 outline-none"
+                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-[#714B67] outline-none"
                             data-testid="input-sh-workers"
                           />
-                          <div className="text-xs text-white/30">{shLimits.workerMin}-{shLimits.workerMax} workers</div>
+                          <div className="text-xs text-gray-400">{shLimits.workerMin}-{shLimits.workerMax} workers</div>
                         </div>
                         
                         {/* Storage */}
                         <div className="space-y-2">
-                          <label className="text-xs text-white/40 flex items-center gap-1">
+                          <label className="text-xs text-gray-500 flex items-center gap-1">
                             <HardDrive className="w-3 h-3" /> Storage (GB)
                           </label>
                           <input
@@ -592,15 +590,15 @@ export default function Calculator() {
                             max={shLimits.storageMax}
                             value={shStorage}
                             onChange={(e) => setShStorage(Math.min(Math.max(parseInt(e.target.value) || shLimits.storageMin, shLimits.storageMin), shLimits.storageMax))}
-                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-orange-500/50 outline-none"
+                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-[#714B67] outline-none"
                             data-testid="input-sh-storage"
                           />
-                          <div className="text-xs text-white/30">{shLimits.storageMin}-{shLimits.storageMax} GB</div>
+                          <div className="text-xs text-gray-400">{shLimits.storageMin}-{shLimits.storageMax} GB</div>
                         </div>
                         
                         {/* Staging Environments */}
                         <div className="space-y-2">
-                          <label className="text-xs text-white/40 flex items-center gap-1">
+                          <label className="text-xs text-gray-500 flex items-center gap-1">
                             <Layers className="w-3 h-3" /> Staging Env.
                           </label>
                           <input
@@ -609,15 +607,15 @@ export default function Calculator() {
                             max={shLimits.stagingMax}
                             value={shStaging}
                             onChange={(e) => setShStaging(Math.min(Math.max(parseInt(e.target.value) || 0, shLimits.stagingMin), shLimits.stagingMax))}
-                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-orange-500/50 outline-none"
+                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-[#714B67] outline-none"
                             data-testid="input-sh-staging"
                           />
-                          <div className="text-xs text-white/30">0-{shLimits.stagingMax} environments</div>
+                          <div className="text-xs text-gray-400">0-{shLimits.stagingMax} environments</div>
                         </div>
                       </div>
                       
-                      <div className="text-xs text-white/50 pt-2 border-t border-white/5">
-                        Odoo SH: <span className="text-orange-400 font-mono">{formatCurrency(calculateShMonthlyCost(true))}/mo</span> (annual) | <span className="text-orange-400 font-mono">{formatCurrency(calculateShMonthlyCost(false))}/mo</span> (monthly)
+                      <div className="text-xs text-gray-500 pt-2 border-t border-gray-200">
+                        Odoo SH: <span className="text-[#714B67] font-mono font-medium">{formatCurrency(calculateShMonthlyCost(true))}/mo</span> (annual) | <span className="text-[#714B67] font-mono font-medium">{formatCurrency(calculateShMonthlyCost(false))}/mo</span> (monthly)
                       </div>
                     </div>
                   )}
@@ -636,10 +634,10 @@ export default function Calculator() {
           <GlassCard 
             title="Advanced Pricing & Discounts"
             description="Configure term visibility and optional discounts"
-            className="overflow-visible"
+            className="overflow-visible bg-white"
           >
             <div className="space-y-6">
-                    <div className="text-xs text-white/40 uppercase tracking-wider font-semibold mb-2">Select Terms to Display</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">Select Terms to Display</div>
                     <div className="flex flex-wrap gap-2 mb-6">
                       {Object.keys(selectedTerms).map((term) => (
                         <button
@@ -648,8 +646,8 @@ export default function Calculator() {
                           data-testid={`button-term-${term}`}
                           className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                             selectedTerms[term as TermKey]
-                              ? 'bg-white/10 border-white/30 text-white'
-                              : 'bg-transparent border-white/5 text-white/30 hover:border-white/20'
+                              ? 'bg-[#714B67] border-[#714B67] text-white'
+                              : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
                           }`}
                         >
                           {term === 'monthly' ? 'Monthly' : term.replace('year', ' Year')}
@@ -659,13 +657,13 @@ export default function Calculator() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                       {activeTerms.map((term) => (
-                        <div key={term} className="bg-black/20 rounded-xl p-4 border border-white/5 space-y-3">
-                          <div className="text-sm font-medium text-white/80 capitalize">
+                        <div key={term} className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-3">
+                          <div className="text-sm font-medium text-gray-700 capitalize">
                             {term === 'monthly' ? 'Monthly' : term.replace('year', ' Year')}
                           </div>
                           <div className="space-y-2">
                             <div>
-                              <label className="text-xs text-white/40 block mb-1">Plan % Off</label>
+                              <label className="text-xs text-gray-500 block mb-1">Plan % Off</label>
                               <div className="relative">
                                 <input
                                   type="number"
@@ -679,14 +677,14 @@ export default function Calculator() {
                                       [term]: { ...prev[term], plan: val }
                                     }));
                                   }}
-                                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-right pr-7 focus:border-primary/50 outline-none"
+                                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-right pr-7 text-gray-800 focus:border-[#714B67] outline-none"
                                   data-testid={`input-plan-discount-${term}`}
                                 />
-                                <span className="absolute right-2 top-2 text-white/30 text-sm">%</span>
+                                <span className="absolute right-2 top-2 text-gray-400 text-sm">%</span>
                               </div>
                             </div>
                             <div>
-                              <label className="text-xs text-white/40 block mb-1">Impl % Off</label>
+                              <label className="text-xs text-gray-500 block mb-1">Impl % Off</label>
                               <div className="relative">
                                 <input
                                   type="number"
@@ -700,10 +698,10 @@ export default function Calculator() {
                                       [term]: { ...prev[term], impl: val }
                                     }));
                                   }}
-                                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-right pr-7 focus:border-primary/50 outline-none"
+                                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-right pr-7 text-gray-800 focus:border-[#714B67] outline-none"
                                   data-testid={`input-impl-discount-${term}`}
                                 />
-                                <span className="absolute right-2 top-2 text-white/30 text-sm">%</span>
+                                <span className="absolute right-2 top-2 text-gray-400 text-sm">%</span>
                               </div>
                             </div>
                           </div>
@@ -721,8 +719,8 @@ export default function Calculator() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white/90">Quote Comparison</h2>
-            <div className="text-sm text-white/40">{activeTerms.length} terms selected</div>
+            <h2 className="text-xl font-semibold text-gray-800">Quote Comparison</h2>
+            <div className="text-sm text-gray-500">{activeTerms.length} terms selected</div>
           </div>
           
           {activeTerms.length > 0 ? (
@@ -742,7 +740,7 @@ export default function Calculator() {
               })}
             </div>
           ) : (
-            <div className="h-64 flex flex-col items-center justify-center text-white/30 border-2 border-dashed border-white/10 rounded-3xl">
+            <div className="h-64 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl bg-white">
               <Info className="w-12 h-12 mb-4 opacity-50" />
               <p>Select terms from the Discounts section to view quotes</p>
             </div>
@@ -760,75 +758,73 @@ function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: stri
   const isMonthly = termKey === 'monthly';
 
   return (
-    <div className={`relative group h-full ${data.isBestValue ? 'ring-2 ring-primary/50 shadow-2xl shadow-primary/10' : ''} rounded-2xl`}>
+    <div className={`relative group h-full ${data.isBestValue ? 'ring-2 ring-[#017E84] shadow-lg' : ''} rounded-2xl`}>
       {data.isBestValue && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-20 flex items-center gap-1">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#017E84] text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-20 flex items-center gap-1">
           <Zap className="w-3 h-3" /> BEST VALUE
         </div>
       )}
       
-      <GlassCard className="h-full hover:bg-white/[0.07] transition-colors relative overflow-hidden group" data-testid={`card-quote-${termKey}`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
+      <GlassCard className="h-full bg-white hover:shadow-md transition-all relative overflow-hidden group" data-testid={`card-quote-${termKey}`}>
         <div className="flex flex-col h-full relative z-10">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h3 className="text-2xl font-display font-bold text-white">{data.termLabel}</h3>
-              <p className="text-sm text-white/50">{isMonthly ? 'Pay as you go' : 'Upfront Commitment'}</p>
+              <h3 className="text-2xl font-semibold text-gray-800">{data.termLabel}</h3>
+              <p className="text-sm text-gray-500">{isMonthly ? 'Pay as you go' : 'Upfront Commitment'}</p>
             </div>
           </div>
 
           <div className="space-y-3 flex-1">
-            <div className="flex justify-between items-center py-2 border-b border-white/5">
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <Code className="w-4 h-4 text-violet-400" />
-                <span className="text-sm text-white/80">Software</span>
+                <Code className="w-4 h-4 text-[#714B67]" />
+                <span className="text-sm text-gray-600">Software</span>
               </div>
-              <span className="text-sm font-mono text-white/80">{formatCurrency(data.totalSoftwareCost)}</span>
+              <span className="text-sm font-mono text-gray-800">{formatCurrency(data.totalSoftwareCost)}</span>
             </div>
 
-            <div className="flex justify-between items-center py-2 border-b border-white/5">
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm text-white/80">Implementation</span>
+                <Cpu className="w-4 h-4 text-[#017E84]" />
+                <span className="text-sm text-gray-600">Implementation</span>
               </div>
-              <span className="text-sm font-mono text-white/80">{formatCurrency(data.implementationCost)}</span>
+              <span className="text-sm font-mono text-gray-800">{formatCurrency(data.implementationCost)}</span>
             </div>
 
             {data.shTotalCost > 0 && (
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                  <Server className="w-4 h-4 text-orange-400" />
-                  <span className="text-sm text-white/80">Odoo SH</span>
+                  <Server className="w-4 h-4 text-[#714B67]" />
+                  <span className="text-sm text-gray-600">Odoo SH</span>
                 </div>
-                <span className="text-sm font-mono text-white/80">{formatCurrency(data.shTotalCost)}</span>
+                <span className="text-sm font-mono text-gray-800">{formatCurrency(data.shTotalCost)}</span>
               </div>
             )}
 
             {!isMonthly && data.totalSavings > 0 && (
-              <div className="flex justify-between items-center py-2 bg-green-500/10 rounded-lg px-3 border border-green-500/20">
-                <span className="text-xs font-bold text-green-400 uppercase tracking-wide">Savings</span>
-                <span className="text-sm font-mono font-bold text-green-400">-{formatCurrency(data.totalSavings)}</span>
+              <div className="flex justify-between items-center py-2 bg-green-50 rounded-lg px-3 border border-green-200">
+                <span className="text-xs font-bold text-green-600 uppercase tracking-wide">Savings</span>
+                <span className="text-sm font-mono font-bold text-green-600">-{formatCurrency(data.totalSavings)}</span>
               </div>
             )}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-white/10">
-            <div className="text-xs text-white/40 mb-1">Total Contract</div>
-            <div className="text-2xl font-bold font-mono text-white mb-4">
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="text-xs text-gray-500 mb-1">Total Contract</div>
+            <div className="text-2xl font-bold font-mono text-gray-900 mb-4">
               {formatCurrency(data.totalCost)}
             </div>
             
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-xs text-white/40 mb-1">Amortized Monthly</p>
-                <div className="text-xl font-bold font-display text-gradient">
+                <p className="text-xs text-gray-500 mb-1">Amortized Monthly</p>
+                <div className="text-xl font-bold text-[#714B67]">
                   {formatCurrency(data.amortizedMonthly)}
-                  <span className="text-sm font-normal text-white/30 ml-1">/mo</span>
+                  <span className="text-sm font-normal text-gray-400 ml-1">/mo</span>
                 </div>
               </div>
-              <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                <CheckCircle2 className="w-4 h-4 text-white/20 group-hover:text-white" />
+              <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-[#714B67] transition-all">
+                <CheckCircle2 className="w-4 h-4 text-gray-400 group-hover:text-white" />
               </div>
             </div>
           </div>
