@@ -103,9 +103,9 @@ const ODOO_SH_PRICING = {
       base: 480.00
     },
     monthly: {
-      worker: 57.60,
-      storage: 0.20,
-      staging: 14.40,
+      worker: 72.00,
+      storage: 0.25,
+      staging: 18.00,
       base: 600.00
     },
     limits: {
