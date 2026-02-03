@@ -181,7 +181,7 @@ export default function Calculator() {
 
   const [selectedTerms, setSelectedTerms] = useState<SelectedTerms>({
     monthly: true,
-    '1year': true,
+    '1year': false,
     '2year': false,
     '3year': false,
     '4year': false,
