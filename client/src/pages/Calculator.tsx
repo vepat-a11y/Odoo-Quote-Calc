@@ -557,33 +557,21 @@ export default function Calculator() {
     
     y += rowHeight + 8;
 
-    // Financing section (if applicable)
+    // Financing section (if applicable) - simplified with just amounts
     if (hasAnyFinancing) {
+      y += 4;
+      
+      // Section header
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
-      doc.setTextColor(1, 126, 132);
+      doc.setTextColor(80, 80, 80);
       doc.text('Financing Estimates', margin, y);
-      y += 8;
+      y += 6;
       
-      // Financing table
-      doc.setFillColor(1, 126, 132);
+      // Low estimate row - green tones
+      doc.setFillColor(236, 253, 245); // emerald-50
       doc.rect(margin, y, tableWidth, rowHeight, 'F');
-      
-      doc.setFontSize(7);
-      doc.setTextColor(255, 255, 255);
-      doc.text('APR', margin + 4, y + 6);
-      
-      quoteData.forEach((data, i) => {
-        const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
-        doc.text(data.termLabel, colX, y + 6, { align: 'center' });
-      });
-      
-      y += rowHeight;
-
-      // Low APR row
-      doc.setFillColor(245, 252, 252);
-      doc.rect(margin, y, tableWidth, rowHeight, 'F');
-      doc.setDrawColor(200, 230, 230);
+      doc.setDrawColor(167, 243, 208); // emerald-200
       doc.rect(margin, y, tableWidth, rowHeight);
       doc.line(margin + labelColWidth, y, margin + labelColWidth, y + rowHeight);
       
@@ -592,28 +580,28 @@ export default function Calculator() {
         doc.line(lineX, y, lineX, y + rowHeight);
       }
       
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('helvetica', 'bold');
       doc.setFontSize(7);
-      doc.setTextColor(1, 126, 132);
-      doc.text('Low Rate', margin + 4, y + 6);
+      doc.setTextColor(4, 120, 87); // emerald-700
+      doc.text('Low Estimate', margin + 4, y + 6.5);
       
-      doc.setTextColor(50, 50, 50);
       quoteData.forEach((data, i) => {
         const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
         if (data.financingLow > 0) {
-          doc.text(`${formatCurrency(data.financingLow)}/mo (${data.financingRates?.low}%)`, colX, y + 6, { align: 'center' });
+          doc.setTextColor(4, 120, 87);
+          doc.text(`${formatCurrency(data.financingLow)}/mo`, colX, y + 6.5, { align: 'center' });
         } else {
           doc.setTextColor(180, 180, 180);
-          doc.text('—', colX, y + 6, { align: 'center' });
+          doc.text('—', colX, y + 6.5, { align: 'center' });
         }
       });
       
       y += rowHeight;
 
-      // High APR row
-      doc.setFillColor(255, 255, 255);
+      // High estimate row - amber tones
+      doc.setFillColor(255, 251, 235); // amber-50
       doc.rect(margin, y, tableWidth, rowHeight, 'F');
-      doc.setDrawColor(200, 230, 230);
+      doc.setDrawColor(253, 230, 138); // amber-200
       doc.rect(margin, y, tableWidth, rowHeight);
       doc.line(margin + labelColWidth, y, margin + labelColWidth, y + rowHeight);
       
@@ -622,18 +610,19 @@ export default function Calculator() {
         doc.line(lineX, y, lineX, y + rowHeight);
       }
       
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(1, 126, 132);
-      doc.text('High Rate', margin + 4, y + 6);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(180, 83, 9); // amber-700
+      doc.text('High Estimate', margin + 4, y + 6.5);
       
-      doc.setTextColor(50, 50, 50);
       quoteData.forEach((data, i) => {
         const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
         if (data.financingHigh > 0) {
-          doc.text(`${formatCurrency(data.financingHigh)}/mo (${data.financingRates?.high}%)`, colX, y + 6, { align: 'center' });
+          doc.setTextColor(180, 83, 9);
+          doc.text(`${formatCurrency(data.financingHigh)}/mo`, colX, y + 6.5, { align: 'center' });
         } else {
           doc.setTextColor(180, 180, 180);
-          doc.text('—', colX, y + 6, { align: 'center' });
+          doc.text('—', colX, y + 6.5, { align: 'center' });
         }
       });
     }
@@ -1141,18 +1130,18 @@ function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: stri
 
             {hasFinancing && (
               <div className="pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <TrendingUp className="w-4 h-4 text-[#017E84]" />
                   <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Financing Estimate</span>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">Low ({data.financingRates.low}% APR)</span>
-                    <span className="text-sm font-mono font-medium text-gray-700">{formatCurrency(data.financingLow)}/mo</span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+                    <div className="text-[10px] text-emerald-600 font-medium uppercase mb-1">Low Estimate</div>
+                    <div className="text-base font-bold text-emerald-700">{formatCurrency(data.financingLow)}<span className="text-xs font-normal">/mo</span></div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">High ({data.financingRates.high}% APR)</span>
-                    <span className="text-sm font-mono font-medium text-gray-700">{formatCurrency(data.financingHigh)}/mo</span>
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                    <div className="text-[10px] text-amber-600 font-medium uppercase mb-1">High Estimate</div>
+                    <div className="text-base font-bold text-amber-700">{formatCurrency(data.financingHigh)}<span className="text-xs font-normal">/mo</span></div>
                   </div>
                 </div>
               </div>
