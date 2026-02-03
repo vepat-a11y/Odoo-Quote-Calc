@@ -375,44 +375,14 @@ export default function Calculator() {
     data: calculateTermQuote(term, termDiscounts[term].plan, termDiscounts[term].impl)
   }));
 
-  // Compute best value term - the one with the lowest amortized monthly cost (excluding monthly)
-  // Tie-breaker: if costs are equal, prefer the longer term (better commitment value)
-  const getBestValueTerm = (): TermKey | null => {
-    const yearlyQuotes = allQuoteData.filter(q => q.term !== 'monthly');
-    if (yearlyQuotes.length === 0) return null;
-    
-    let bestTerm: TermKey | null = null;
-    let lowestAmortized = Infinity;
-    let longestYears = 0;
-    
-    yearlyQuotes.forEach(({ term, data }) => {
-      const years = data.years;
-      // Strictly lower wins, or same cost but longer term wins (tie-breaker)
-      if (data.amortizedMonthly < lowestAmortized || 
-          (data.amortizedMonthly === lowestAmortized && years > longestYears)) {
-        lowestAmortized = data.amortizedMonthly;
-        bestTerm = term;
-        longestYears = years;
-      }
-    });
-    
-    return bestTerm;
-  };
-  
-  const bestValueTerm = getBestValueTerm();
-
-  // Modern Minimalist PDF Export Function
+  // Clean PDF Export with proper table design
   const handleExportPDF = () => {
-    const doc = new jsPDF('landscape');
+    const doc = new jsPDF('portrait');
     const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 20;
 
-    // Use precomputed quote data with best value flag
-    const quoteData = allQuoteData.map(({ term, data }) => ({
-      ...data,
-      isBestValue: term === bestValueTerm
-    }));
+    // Use precomputed quote data
+    const quoteData = allQuoteData.map(({ data }) => data);
     
     const numTerms = quoteData.length;
     if (numTerms === 0) {
@@ -424,218 +394,263 @@ export default function Calculator() {
       return;
     }
 
-    // Minimalist Header - thin accent line only
+    // Header
     doc.setFillColor(113, 75, 103);
-    doc.rect(0, 0, pageWidth, 4, 'F');
+    doc.rect(0, 0, pageWidth, 3, 'F');
+    
+    let y = 22;
     
     // Title
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(24);
+    doc.setTextColor(113, 75, 103);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('Quote Comparison', margin, 25);
-    
-    // Subtitle with config
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(120, 120, 120);
-    const configText = `${users} Users  ·  ${plan === 'standard' ? 'Standard' : 'Custom'}  ·  ${countryConfig.currency}  ·  ${currentImplementations[implementation as keyof typeof currentImplementations]?.label || 'Self-Service'}`;
-    doc.text(configText, margin, 33);
+    doc.text('Odoo Quote Comparison', margin, y);
     
     // Date
-    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth - margin, 25, { align: 'right' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(130, 130, 130);
+    doc.text(new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), pageWidth - margin, y, { align: 'right' });
+    
+    y += 12;
+
+    // Configuration row
+    doc.setFillColor(248, 248, 248);
+    doc.roundedRect(margin, y - 4, pageWidth - (margin * 2), 16, 2, 2, 'F');
+    
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    const configs = [
+      `Users: ${users}`,
+      `Plan: ${plan === 'standard' ? 'Standard' : 'Custom'}`,
+      `Currency: ${countryConfig.currency}`,
+      `Impl: ${currentImplementations[implementation as keyof typeof currentImplementations]?.label || 'None'}`
+    ];
+    doc.text(configs.join('   •   '), margin + 6, y + 5);
+    
+    y += 22;
 
     // Table setup
-    const tableTop = 48;
     const tableWidth = pageWidth - (margin * 2);
-    const labelColWidth = 55;
+    const labelColWidth = 48;
     const termColWidth = (tableWidth - labelColWidth) / numTerms;
-    const rowHeight = 14;
-    let y = tableTop;
+    const rowHeight = 10;
 
     // Check what rows to show
     const hasAnySH = quoteData.some(d => d.shTotalCost > 0);
     const hasAnySavings = quoteData.some(d => d.totalSavings > 0);
     const hasAnyFinancing = quoteData.some(d => d.financingLow > 0);
 
-    // Column headers with term labels
-    doc.setFillColor(252, 252, 252);
+    // Draw table header row
+    doc.setFillColor(113, 75, 103);
     doc.rect(margin, y, tableWidth, rowHeight + 2, 'F');
     
-    // Thin top border
-    doc.setDrawColor(230, 230, 230);
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, margin + tableWidth, y);
-    
-    y += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(255, 255, 255);
+    doc.text('', margin + 4, y + 7);
     
     quoteData.forEach((data, i) => {
       const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
-      
-      // Best value indicator - subtle underline
-      if (data.isBestValue) {
-        doc.setFillColor(1, 126, 132);
-        doc.rect(colX - 18, y + 3, 36, 1.5, 'F');
-      }
-      
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.setTextColor(data.isBestValue ? 1 : 70, data.isBestValue ? 126 : 70, data.isBestValue ? 132 : 70);
-      doc.text(data.termLabel, colX, y, { align: 'center' });
-      
-      if (data.isBestValue) {
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        doc.text('BEST VALUE', colX, y + 9, { align: 'center' });
-      }
+      doc.text(data.termLabel, colX, y + 7, { align: 'center' });
     });
     
-    y += 18;
+    y += rowHeight + 2;
 
-    // Data rows
-    const dataRows = [
-      { label: 'Software', key: 'totalSoftwareCost' },
+    // Define data rows
+    interface DataRow {
+      label: string;
+      key: string;
+      isGreen?: boolean;
+    }
+    
+    const dataRows: DataRow[] = [
+      { label: 'Software License', key: 'totalSoftwareCost' },
       { label: 'Implementation', key: 'implementationCost' },
-      ...(hasAnySH ? [{ label: 'Odoo SH', key: 'shTotalCost' }] : []),
+      ...(hasAnySH ? [{ label: 'Odoo SH Hosting', key: 'shTotalCost' }] : []),
       ...(hasAnySavings ? [{ label: 'Savings', key: 'totalSavings', isGreen: true }] : []),
     ];
 
+    // Draw data rows with borders
     dataRows.forEach((row, rowIdx) => {
-      // Alternating row background
+      // Row background
       if (rowIdx % 2 === 0) {
-        doc.setFillColor(250, 250, 250);
-        doc.rect(margin, y - 8, tableWidth, rowHeight, 'F');
+        doc.setFillColor(252, 252, 252);
+      } else {
+        doc.setFillColor(255, 255, 255);
+      }
+      doc.rect(margin, y, tableWidth, rowHeight, 'F');
+      
+      // Draw cell borders
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(0.3);
+      doc.rect(margin, y, tableWidth, rowHeight);
+      doc.line(margin + labelColWidth, y, margin + labelColWidth, y + rowHeight);
+      
+      for (let i = 1; i < numTerms; i++) {
+        const lineX = margin + labelColWidth + (i * termColWidth);
+        doc.line(lineX, y, lineX, y + rowHeight);
       }
       
       // Row label
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(100, 100, 100);
-      doc.text(row.label, margin + 4, y);
+      doc.setFontSize(8);
+      doc.setTextColor(80, 80, 80);
+      doc.text(row.label, margin + 4, y + 6.5);
       
       // Values
       quoteData.forEach((data, i) => {
         const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
         const numValue = data[row.key as keyof typeof data] as number;
         
+        doc.setFont('helvetica', 'normal');
         if (row.isGreen && numValue > 0) {
           doc.setTextColor(22, 163, 74);
-          doc.text('-' + formatCurrency(numValue), colX, y, { align: 'center' });
+          doc.text('-' + formatCurrency(numValue), colX, y + 6.5, { align: 'center' });
         } else {
-          doc.setTextColor(60, 60, 60);
-          doc.text(numValue > 0 ? formatCurrency(numValue) : '—', colX, y, { align: 'center' });
+          doc.setTextColor(50, 50, 50);
+          doc.text(numValue > 0 ? formatCurrency(numValue) : '—', colX, y + 6.5, { align: 'center' });
         }
       });
       
       y += rowHeight;
     });
 
-    // Divider line
-    y += 2;
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
-    doc.line(margin, y, margin + tableWidth, y);
-    y += 12;
-
     // Total row - highlighted
-    doc.setFillColor(113, 75, 103, 0.08);
-    doc.setFillColor(248, 246, 247);
-    doc.rect(margin, y - 8, tableWidth, rowHeight + 4, 'F');
+    doc.setFillColor(113, 75, 103);
+    doc.rect(margin, y, tableWidth, rowHeight + 2, 'F');
     
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.setTextColor(70, 70, 70);
-    doc.text('Total Contract', margin + 4, y);
+    doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Total Contract', margin + 4, y + 7);
     
     quoteData.forEach((data, i) => {
       const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
-      doc.setFontSize(11);
-      doc.setTextColor(40, 40, 40);
-      doc.text(formatCurrency(data.totalCost), colX, y, { align: 'center' });
+      doc.text(formatCurrency(data.totalCost), colX, y + 7, { align: 'center' });
     });
     
-    y += rowHeight + 4;
+    y += rowHeight + 2;
 
     // Amortized monthly row
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text('Amortized Monthly', margin + 4, y);
+    doc.setFillColor(248, 245, 247);
+    doc.rect(margin, y, tableWidth, rowHeight, 'F');
+    doc.setDrawColor(220, 220, 220);
+    doc.rect(margin, y, tableWidth, rowHeight);
+    doc.line(margin + labelColWidth, y, margin + labelColWidth, y + rowHeight);
     
+    for (let i = 1; i < numTerms; i++) {
+      const lineX = margin + labelColWidth + (i * termColWidth);
+      doc.line(lineX, y, lineX, y + rowHeight);
+    }
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(113, 75, 103);
+    doc.text('Monthly Cost', margin + 4, y + 6.5);
+    
+    doc.setFont('helvetica', 'bold');
     quoteData.forEach((data, i) => {
       const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
-      doc.setTextColor(113, 75, 103);
-      doc.setFont('helvetica', 'bold');
-      doc.text(formatCurrency(data.amortizedMonthly) + '/mo', colX, y, { align: 'center' });
+      doc.text(formatCurrency(data.amortizedMonthly) + '/mo', colX, y + 6.5, { align: 'center' });
     });
     
     y += rowHeight + 8;
 
     // Financing section (if applicable)
     if (hasAnyFinancing) {
-      doc.setDrawColor(230, 230, 230);
-      doc.line(margin, y - 4, margin + tableWidth, y - 4);
-      
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setTextColor(1, 126, 132);
-      doc.text('FINANCING OPTIONS', margin + 4, y + 4);
-      y += 14;
+      doc.text('Financing Estimates', margin, y);
+      y += 8;
       
+      // Financing table
+      doc.setFillColor(1, 126, 132);
+      doc.rect(margin, y, tableWidth, rowHeight, 'F');
+      
+      doc.setFontSize(7);
+      doc.setTextColor(255, 255, 255);
+      doc.text('APR', margin + 4, y + 6);
+      
+      quoteData.forEach((data, i) => {
+        const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
+        doc.text(data.termLabel, colX, y + 6, { align: 'center' });
+      });
+      
+      y += rowHeight;
+
       // Low APR row
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
-      doc.text('Low APR', margin + 4, y);
+      doc.setFillColor(245, 252, 252);
+      doc.rect(margin, y, tableWidth, rowHeight, 'F');
+      doc.setDrawColor(200, 230, 230);
+      doc.rect(margin, y, tableWidth, rowHeight);
+      doc.line(margin + labelColWidth, y, margin + labelColWidth, y + rowHeight);
       
+      for (let i = 1; i < numTerms; i++) {
+        const lineX = margin + labelColWidth + (i * termColWidth);
+        doc.line(lineX, y, lineX, y + rowHeight);
+      }
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(1, 126, 132);
+      doc.text('Low Rate', margin + 4, y + 6);
+      
+      doc.setTextColor(50, 50, 50);
       quoteData.forEach((data, i) => {
         const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
         if (data.financingLow > 0) {
-          doc.setTextColor(60, 60, 60);
-          doc.text(`${formatCurrency(data.financingLow)}/mo`, colX - 10, y, { align: 'center' });
-          doc.setTextColor(140, 140, 140);
-          doc.setFontSize(7);
-          doc.text(`${data.financingRates?.low}%`, colX + 20, y, { align: 'center' });
-          doc.setFontSize(8);
+          doc.text(`${formatCurrency(data.financingLow)}/mo (${data.financingRates?.low}%)`, colX, y + 6, { align: 'center' });
         } else {
           doc.setTextColor(180, 180, 180);
-          doc.text('—', colX, y, { align: 'center' });
+          doc.text('—', colX, y + 6, { align: 'center' });
         }
       });
       
-      y += 10;
-      
+      y += rowHeight;
+
       // High APR row
-      doc.setTextColor(100, 100, 100);
-      doc.text('High APR', margin + 4, y);
+      doc.setFillColor(255, 255, 255);
+      doc.rect(margin, y, tableWidth, rowHeight, 'F');
+      doc.setDrawColor(200, 230, 230);
+      doc.rect(margin, y, tableWidth, rowHeight);
+      doc.line(margin + labelColWidth, y, margin + labelColWidth, y + rowHeight);
       
+      for (let i = 1; i < numTerms; i++) {
+        const lineX = margin + labelColWidth + (i * termColWidth);
+        doc.line(lineX, y, lineX, y + rowHeight);
+      }
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(1, 126, 132);
+      doc.text('High Rate', margin + 4, y + 6);
+      
+      doc.setTextColor(50, 50, 50);
       quoteData.forEach((data, i) => {
         const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
         if (data.financingHigh > 0) {
-          doc.setTextColor(60, 60, 60);
-          doc.text(`${formatCurrency(data.financingHigh)}/mo`, colX - 10, y, { align: 'center' });
-          doc.setTextColor(140, 140, 140);
-          doc.setFontSize(7);
-          doc.text(`${data.financingRates?.high}%`, colX + 20, y, { align: 'center' });
-          doc.setFontSize(8);
+          doc.text(`${formatCurrency(data.financingHigh)}/mo (${data.financingRates?.high}%)`, colX, y + 6, { align: 'center' });
         } else {
           doc.setTextColor(180, 180, 180);
-          doc.text('—', colX, y, { align: 'center' });
+          doc.text('—', colX, y + 6, { align: 'center' });
         }
       });
     }
 
-    // Footer - minimal
+    // Footer
+    const pageHeight = doc.internal.pageSize.getHeight();
     doc.setFontSize(7);
-    doc.setTextColor(160, 160, 160);
-    doc.text('Estimates only. Final pricing may vary.', margin, pageHeight - 8);
-    doc.text('Odoo Enterprise', pageWidth - margin, pageHeight - 8, { align: 'right' });
+    doc.setTextColor(150, 150, 150);
+    doc.text('This quote is for estimation purposes only. Final pricing may vary.', margin, pageHeight - 10);
+    doc.text('Odoo Enterprise Pricing Calculator', pageWidth - margin, pageHeight - 10, { align: 'right' });
 
     // Save the PDF
     doc.save(`odoo-quote-${new Date().toISOString().split('T')[0]}.pdf`);
     
     toast({
       title: "PDF Generated",
-      description: "Your quote comparison has been exported.",
+      description: "Your quote has been exported.",
     });
   };
 
@@ -1033,19 +1048,16 @@ export default function Calculator() {
           
           {activeTerms.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {allQuoteData.map(({ term, data }, index) => {
-                const isBestValue = term === bestValueTerm;
-                return (
-                  <motion.div
-                    key={term}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                  >
-                    <QuoteCard data={data} termKey={term} formatCurrency={formatCurrency} isBestValue={isBestValue} />
-                  </motion.div>
-                );
-              })}
+              {allQuoteData.map(({ term, data }, index) => (
+                <motion.div
+                  key={term}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                >
+                  <QuoteCard data={data} termKey={term} formatCurrency={formatCurrency} />
+                </motion.div>
+              ))}
             </div>
           ) : (
             <div className="h-64 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl bg-white">
@@ -1062,17 +1074,12 @@ export default function Calculator() {
 
 // === QUOTE CARD COMPONENT ===
 
-function QuoteCard({ data, termKey, formatCurrency, isBestValue }: { data: any, termKey: string, formatCurrency: (n: number) => string, isBestValue: boolean }) {
+function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: string, formatCurrency: (n: number) => string }) {
   const isMonthly = termKey === 'monthly';
   const hasFinancing = !isMonthly && data.financingLow > 0;
 
   return (
-    <div className={`relative group h-full ${isBestValue ? 'ring-2 ring-[#017E84] shadow-lg' : ''} rounded-2xl`}>
-      {isBestValue && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#017E84] text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-20 flex items-center gap-1">
-          <Zap className="w-3 h-3" /> BEST VALUE
-        </div>
-      )}
+    <div className="relative group h-full rounded-2xl">
       
       <GlassCard className="h-full bg-white hover:shadow-md transition-all relative overflow-hidden group" data-testid={`card-quote-${termKey}`}>
         <div className="flex flex-col h-full relative z-10">
