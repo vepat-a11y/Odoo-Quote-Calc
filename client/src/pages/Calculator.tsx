@@ -122,23 +122,42 @@ const ODOO_SH_PRICING = {
   }
 };
 
-// Financing Interest Rates by Term Length
-const FINANCING_RATES: { [key: string]: { low: number; high: number } } = {
-  '1year': { low: 14.9, high: 41.0 },
-  '2year': { low: 11.9, high: 23.9 },
-  '3year': { low: 10.4, high: 19.9 },
-  '4year': { low: 11.3, high: 17.9 },
-  '5year': { low: 11.6, high: 16.4 }
+// Tiered Rate Factors for Financing
+// Tier 1: Total Amount < $25,000
+// Tier 2: Total Amount >= $25,000
+const TIER_THRESHOLD = 25000;
+
+const RATE_FACTORS_TIER1: { [key: string]: { low: number; high: number } } = {
+  '1year': { low: 0.09000, high: 0.10230 },  // 12 months
+  '2year': { low: 0.04690, high: 0.05250 },  // 24 months
+  '3year': { low: 0.03250, high: 0.03690 },  // 36 months
+  '4year': { low: 0.02590, high: 0.02920 },  // 48 months
+  '5year': { low: 0.02200, high: 0.02460 }   // 60 months
 };
 
-// Calculate monthly financing payment using standard loan amortization formula
-function calculateFinancingPayment(principal: number, annualRate: number, termYears: number): number {
-  if (principal <= 0 || termYears <= 0) return 0;
-  const monthlyRate = annualRate / 100 / 12;
-  const numPayments = termYears * 12;
-  if (monthlyRate === 0) return principal / numPayments;
-  const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
-  return payment;
+const RATE_FACTORS_TIER2: { [key: string]: { low: number; high: number } } = {
+  '1year': { low: 0.08800, high: 0.09975 },  // 12 months
+  '2year': { low: 0.04650, high: 0.05250 },  // 24 months
+  '3year': { low: 0.03233, high: 0.03693 },  // 36 months
+  '4year': { low: 0.02480, high: 0.02922 },  // 48 months
+  '5year': { low: 0.02083, high: 0.02462 }   // 60 months
+};
+
+// Calculate monthly financing payment using Rate Factor formula
+// Monthly Payment = Total Quote Amount × Rate Factor
+function calculateFinancingPayment(totalAmount: number, termKey: string): { low: number; high: number } {
+  if (totalAmount <= 0) return { low: 0, high: 0 };
+  
+  // Select tier based on total amount
+  const rateFactors = totalAmount >= TIER_THRESHOLD ? RATE_FACTORS_TIER2 : RATE_FACTORS_TIER1;
+  const factors = rateFactors[termKey];
+  
+  if (!factors) return { low: 0, high: 0 };
+  
+  return {
+    low: totalAmount * factors.low,
+    high: totalAmount * factors.high
+  };
 }
 
 type TermKey = 'monthly' | '1year' | '2year' | '3year' | '4year' | '5year';
@@ -316,15 +335,14 @@ export default function Calculator() {
       totalSavings = planSavings + planDiscountSavings + implDiscountSavings;
     }
     
-    // Calculate financing estimates (only for yearly terms)
+    // Calculate financing estimates using tiered rate factors (only for yearly terms)
     let financingLow = 0;
     let financingHigh = 0;
-    let financingRates = { low: 0, high: 0 };
     
-    if (!isMonthly && FINANCING_RATES[termKey]) {
-      financingRates = FINANCING_RATES[termKey];
-      financingLow = calculateFinancingPayment(totalCost, financingRates.low, years);
-      financingHigh = calculateFinancingPayment(totalCost, financingRates.high, years);
+    if (!isMonthly) {
+      const financing = calculateFinancingPayment(totalCost, termKey);
+      financingLow = financing.low;
+      financingHigh = financing.high;
     }
 
     return {
@@ -338,8 +356,7 @@ export default function Calculator() {
       amortizedMonthly,
       totalSavings,
       financingLow,
-      financingHigh,
-      financingRates
+      financingHigh
     };
   };
 
