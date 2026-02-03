@@ -138,13 +138,13 @@ const RATE_FACTORS_TIER1: { [key: string]: { low: number; high: number } } = {
   '5year': { low: 0.02200, high: 0.02460 }   // 60 months
 };
 
-// Tier 2: Mid Ticket ($15,000 - $24,999) - Aggressive factors
+// Tier 2: Mid Ticket ($15,000 - $24,999) - Matches $16,416 screenshot exactly
 const RATE_FACTORS_TIER2: { [key: string]: { low: number; high: number } } = {
-  '1year': { low: 0.08800, high: 0.09975 },  // 12 months
-  '2year': { low: 0.04650, high: 0.05250 },  // 24 months
-  '3year': { low: 0.03233, high: 0.03693 },  // 36 months
-  '4year': { low: 0.02480, high: 0.02922 },  // 48 months
-  '5year': { low: 0.02026, high: 0.02462 }   // 60 months (adjusted for ~$363 on $17.9k)
+  '1year': { low: 0.09259, high: 0.10185 },  // 12 months
+  '2year': { low: 0.04550, high: 0.05245 },  // 24 months
+  '3year': { low: 0.03131, high: 0.03692 },  // 36 months
+  '4year': { low: 0.02449, high: 0.02924 },  // 48 months
+  '5year': { low: 0.02022, high: 0.02461 }   // 60 months
 };
 
 // Tier 3: Standard Ticket ($25,000+) - Standard factors
