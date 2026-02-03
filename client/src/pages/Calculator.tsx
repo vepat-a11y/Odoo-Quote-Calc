@@ -13,12 +13,15 @@ import {
   Globe,
   Server,
   HardDrive,
-  Layers
+  Layers,
+  TrendingUp,
+  FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GlassCard, Button, InputField, Select } from '@/components/ui-custom';
 import { useCreateQuote } from '@/hooks/use-quotes';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
 
 // === CONSTANTS & TYPES ===
 
@@ -118,6 +121,25 @@ const ODOO_SH_PRICING = {
     }
   }
 };
+
+// Financing Interest Rates by Term Length
+const FINANCING_RATES: { [key: string]: { low: number; high: number } } = {
+  '1year': { low: 14.9, high: 41.0 },
+  '2year': { low: 11.9, high: 23.9 },
+  '3year': { low: 10.4, high: 19.9 },
+  '4year': { low: 11.3, high: 17.9 },
+  '5year': { low: 11.6, high: 16.4 }
+};
+
+// Calculate monthly financing payment using standard loan amortization formula
+function calculateFinancingPayment(principal: number, annualRate: number, termYears: number): number {
+  if (principal <= 0 || termYears <= 0) return 0;
+  const monthlyRate = annualRate / 100 / 12;
+  const numPayments = termYears * 12;
+  if (monthlyRate === 0) return principal / numPayments;
+  const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+  return payment;
+}
 
 type TermKey = 'monthly' | '1year' | '2year' | '3year' | '4year' | '5year';
 type ShHostingType = 'shared' | 'dedicated';
@@ -294,15 +316,31 @@ export default function Calculator() {
       totalSavings = planSavings + planDiscountSavings + implDiscountSavings;
     }
     
+    // Calculate financing estimates (only for yearly terms)
+    let financingLow = 0;
+    let financingHigh = 0;
+    let financingRates = { low: 0, high: 0 };
+    
+    if (!isMonthly && FINANCING_RATES[termKey]) {
+      financingRates = FINANCING_RATES[termKey];
+      financingLow = calculateFinancingPayment(totalCost, financingRates.low, years);
+      financingHigh = calculateFinancingPayment(totalCost, financingRates.high, years);
+    }
+
     return {
       termLabel: isMonthly ? 'Monthly' : `${years} Year${years > 1 ? 's' : ''}`,
+      termKey,
+      years,
       totalSoftwareCost,
       implementationCost,
       shTotalCost,
       totalCost,
       amortizedMonthly,
       totalSavings,
-      isBestValue: !isMonthly && years >= 3
+      isBestValue: !isMonthly && years >= 3,
+      financingLow,
+      financingHigh,
+      financingRates
     };
   };
 
@@ -331,6 +369,170 @@ export default function Calculator() {
   };
 
   const activeTerms = Object.keys(selectedTerms).filter(k => selectedTerms[k as TermKey]) as TermKey[];
+
+  // Professional PDF Export Function
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    let y = 25;
+
+    // Helper function for drawing lines
+    const drawLine = (yPos: number) => {
+      doc.setDrawColor(200, 200, 200);
+      doc.line(margin, yPos, pageWidth - margin, yPos);
+    };
+
+    // Header
+    doc.setFillColor(113, 75, 103); // #714B67
+    doc.rect(0, 0, pageWidth, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Odoo Software Quote', margin, y);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, y, { align: 'right' });
+    
+    y = 55;
+    doc.setTextColor(0, 0, 0);
+
+    // Configuration Summary
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Quote Configuration', margin, y);
+    y += 10;
+    drawLine(y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const configItems = [
+      ['Users', users.toString()],
+      ['Plan', plan === 'standard' ? 'Standard' : 'Custom'],
+      ['Currency', countryConfig.currency],
+      ['Implementation', currentImplementations[implementation as keyof typeof currentImplementations]?.label || 'None'],
+    ];
+
+    configItems.forEach(([label, value]) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${label}:`, margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(value, margin + 40, y);
+      y += 6;
+    });
+
+    y += 10;
+
+    // Quote Details for each selected term
+    activeTerms.forEach((term, index) => {
+      const data = calculateTermQuote(term, termDiscounts[term].plan, termDiscounts[term].impl);
+      
+      // Check if we need a new page
+      if (y > 240) {
+        doc.addPage();
+        y = 25;
+      }
+
+      // Term Header
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, y - 5, pageWidth - (margin * 2), 10, 'F');
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(113, 75, 103);
+      doc.text(data.termLabel + ' Quote', margin + 2, y + 2);
+      doc.setTextColor(0, 0, 0);
+      y += 12;
+
+      // Line items
+      doc.setFontSize(10);
+      const lineItems = [
+        ['Software License', formatCurrency(data.totalSoftwareCost)],
+        ['Implementation Services', formatCurrency(data.implementationCost)],
+      ];
+
+      if (data.shTotalCost > 0) {
+        lineItems.push(['Odoo SH Hosting', formatCurrency(data.shTotalCost)]);
+      }
+
+      lineItems.forEach(([label, value]) => {
+        doc.setFont('helvetica', 'normal');
+        doc.text(label, margin + 5, y);
+        doc.text(value, pageWidth - margin, y, { align: 'right' });
+        y += 6;
+      });
+
+      // Savings (if applicable)
+      if (data.totalSavings > 0) {
+        doc.setTextColor(34, 139, 34);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Total Savings', margin + 5, y);
+        doc.text('-' + formatCurrency(data.totalSavings), pageWidth - margin, y, { align: 'right' });
+        doc.setTextColor(0, 0, 0);
+        y += 6;
+      }
+
+      y += 2;
+      drawLine(y);
+      y += 6;
+
+      // Total
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Total Contract Value', margin + 5, y);
+      doc.text(formatCurrency(data.totalCost), pageWidth - margin, y, { align: 'right' });
+      y += 8;
+
+      // Amortized Monthly
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text('Amortized Monthly', margin + 5, y);
+      doc.text(formatCurrency(data.amortizedMonthly) + '/mo', pageWidth - margin, y, { align: 'right' });
+      doc.setTextColor(0, 0, 0);
+      y += 10;
+
+      // Financing Estimates (for yearly terms only)
+      if (data.financingLow > 0 && data.financingHigh > 0) {
+        doc.setFillColor(240, 248, 255);
+        doc.rect(margin, y - 3, pageWidth - (margin * 2), 22, 'F');
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(1, 126, 132); // #017E84
+        doc.text('Monthly Financing Estimate', margin + 5, y + 3);
+        doc.setTextColor(0, 0, 0);
+        
+        doc.setFont('helvetica', 'normal');
+        y += 10;
+        doc.text(`Low Estimate (${data.financingRates.low}% APR):`, margin + 5, y);
+        doc.text(formatCurrency(data.financingLow) + '/mo', pageWidth - margin, y, { align: 'right' });
+        y += 6;
+        doc.text(`High Estimate (${data.financingRates.high}% APR):`, margin + 5, y);
+        doc.text(formatCurrency(data.financingHigh) + '/mo', pageWidth - margin, y, { align: 'right' });
+        y += 12;
+      }
+
+      y += 8;
+    });
+
+    // Footer
+    y = doc.internal.pageSize.getHeight() - 20;
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text('This quote is for estimation purposes only. Final pricing may vary.', margin, y);
+    doc.text('Odoo Enterprise Pricing Calculator', pageWidth - margin, y, { align: 'right' });
+
+    // Save the PDF
+    doc.save(`odoo-quote-${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    toast({
+      title: "PDF Generated",
+      description: "Your quote has been exported as a PDF.",
+    });
+  };
 
   return (
     <div className="min-h-screen pb-20 bg-[#FAFAFA]">
@@ -364,7 +566,8 @@ export default function Calculator() {
               </select>
             </div>
             
-            <Button variant="secondary" onClick={() => window.print()} className="hidden md:flex text-gray-600 bg-gray-100 hover:bg-gray-200 border-0">
+            <Button variant="secondary" onClick={handleExportPDF} className="hidden md:flex text-gray-600 bg-gray-100 hover:bg-gray-200 border-0" data-testid="button-export-pdf">
+              <FileText className="w-4 h-4 mr-2" />
               Export PDF
             </Button>
             <Button onClick={handleSaveQuote} isLoading={createQuote.isPending} className="bg-[#714B67] hover:bg-[#5d3d55] text-white">
@@ -756,6 +959,7 @@ export default function Calculator() {
 
 function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: string, formatCurrency: (n: number) => string }) {
   const isMonthly = termKey === 'monthly';
+  const hasFinancing = !isMonthly && data.financingLow > 0;
 
   return (
     <div className={`relative group h-full ${data.isBestValue ? 'ring-2 ring-[#017E84] shadow-lg' : ''} rounded-2xl`}>
@@ -815,7 +1019,7 @@ function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: stri
               {formatCurrency(data.totalCost)}
             </div>
             
-            <div className="flex justify-between items-end">
+            <div className="flex justify-between items-end mb-4">
               <div>
                 <p className="text-xs text-gray-500 mb-1">Amortized Monthly</p>
                 <div className="text-xl font-bold text-[#714B67]">
@@ -827,6 +1031,25 @@ function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: stri
                 <CheckCircle2 className="w-4 h-4 text-gray-400 group-hover:text-white" />
               </div>
             </div>
+
+            {hasFinancing && (
+              <div className="pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-4 h-4 text-[#017E84]" />
+                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Financing Estimate</span>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">Low ({data.financingRates.low}% APR)</span>
+                    <span className="text-sm font-mono font-medium text-gray-700">{formatCurrency(data.financingLow)}/mo</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">High ({data.financingRates.high}% APR)</span>
+                    <span className="text-sm font-mono font-medium text-gray-700">{formatCurrency(data.financingHigh)}/mo</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </GlassCard>
