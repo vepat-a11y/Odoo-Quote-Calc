@@ -372,165 +372,238 @@ export default function Calculator() {
 
   // Professional PDF Export Function
   const handleExportPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF('landscape');
     const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
-    let y = 25;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    let y = 20;
 
-    // Helper function for drawing lines
-    const drawLine = (yPos: number) => {
-      doc.setDrawColor(200, 200, 200);
-      doc.line(margin, yPos, pageWidth - margin, yPos);
-    };
+    // Gather all quote data for selected terms
+    const quoteData = activeTerms.map(term => 
+      calculateTermQuote(term, termDiscounts[term].plan, termDiscounts[term].impl)
+    );
+    
+    const numTerms = quoteData.length;
+    if (numTerms === 0) {
+      toast({
+        title: "No Terms Selected",
+        description: "Please select at least one term to export.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    // Header
+    // Header with gradient effect
     doc.setFillColor(113, 75, 103); // #714B67
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    doc.rect(0, 0, pageWidth, 35, 'F');
     
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
+    doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
-    doc.text('Odoo Software Quote', margin, y);
+    doc.text('Odoo Quote Comparison', margin, 22);
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, y, { align: 'right' });
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, 22, { align: 'right' });
+    
+    y = 45;
+
+    // Configuration Summary - Horizontal layout
+    doc.setTextColor(80, 80, 80);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    const configText = `${users} Users  |  ${plan === 'standard' ? 'Standard' : 'Custom'} Plan  |  ${countryConfig.currency}  |  ${currentImplementations[implementation as keyof typeof currentImplementations]?.label || 'None'}`;
+    doc.text(configText, pageWidth / 2, y, { align: 'center' });
     
     y = 55;
-    doc.setTextColor(0, 0, 0);
 
-    // Configuration Summary
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Quote Configuration', margin, y);
-    y += 10;
-    drawLine(y);
-    y += 8;
+    // Calculate table dimensions
+    const tableWidth = pageWidth - (margin * 2);
+    const labelColWidth = 65;
+    const termColWidth = (tableWidth - labelColWidth) / numTerms;
+    const rowHeight = 12;
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    const configItems = [
-      ['Users', users.toString()],
-      ['Plan', plan === 'standard' ? 'Standard' : 'Custom'],
-      ['Currency', countryConfig.currency],
-      ['Implementation', currentImplementations[implementation as keyof typeof currentImplementations]?.label || 'None'],
+    // Define table rows
+    const rows = [
+      { label: 'Term', key: 'termLabel', isBold: true, isHeader: true },
+      { label: 'Software License', key: 'totalSoftwareCost', format: true },
+      { label: 'Implementation', key: 'implementationCost', format: true },
+      { label: 'Odoo SH Hosting', key: 'shTotalCost', format: true, conditional: true },
+      { label: 'Total Savings', key: 'totalSavings', format: true, isGreen: true, conditional: true },
+      { label: '', key: 'divider', isDivider: true },
+      { label: 'Total Contract', key: 'totalCost', format: true, isBold: true, highlight: true },
+      { label: 'Amortized Monthly', key: 'amortizedMonthly', format: true, suffix: '/mo', isSubtle: true },
+      { label: '', key: 'spacer', isSpacer: true },
+      { label: 'Financing Low', key: 'financingLow', format: true, suffix: '/mo', isFinancing: true },
+      { label: 'Financing High', key: 'financingHigh', format: true, suffix: '/mo', isFinancing: true },
     ];
 
-    configItems.forEach(([label, value]) => {
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${label}:`, margin, y);
-      doc.setFont('helvetica', 'normal');
-      doc.text(value, margin + 40, y);
-      y += 6;
-    });
+    // Check if any term has SH or savings
+    const hasAnySH = quoteData.some(d => d.shTotalCost > 0);
+    const hasAnySavings = quoteData.some(d => d.totalSavings > 0);
+    const hasAnyFinancing = quoteData.some(d => d.financingLow > 0);
 
-    y += 10;
-
-    // Quote Details for each selected term
-    activeTerms.forEach((term, index) => {
-      const data = calculateTermQuote(term, termDiscounts[term].plan, termDiscounts[term].impl);
-      
-      // Check if we need a new page
-      if (y > 240) {
-        doc.addPage();
-        y = 25;
-      }
-
-      // Term Header
-      doc.setFillColor(245, 245, 245);
-      doc.rect(margin, y - 5, pageWidth - (margin * 2), 10, 'F');
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
+    // Draw table header background
+    doc.setFillColor(250, 250, 250);
+    doc.rect(margin, y - 8, tableWidth, rowHeight + 4, 'F');
+    
+    // Draw column headers (term labels)
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(113, 75, 103);
+    
+    // Label column header
+    doc.text('', margin + 5, y);
+    
+    // Term column headers with best value indicator
+    quoteData.forEach((data, i) => {
+      const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
       doc.setTextColor(113, 75, 103);
-      doc.text(data.termLabel + ' Quote', margin + 2, y + 2);
-      doc.setTextColor(0, 0, 0);
-      y += 12;
+      doc.text(data.termLabel, colX, y, { align: 'center' });
+      
+      if (data.isBestValue) {
+        doc.setFillColor(1, 126, 132);
+        doc.roundedRect(colX - 22, y + 2, 44, 6, 2, 2, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(6);
+        doc.setFont('helvetica', 'bold');
+        doc.text('BEST VALUE', colX, y + 6, { align: 'center' });
+        doc.setFontSize(11);
+      }
+    });
+    
+    y += rowHeight + 6;
 
-      // Line items
-      doc.setFontSize(10);
-      const lineItems = [
-        ['Software License', formatCurrency(data.totalSoftwareCost)],
-        ['Implementation Services', formatCurrency(data.implementationCost)],
-      ];
+    // Draw horizontal line under header
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y - 4, margin + tableWidth, y - 4);
 
-      if (data.shTotalCost > 0) {
-        lineItems.push(['Odoo SH Hosting', formatCurrency(data.shTotalCost)]);
+    // Draw data rows
+    rows.forEach(row => {
+      if (row.isDivider) {
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y - 2, margin + tableWidth, y - 2);
+        y += 4;
+        return;
+      }
+      
+      if (row.isSpacer) {
+        y += 6;
+        return;
       }
 
-      lineItems.forEach(([label, value]) => {
-        doc.setFont('helvetica', 'normal');
-        doc.text(label, margin + 5, y);
-        doc.text(value, pageWidth - margin, y, { align: 'right' });
-        y += 6;
+      if (row.isHeader) return; // Skip term header row (already drawn)
+      
+      // Skip conditional rows if not applicable
+      if (row.conditional) {
+        if (row.key === 'shTotalCost' && !hasAnySH) return;
+        if (row.key === 'totalSavings' && !hasAnySavings) return;
+      }
+      
+      if (row.isFinancing && !hasAnyFinancing) return;
+
+      // Highlight background for total row
+      if (row.highlight) {
+        doc.setFillColor(245, 243, 244);
+        doc.rect(margin, y - 6, tableWidth, rowHeight + 2, 'F');
+      }
+
+      // Draw row label
+      doc.setFontSize(9);
+      doc.setFont('helvetica', row.isBold ? 'bold' : 'normal');
+      
+      if (row.isGreen) {
+        doc.setTextColor(34, 139, 34);
+      } else if (row.isSubtle) {
+        doc.setTextColor(120, 120, 120);
+      } else if (row.isFinancing) {
+        doc.setTextColor(1, 126, 132);
+        const aprLabel = row.key === 'financingLow' ? 'Low APR' : 'High APR';
+        doc.text(aprLabel, margin + 5, y);
+      } else {
+        doc.setTextColor(60, 60, 60);
+      }
+      
+      if (!row.isFinancing) {
+        doc.text(row.label, margin + 5, y);
+      }
+
+      // Draw values for each term
+      quoteData.forEach((data, i) => {
+        const colX = margin + labelColWidth + (i * termColWidth) + (termColWidth / 2);
+        let value = '';
+        
+        if (row.format) {
+          const numValue = data[row.key as keyof typeof data] as number;
+          if (numValue === 0 && row.conditional) {
+            value = '-';
+            doc.setTextColor(180, 180, 180);
+          } else if (row.isGreen && numValue > 0) {
+            value = '-' + formatCurrency(numValue);
+            doc.setTextColor(34, 139, 34);
+          } else if (row.isFinancing) {
+            if (numValue > 0) {
+              const rateKey = row.key === 'financingLow' ? 'low' : 'high';
+              const rate = data.financingRates?.[rateKey] || 0;
+              value = formatCurrency(numValue) + '/mo';
+              doc.setFontSize(7);
+              doc.setTextColor(120, 120, 120);
+              doc.text(`(${rate}% APR)`, colX, y + 4, { align: 'center' });
+              doc.setFontSize(9);
+              doc.setTextColor(1, 126, 132);
+            } else {
+              value = '-';
+              doc.setTextColor(180, 180, 180);
+            }
+          } else {
+            value = formatCurrency(numValue) + (row.suffix || '');
+          }
+        }
+        
+        doc.setFont('helvetica', row.isBold ? 'bold' : 'normal');
+        if (row.highlight) {
+          doc.setFontSize(10);
+          doc.setTextColor(40, 40, 40);
+        }
+        doc.text(value, colX, y, { align: 'center' });
+        
+        // Reset text color
+        doc.setTextColor(60, 60, 60);
+        doc.setFontSize(9);
       });
 
-      // Savings (if applicable)
-      if (data.totalSavings > 0) {
-        doc.setTextColor(34, 139, 34);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Total Savings', margin + 5, y);
-        doc.text('-' + formatCurrency(data.totalSavings), pageWidth - margin, y, { align: 'right' });
-        doc.setTextColor(0, 0, 0);
-        y += 6;
-      }
-
-      y += 2;
-      drawLine(y);
-      y += 6;
-
-      // Total
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Total Contract Value', margin + 5, y);
-      doc.text(formatCurrency(data.totalCost), pageWidth - margin, y, { align: 'right' });
-      y += 8;
-
-      // Amortized Monthly
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(100, 100, 100);
-      doc.text('Amortized Monthly', margin + 5, y);
-      doc.text(formatCurrency(data.amortizedMonthly) + '/mo', pageWidth - margin, y, { align: 'right' });
-      doc.setTextColor(0, 0, 0);
-      y += 10;
-
-      // Financing Estimates (for yearly terms only)
-      if (data.financingLow > 0 && data.financingHigh > 0) {
-        doc.setFillColor(240, 248, 255);
-        doc.rect(margin, y - 3, pageWidth - (margin * 2), 22, 'F');
-        
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(1, 126, 132); // #017E84
-        doc.text('Monthly Financing Estimate', margin + 5, y + 3);
-        doc.setTextColor(0, 0, 0);
-        
-        doc.setFont('helvetica', 'normal');
-        y += 10;
-        doc.text(`Low Estimate (${data.financingRates.low}% APR):`, margin + 5, y);
-        doc.text(formatCurrency(data.financingLow) + '/mo', pageWidth - margin, y, { align: 'right' });
-        y += 6;
-        doc.text(`High Estimate (${data.financingRates.high}% APR):`, margin + 5, y);
-        doc.text(formatCurrency(data.financingHigh) + '/mo', pageWidth - margin, y, { align: 'right' });
-        y += 12;
-      }
-
-      y += 8;
+      y += rowHeight;
+      if (row.isFinancing) y += 2; // Extra spacing for APR label
     });
 
+    // Draw table border
+    const tableHeight = y - 55 + 5;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, 51, tableWidth, tableHeight);
+
+    // Draw vertical column lines
+    doc.setLineWidth(0.3);
+    doc.line(margin + labelColWidth, 51, margin + labelColWidth, 51 + tableHeight);
+    for (let i = 1; i < numTerms; i++) {
+      const lineX = margin + labelColWidth + (i * termColWidth);
+      doc.line(lineX, 51, lineX, 51 + tableHeight);
+    }
+
     // Footer
-    y = doc.internal.pageSize.getHeight() - 20;
     doc.setFontSize(8);
-    doc.setTextColor(128, 128, 128);
-    doc.text('This quote is for estimation purposes only. Final pricing may vary.', margin, y);
-    doc.text('Odoo Enterprise Pricing Calculator', pageWidth - margin, y, { align: 'right' });
+    doc.setTextColor(140, 140, 140);
+    doc.text('This quote is for estimation purposes only. Final pricing may vary.', margin, pageHeight - 10);
+    doc.text('Odoo Enterprise Pricing Calculator', pageWidth - margin, pageHeight - 10, { align: 'right' });
 
     // Save the PDF
-    doc.save(`odoo-quote-${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`odoo-quote-comparison-${new Date().toISOString().split('T')[0]}.pdf`);
     
     toast({
       title: "PDF Generated",
-      description: "Your quote has been exported as a PDF.",
+      description: "Your quote comparison has been exported as a PDF.",
     });
   };
 
@@ -1019,16 +1092,11 @@ function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: stri
               {formatCurrency(data.totalCost)}
             </div>
             
-            <div className="flex justify-between items-end mb-4">
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Amortized Monthly</p>
-                <div className="text-xl font-bold text-[#714B67]">
-                  {formatCurrency(data.amortizedMonthly)}
-                  <span className="text-sm font-normal text-gray-400 ml-1">/mo</span>
-                </div>
-              </div>
-              <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-[#714B67] transition-all">
-                <CheckCircle2 className="w-4 h-4 text-gray-400 group-hover:text-white" />
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-1">Amortized Monthly</p>
+              <div className="text-xl font-bold text-[#714B67]">
+                {formatCurrency(data.amortizedMonthly)}
+                <span className="text-sm font-normal text-gray-400 ml-1">/mo</span>
               </div>
             </div>
 
