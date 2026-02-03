@@ -122,11 +122,14 @@ const ODOO_SH_PRICING = {
   }
 };
 
-// Tiered Rate Factors for Financing
-// Tier 1: Total Amount < $25,000
-// Tier 2: Total Amount >= $25,000
-const TIER_THRESHOLD = 25000;
+// 3-Tier Rate Factors for Financing
+// Tier 1 (Micro Ticket): Total Amount < $15,000
+// Tier 2 (Mid Ticket): $15,000 <= Total Amount < $25,000
+// Tier 3 (Standard Ticket): Total Amount >= $25,000
+const TIER1_THRESHOLD = 15000;
+const TIER2_THRESHOLD = 25000;
 
+// Tier 1: Micro Ticket (< $15,000) - Higher rates
 const RATE_FACTORS_TIER1: { [key: string]: { low: number; high: number } } = {
   '1year': { low: 0.09000, high: 0.10230 },  // 12 months
   '2year': { low: 0.04690, high: 0.05250 },  // 24 months
@@ -135,7 +138,17 @@ const RATE_FACTORS_TIER1: { [key: string]: { low: number; high: number } } = {
   '5year': { low: 0.02200, high: 0.02460 }   // 60 months
 };
 
+// Tier 2: Mid Ticket ($15,000 - $24,999) - Aggressive factors
 const RATE_FACTORS_TIER2: { [key: string]: { low: number; high: number } } = {
+  '1year': { low: 0.08800, high: 0.09975 },  // 12 months
+  '2year': { low: 0.04650, high: 0.05250 },  // 24 months
+  '3year': { low: 0.03233, high: 0.03693 },  // 36 months
+  '4year': { low: 0.02480, high: 0.02922 },  // 48 months
+  '5year': { low: 0.02026, high: 0.02462 }   // 60 months (adjusted for ~$363 on $17.9k)
+};
+
+// Tier 3: Standard Ticket ($25,000+) - Standard factors
+const RATE_FACTORS_TIER3: { [key: string]: { low: number; high: number } } = {
   '1year': { low: 0.08800, high: 0.09975 },  // 12 months
   '2year': { low: 0.04650, high: 0.05250 },  // 24 months
   '3year': { low: 0.03233, high: 0.03693 },  // 36 months
@@ -148,10 +161,17 @@ const RATE_FACTORS_TIER2: { [key: string]: { low: number; high: number } } = {
 function calculateFinancingPayment(totalAmount: number, termKey: string): { low: number; high: number } {
   if (totalAmount <= 0) return { low: 0, high: 0 };
   
-  // Select tier based on total amount
-  const rateFactors = totalAmount >= TIER_THRESHOLD ? RATE_FACTORS_TIER2 : RATE_FACTORS_TIER1;
-  const factors = rateFactors[termKey];
+  // Select tier based on total amount (3-tier system)
+  let rateFactors: { [key: string]: { low: number; high: number } };
+  if (totalAmount >= TIER2_THRESHOLD) {
+    rateFactors = RATE_FACTORS_TIER3;  // Standard Ticket: $25,000+
+  } else if (totalAmount >= TIER1_THRESHOLD) {
+    rateFactors = RATE_FACTORS_TIER2;  // Mid Ticket: $15,000 - $24,999
+  } else {
+    rateFactors = RATE_FACTORS_TIER1;  // Micro Ticket: < $15,000
+  }
   
+  const factors = rateFactors[termKey];
   if (!factors) return { low: 0, high: 0 };
   
   return {
