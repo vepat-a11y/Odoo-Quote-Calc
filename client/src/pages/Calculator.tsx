@@ -291,21 +291,20 @@ export default function Calculator() {
       softwareCostBeforeDiscount = year1Cost;
       totalSoftwareCost = year1Cost; // No plan discount on monthly Year 1 rate
     } else {
-      // Yearly terms: use yearly rates
-      // Year 1 at year1 rate (no discount - already discounted)
-      const year1Cost = users * yearlyPlanYear1 * 12;
+      // Yearly terms:
+      // Step 1: Calculate the full term cost with ALL years at Year 2+ rate
+      const fullTermAtYear2Rate = users * yearlyPlanYear2Plus * 12 * years;
       
-      // Year 2+ (if applicable) - plan discount ONLY applies here
-      let year2PlusCost = 0;
-      let year2PlusCostBeforeDiscount = 0;
-      if (years > 1) {
-        const remainingYears = years - 1;
-        year2PlusCostBeforeDiscount = users * yearlyPlanYear2Plus * 12 * remainingYears;
-        year2PlusCost = year2PlusCostBeforeDiscount * (1 - planDiscount / 100);
-      }
+      // Step 2: Apply plan discount to the ENTIRE term (not just Year 2+)
+      const planDiscountAmount = fullTermAtYear2Rate * (planDiscount / 100);
       
-      softwareCostBeforeDiscount = year1Cost + year2PlusCostBeforeDiscount;
-      totalSoftwareCost = year1Cost + year2PlusCost;
+      // Step 3: Subtract Year 1 benefit (year1 rate is lower than year2+ rate)
+      const year1Benefit = users * (yearlyPlanYear2Plus - yearlyPlanYear1) * 12;
+      
+      // softwareCostBeforeDiscount = natural price (all years at year2+ minus year1 benefit)
+      softwareCostBeforeDiscount = fullTermAtYear2Rate - year1Benefit;
+      // totalSoftwareCost = apply plan % discount to full year2+ baseline, then subtract year1 benefit
+      totalSoftwareCost = fullTermAtYear2Rate - planDiscountAmount - year1Benefit;
     }
 
     // Implementation cost
@@ -332,27 +331,15 @@ export default function Calculator() {
       const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
       totalSavings = planDiscountSavings + implDiscountSavings;
     } else {
-      // Plan savings: compare monthly Year2+ rate (full price) to yearly rates
-      // Full monthly cost = Year 2+ monthly rate * total months * users
+      // Savings = what they'd pay on full monthly billing vs what they're actually paying
+      // Full monthly baseline = monthly Year2+ rate × all months × users
       const fullMonthlyTotal = monthlyPlanYear2Plus * months * users;
       
-      // Yearly software cost
-      const yearlyYear1Cost = yearlyPlanYear1 * 12 * users;
-      const yearlyYear2PlusCost = years > 1 ? yearlyPlanYear2Plus * 12 * (years - 1) * users : 0;
-      const yearlyTotalSoftware = yearlyYear1Cost + yearlyYear2PlusCost;
-      
-      // Plan savings = difference between monthly and yearly rates
-      const planSavings = fullMonthlyTotal - yearlyTotalSoftware;
-      
-      // Add any plan discount savings (only on Year 2+ portion)
-      const year2PlusCostForDiscount = years > 1 ? yearlyPlanYear2Plus * 12 * (years - 1) * users : 0;
-      const planDiscountSavings = year2PlusCostForDiscount * (planDiscount / 100);
-      
-      // Implementation discount savings (simple: impl price * discount %)
+      // Implementation discount savings
       const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
       
-      // Total savings = plan rate savings + plan discount + impl discount
-      totalSavings = planSavings + planDiscountSavings + implDiscountSavings;
+      // Total savings = (monthly baseline - yearly software cost) + impl discount savings
+      totalSavings = (fullMonthlyTotal - totalSoftwareCost) + implDiscountSavings;
     }
     
     // Calculate financing estimates using tiered rate factors (only for yearly terms)
