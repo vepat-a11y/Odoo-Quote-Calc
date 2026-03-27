@@ -59,7 +59,7 @@ function calcQuote(users: number, plan: 'standard' | 'custom', implKey: string, 
   const software = fullTermAtYear2 - discAmount - year1Benefit;
   const total = software + implCost;
   const monthly = total / months;
-  const monthlyBaseline = pricing.monthly.year2plus * months * users;
+  const monthlyBaseline = users * pricing.monthly.year1 * 12 + users * pricing.monthly.year2plus * (months - 12);
   const savings = (monthlyBaseline - software) + (implBase * implDisc / 100);
   const rf = total >= TIER2 ? RF3 : total >= TIER1 ? RF2 : RF1;
   const f = rf[termKey];

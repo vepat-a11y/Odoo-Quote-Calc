@@ -45,7 +45,7 @@ function calc(users: number, plan: 'standard' | 'custom', implKey: string, term:
   const full = users * pr.yearly.year2plus * 12 * yrs;
   const sw = full - full * (pd / 100) - users * (pr.yearly.year2plus - pr.yearly.year1) * 12;
   const total = sw + ic; const monthly = total / mos;
-  const savings = (pr.monthly.year2plus * mos * users - sw) + ib * id / 100;
+  const savings = (users * pr.monthly.year1 * 12 + users * pr.monthly.year2plus * (mos - 12) - sw) + ib * id / 100;
   const tier = total >= 25000 ? 't3' : total >= 15000 ? 't2' : 't1';
   const f = RF[tier][term];
   return { sw, ic, total, monthly, savings, fin: f ? { low: total * f.low, high: total * f.high } : null };

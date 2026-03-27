@@ -332,8 +332,9 @@ export default function Calculator() {
       totalSavings = planDiscountSavings + implDiscountSavings;
     } else {
       // Savings = what they'd pay on full monthly billing vs what they're actually paying
-      // Full monthly baseline = monthly Year2+ rate × all months × users
-      const fullMonthlyTotal = monthlyPlanYear2Plus * months * users;
+      // Baseline = Year 1 monthly rate × first 12 months + Year2+ monthly rate × remaining months
+      // This avoids counting the Year1→Year2+ monthly rate increase as savings (double-entry)
+      const fullMonthlyTotal = users * monthlyPlanYear1 * 12 + users * monthlyPlanYear2Plus * (months - 12);
       
       // Implementation discount savings
       const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
