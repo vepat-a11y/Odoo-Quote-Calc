@@ -19,9 +19,13 @@ export function GlassCard({ children, className, title, description, headerActio
       data-testid={dataTestId}
     >
       {(title || description) && (
-        <div className="p-6 border-b border-gray-100 flex items-start justify-between">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-start justify-between">
           <div>
-            {title && <h3 className="text-lg font-semibold text-gray-800">{title}</h3>}
+            {title && (
+              <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#714B67', letterSpacing: '0.08em' }}>
+                {title}
+              </h3>
+            )}
             {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
           </div>
           {headerAction && <div>{headerAction}</div>}
@@ -81,9 +85,9 @@ export function Button({
   };
 
   const sizes = {
-    sm: "px-3 py-1.5 text-xs rounded-lg",
-    md: "px-5 py-2.5 text-sm rounded-xl",
-    lg: "px-8 py-4 text-base rounded-xl font-semibold"
+    sm: "px-3 py-1.5 text-xs rounded",
+    md: "px-5 py-2.5 text-sm rounded",
+    lg: "px-8 py-4 text-base rounded font-semibold"
   };
 
   return (

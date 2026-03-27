@@ -1,20 +1,16 @@
 import { useState } from 'react';
 import { 
-  Calculator as CalcIcon, 
   Users, 
   Package, 
   Zap, 
-  DollarSign, 
-  Code, 
+  Code,
   Cpu, 
-  CheckCircle2,
   Save,
   Info,
   Globe,
   Server,
   HardDrive,
   Layers,
-  TrendingUp,
   FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -189,6 +185,32 @@ interface TermDiscounts {
 
 interface SelectedTerms {
   [key: string]: boolean;
+}
+
+// Odoo wordmark logo — matches odoo.com visual identity
+function OdooLogo() {
+  return (
+    <div className="flex items-center gap-2.5">
+      {/* Odoo brand mark: three interlocking circles */}
+      <svg width="38" height="20" viewBox="0 0 38 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="9" fill="#714B67" />
+        <circle cx="10" cy="10" r="4.5" fill="white" />
+        <circle cx="26" cy="10" r="9" fill="#714B67" />
+        <circle cx="26" cy="10" r="4.5" fill="white" />
+      </svg>
+      {/* Wordmark */}
+      <span style={{
+        fontFamily: '"Roboto", "Inter", sans-serif',
+        fontWeight: 900,
+        fontSize: '22px',
+        color: '#714B67',
+        letterSpacing: '-0.5px',
+        lineHeight: 1,
+      }}>
+        odoo
+      </span>
+    </div>
+  );
 }
 
 export default function Calculator() {
@@ -671,18 +693,12 @@ export default function Calculator() {
   return (
     <div className="min-h-screen pb-20 bg-[#FAFAFA]">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#714B67] flex items-center justify-center">
-              <CalcIcon className="text-white w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-[#714B67]">
-                Odoo Estimator
-              </h1>
-              <p className="text-xs text-gray-500 font-medium">Enterprise Pricing Calculator</p>
-            </div>
+          <div className="flex items-center gap-4">
+            <OdooLogo />
+            <div className="h-5 w-px bg-gray-200" />
+            <span className="text-sm text-gray-500 font-medium hidden sm:block">Pricing Calculator</span>
           </div>
           
           <div className="flex items-center gap-3">
@@ -1056,7 +1072,7 @@ export default function Calculator() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-800">Quote Comparison</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#714B67', letterSpacing: '0.08em' }}>Quote Comparison</h2>
             <div className="text-sm text-gray-500">{activeTerms.length} terms selected</div>
           </div>
           
