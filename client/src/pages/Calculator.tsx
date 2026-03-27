@@ -11,7 +11,8 @@ import {
   Server,
   HardDrive,
   Layers,
-  FileText
+  FileText,
+  TrendingUp
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GlassCard, Button, InputField, Select } from '@/components/ui-custom';
