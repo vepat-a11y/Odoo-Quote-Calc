@@ -1156,8 +1156,9 @@ function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
   const hasSavings = !isMonthly && data.totalSavings > 0;
   const hasDownPayment = data.downPayment > 0;
 
-  // MRR = license cost only (no implementation, no SH)
-  const mrr = isMonthly ? data.totalSoftwareCost * 0.8 : data.totalSoftwareCost / 12;
+  // MRR = license + Odoo SH (recurring costs only, no implementation)
+  const recurringBase = data.totalSoftwareCost + data.shTotalCost;
+  const mrr = isMonthly ? recurringBase * 0.8 : recurringBase / 12;
   const nrr = data.implementationCost;
 
   return (
@@ -1315,7 +1316,7 @@ function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
               <div className="flex justify-between items-center bg-white border border-amber-200 rounded-lg px-3 py-2">
                 <div>
                   <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">MRR</div>
-                  <div className="text-[9px] text-amber-500">{isMonthly ? 'License × 80%' : 'License ÷ 12 mo'}</div>
+                  <div className="text-[9px] text-amber-500">{isMonthly ? '(License + SH) × 80%' : '(License + SH) ÷ 12 mo'}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-base font-black text-amber-700">{formatCurrency(mrr)}</div>
