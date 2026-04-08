@@ -13,8 +13,7 @@ import {
   Layers,
   FileText,
   TrendingUp,
-  DollarSign,
-  EyeOff
+  DollarSign
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GlassCard, Button, InputField, Select } from '@/components/ui-custom';
@@ -1087,16 +1086,14 @@ export default function Calculator() {
               <button
                 data-testid="toggle-payout-view"
                 onClick={() => setShowPayoutView(v => !v)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold border transition-all ${
+                className={`flex items-center justify-center w-8 h-8 rounded border transition-all ${
                   showPayoutView
                     ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
-                    : 'bg-white border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-600'
+                    : 'bg-white border-gray-300 text-gray-400 hover:border-amber-400 hover:text-amber-500'
                 }`}
-                title="Internal use only — not visible to customers"
+                title="Partner payout view (internal only)"
               >
-                <DollarSign className="w-3.5 h-3.5" />
-                My Payout
-                {!showPayoutView && <EyeOff className="w-3 h-3 opacity-50" />}
+                <DollarSign className="w-4 h-4" />
               </button>
             </div>
           </div>
