@@ -12,7 +12,9 @@ import {
   HardDrive,
   Layers,
   FileText,
-  TrendingUp
+  TrendingUp,
+  DollarSign,
+  EyeOff
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GlassCard, Button, InputField, Select } from '@/components/ui-custom';
@@ -219,6 +221,7 @@ export default function Calculator() {
   const createQuote = useCreateQuote();
 
   // State
+  const [showPayoutView, setShowPayoutView] = useState(false);
   const [country, setCountry] = useState<Country>('US');
   const [users, setUsers] = useState(10);
   const [plan, setPlan] = useState<'standard' | 'custom'>('standard');
@@ -1079,7 +1082,23 @@ export default function Calculator() {
         >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#714B67', letterSpacing: '0.08em' }}>Quote Comparison</h2>
-            <div className="text-sm text-gray-500">{activeTerms.length} terms selected</div>
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-gray-500">{activeTerms.length} terms selected</div>
+              <button
+                data-testid="toggle-payout-view"
+                onClick={() => setShowPayoutView(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold border transition-all ${
+                  showPayoutView
+                    ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
+                    : 'bg-white border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-600'
+                }`}
+                title="Internal use only — not visible to customers"
+              >
+                <DollarSign className="w-3.5 h-3.5" />
+                My Payout
+                {!showPayoutView && <EyeOff className="w-3 h-3 opacity-50" />}
+              </button>
+            </div>
           </div>
           
           {activeTerms.length > 0 ? (
@@ -1091,7 +1110,7 @@ export default function Calculator() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                 >
-                  <QuoteCard data={data} termKey={term} formatCurrency={formatCurrency} />
+                  <QuoteCard data={data} termKey={term} formatCurrency={formatCurrency} showPayoutView={showPayoutView} />
                 </motion.div>
               ))}
             </div>
@@ -1110,9 +1129,19 @@ export default function Calculator() {
 
 // === QUOTE CARD COMPONENT ===
 
-function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: string, formatCurrency: (n: number) => string }) {
+function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: { data: any, termKey: string, formatCurrency: (n: number) => string, showPayoutView: boolean }) {
   const isMonthly = termKey === 'monthly';
   const hasFinancing = !isMonthly && data.financingLow > 0;
+
+  // MRR = license cost only (no implementation, no SH)
+  // Monthly: totalSoftwareCost × 80%
+  // 1+ years: totalSoftwareCost / 12 (payout spread over 12 months regardless of term length)
+  const mrr = isMonthly
+    ? data.totalSoftwareCost * 0.8
+    : data.totalSoftwareCost / 12;
+
+  // NRR = one-time implementation payout (100% — no commission split specified)
+  const nrr = data.implementationCost;
 
   return (
     <div className="relative group h-full rounded-2xl">
@@ -1190,6 +1219,39 @@ function QuoteCard({ data, termKey, formatCurrency }: { data: any, termKey: stri
                     <div className="text-[10px] text-amber-600 font-medium uppercase mb-1">High Estimate</div>
                     <div className="text-base font-bold text-amber-700">{formatCurrency(data.financingHigh)}<span className="text-xs font-normal">/mo</span></div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {showPayoutView && (
+              <div className="pt-4 border-t-2 border-amber-300 mt-4">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <DollarSign className="w-3.5 h-3.5 text-amber-600" />
+                  <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">My Payout</span>
+                  <span className="ml-auto text-[9px] text-amber-500 font-medium bg-amber-100 px-1.5 py-0.5 rounded">Internal</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    <div>
+                      <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wide">MRR</div>
+                      <div className="text-[9px] text-amber-500">
+                        {isMonthly ? 'License × 80%' : 'License ÷ 12 mo'}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-base font-bold text-amber-700">{formatCurrency(mrr)}</div>
+                      <div className="text-[9px] text-amber-500">/mo</div>
+                    </div>
+                  </div>
+                  {nrr > 0 && (
+                    <div className="flex justify-between items-center bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      <div>
+                        <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wide">NRR</div>
+                        <div className="text-[9px] text-amber-500">One-time impl.</div>
+                      </div>
+                      <div className="text-base font-bold text-amber-700">{formatCurrency(nrr)}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
