@@ -324,8 +324,6 @@ export default function Calculator() {
     // Odoo SH cost (USD only, no discounts, aligns with term type)
     const shMonthlyCost = calculateShMonthlyCost(!isMonthly);
     const shTotalCost = shMonthlyCost * months;
-    // Always the monthly-billing SH rate — used for MRR regardless of term type
-    const shMonthlyRateCost = calculateShMonthlyCost(false);
 
     const totalCost = totalSoftwareCost + implementationCost + shTotalCost;
     const amortizedMonthly = totalCost / months;
@@ -380,7 +378,6 @@ export default function Calculator() {
       totalSoftwareCost,
       implementationCost,
       shTotalCost,
-      shMonthlyRateCost,
       totalCost,
       amortizedMonthly,
       totalSavings,
@@ -1159,13 +1156,10 @@ function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
   const hasSavings = !isMonthly && data.totalSavings > 0;
   const hasDownPayment = data.downPayment > 0;
 
-  // MRR = license (amortized) + SH at monthly billing rate (never the cheaper annual rate)
-  // Monthly:  (swCost + shMonthlyRate) × 80%
-  // Annual:   swTotal ÷ 12  +  shMonthlyRate   (SH is a true monthly cost, not re-amortized)
-  const shMrr = data.shMonthlyRateCost ?? 0;
-  const mrr = isMonthly
-    ? (data.totalSoftwareCost + shMrr) * 0.8
-    : data.totalSoftwareCost / 12 + shMrr;
+  // MRR = (total license cost + total SH cost over term) × 80% for monthly
+  //       (total license cost + total SH cost over term) ÷ 12  for 1+ year terms
+  const recurringBase = data.totalSoftwareCost + data.shTotalCost;
+  const mrr = isMonthly ? recurringBase * 0.8 : recurringBase / 12;
   const nrr = data.implementationCost;
 
   return (
@@ -1323,7 +1317,7 @@ function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
               <div className="flex justify-between items-center bg-white border border-amber-200 rounded-lg px-3 py-2">
                 <div>
                   <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">MRR</div>
-                  <div className="text-[9px] text-amber-500">{isMonthly ? '(License + SH) × 80%' : '(License + SH) ÷ 12 mo'}</div>
+                  <div className="text-[9px] text-amber-500">{isMonthly ? '(License + SH) × 80%' : '(License + SH total) ÷ 12'}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-base font-black text-amber-700">{formatCurrency(mrr)}</div>
