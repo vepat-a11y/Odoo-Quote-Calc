@@ -347,15 +347,11 @@ export default function Calculator() {
     // Calculate financing estimates using Catalyst Finance APR (only for yearly terms)
     let financingLow = 0;
     let financingHigh = 0;
-    let intSavedLow = 0;
-    let intSavedHigh = 0;
 
     if (!isMonthly) {
-      const financing = calculateFinancingPayment(totalCost, termKey, downPayment);
-      financingLow   = financing.low;
-      financingHigh  = financing.high;
-      intSavedLow    = financing.intSavedLow;
-      intSavedHigh   = financing.intSavedHigh;
+      const financing = calculateFinancingPayment(totalCost, termKey);
+      financingLow  = financing.low;
+      financingHigh = financing.high;
     }
 
     return {
@@ -370,9 +366,6 @@ export default function Calculator() {
       totalSavings,
       financingLow,
       financingHigh,
-      intSavedLow,
-      intSavedHigh,
-      downPayment,
     };
   };
 
@@ -1114,7 +1107,6 @@ function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
   const isMonthly = termKey === 'monthly';
   const hasFinancing = !isMonthly && data.financingLow > 0;
   const hasSavings = !isMonthly && data.totalSavings > 0;
-  const hasDownPayment = data.downPayment > 0;
 
   // MRR = (total license cost + total SH cost over term) × 80% for monthly
   //       (total license cost + total SH cost over term) ÷ 12  for 1+ year terms
@@ -1233,22 +1225,6 @@ function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
                   <div className="text-[9px] text-blue-400">/mo · {CATALYST_APR_HIGH * 100}% APR</div>
                 </div>
               </div>
-
-              {/* Down payment savings */}
-              {hasDownPayment && (
-                <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center justify-between">
-                  <div>
-                    <div className="text-[9px] font-bold text-green-700 uppercase tracking-wide">Down Payment Applied</div>
-                    <div className="text-[9px] text-green-600">{formatCurrency(data.downPayment)} down</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[9px] text-green-600 font-medium">Interest saved</div>
-                    <div className="text-sm font-black text-green-700">
-                      {formatCurrency(data.intSavedLow)}–{formatCurrency(data.intSavedHigh)}
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Catalyst Finance attribution */}
               <div className="flex items-center justify-center gap-1.5 pt-1">
