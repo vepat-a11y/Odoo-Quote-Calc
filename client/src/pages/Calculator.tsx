@@ -120,61 +120,44 @@ const ODOO_SH_PRICING = {
   }
 };
 
-// 3-Tier Rate Factors for Financing
-// Tier 1 (Micro Ticket): Total Amount < $15,000
-// Tier 2 (Mid Ticket): $15,000 <= Total Amount < $25,000
-// Tier 3 (Standard Ticket): Total Amount >= $25,000
-const TIER1_THRESHOLD = 15000;
-const TIER2_THRESHOLD = 25000;
+// Catalyst Finance APR range (Burlington, ON Canada)
+const CATALYST_APR_LOW = 0.06;   // 6% best rate
+const CATALYST_APR_HIGH = 0.13;  // 13% standard rate
 
-// Tier 1: Micro Ticket (< $15,000) - Higher rates
-const RATE_FACTORS_TIER1: { [key: string]: { low: number; high: number } } = {
-  '1year': { low: 0.09000, high: 0.10230 },  // 12 months
-  '2year': { low: 0.04690, high: 0.05250 },  // 24 months
-  '3year': { low: 0.03250, high: 0.03690 },  // 36 months
-  '4year': { low: 0.02590, high: 0.02920 },  // 48 months
-  '5year': { low: 0.02200, high: 0.02460 }   // 60 months
-};
+// Standard amortization (PMT) formula
+// Monthly Payment = P × r(1+r)^n / ((1+r)^n − 1)
+function pmtCalc(principal: number, annualRate: number, months: number): number {
+  if (principal <= 0 || months <= 0) return 0;
+  const r = annualRate / 12;
+  return (principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1);
+}
 
-// Tier 2: Mid Ticket ($15,000 - $24,999) - Matches $16,416 screenshot exactly
-const RATE_FACTORS_TIER2: { [key: string]: { low: number; high: number } } = {
-  '1year': { low: 0.09259, high: 0.10185 },  // 12 months
-  '2year': { low: 0.04550, high: 0.05245 },  // 24 months
-  '3year': { low: 0.03131, high: 0.03692 },  // 36 months
-  '4year': { low: 0.02449, high: 0.02924 },  // 48 months
-  '5year': { low: 0.02022, high: 0.02461 }   // 60 months
-};
+// Calculate monthly financing payment using APR-based amortization
+function calculateFinancingPayment(
+  totalAmount: number,
+  termKey: string,
+  downPayment: number = 0
+): { low: number; high: number; intSavedLow: number; intSavedHigh: number } {
+  const zero = { low: 0, high: 0, intSavedLow: 0, intSavedHigh: 0 };
+  if (totalAmount <= 0) return zero;
 
-// Tier 3: Standard Ticket ($25,000+) - Standard factors
-const RATE_FACTORS_TIER3: { [key: string]: { low: number; high: number } } = {
-  '1year': { low: 0.08800, high: 0.09975 },  // 12 months
-  '2year': { low: 0.04650, high: 0.05250 },  // 24 months
-  '3year': { low: 0.03233, high: 0.03693 },  // 36 months
-  '4year': { low: 0.02480, high: 0.02922 },  // 48 months
-  '5year': { low: 0.02083, high: 0.02462 }   // 60 months
-};
+  const years = parseInt(termKey.replace('year', ''));
+  if (!years || years <= 0) return zero;
+  const months = years * 12;
 
-// Calculate monthly financing payment using Rate Factor formula
-// Monthly Payment = Total Quote Amount × Rate Factor
-function calculateFinancingPayment(totalAmount: number, termKey: string): { low: number; high: number } {
-  if (totalAmount <= 0) return { low: 0, high: 0 };
-  
-  // Select tier based on total amount (3-tier system)
-  let rateFactors: { [key: string]: { low: number; high: number } };
-  if (totalAmount >= TIER2_THRESHOLD) {
-    rateFactors = RATE_FACTORS_TIER3;  // Standard Ticket: $25,000+
-  } else if (totalAmount >= TIER1_THRESHOLD) {
-    rateFactors = RATE_FACTORS_TIER2;  // Mid Ticket: $15,000 - $24,999
-  } else {
-    rateFactors = RATE_FACTORS_TIER1;  // Micro Ticket: < $15,000
-  }
-  
-  const factors = rateFactors[termKey];
-  if (!factors) return { low: 0, high: 0 };
-  
+  const dp = Math.min(Math.max(downPayment, 0), totalAmount);
+  const principal = totalAmount - dp;
+
+  const lowFull  = pmtCalc(totalAmount, CATALYST_APR_LOW,  months);
+  const highFull = pmtCalc(totalAmount, CATALYST_APR_HIGH, months);
+  const lowPmt   = pmtCalc(principal,   CATALYST_APR_LOW,  months);
+  const highPmt  = pmtCalc(principal,   CATALYST_APR_HIGH, months);
+
   return {
-    low: totalAmount * factors.low,
-    high: totalAmount * factors.high
+    low:         lowPmt,
+    high:        highPmt,
+    intSavedLow:  dp > 0 ? (lowFull  - lowPmt)  * months : 0,
+    intSavedHigh: dp > 0 ? (highFull - highPmt) * months : 0,
   };
 }
 
@@ -221,6 +204,7 @@ export default function Calculator() {
 
   // State
   const [showPayoutView, setShowPayoutView] = useState(false);
+  const [downPayment, setDownPayment] = useState(0);
   const [country, setCountry] = useState<Country>('US');
   const [users, setUsers] = useState(10);
   const [plan, setPlan] = useState<'standard' | 'custom'>('standard');
@@ -373,14 +357,18 @@ export default function Calculator() {
       totalSavings = (fullMonthlyTotal - totalSoftwareCost) + implDiscountSavings;
     }
     
-    // Calculate financing estimates using tiered rate factors (only for yearly terms)
+    // Calculate financing estimates using Catalyst Finance APR (only for yearly terms)
     let financingLow = 0;
     let financingHigh = 0;
-    
+    let intSavedLow = 0;
+    let intSavedHigh = 0;
+
     if (!isMonthly) {
-      const financing = calculateFinancingPayment(totalCost, termKey);
-      financingLow = financing.low;
-      financingHigh = financing.high;
+      const financing = calculateFinancingPayment(totalCost, termKey, downPayment);
+      financingLow   = financing.low;
+      financingHigh  = financing.high;
+      intSavedLow    = financing.intSavedLow;
+      intSavedHigh   = financing.intSavedHigh;
     }
 
     return {
@@ -394,7 +382,10 @@ export default function Calculator() {
       amortizedMonthly,
       totalSavings,
       financingLow,
-      financingHigh
+      financingHigh,
+      intSavedLow,
+      intSavedHigh,
+      downPayment,
     };
   };
 
@@ -1016,6 +1007,34 @@ export default function Calculator() {
                       ))}
                     </div>
 
+                    {/* Financing Down Payment */}
+                    <div className="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-xl mb-2">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-[#1B3A6B] flex items-center justify-center">
+                          <DollarSign className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-xs font-semibold text-[#1B3A6B] uppercase tracking-wide block mb-1">
+                          Financing Down Payment
+                        </label>
+                        <p className="text-xs text-blue-500">Optional — reduces financed amount and saves on interest</p>
+                      </div>
+                      <div className="relative w-36">
+                        <span className="absolute left-3 top-2.5 text-gray-400 text-sm">{countryConfig.symbol}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="100"
+                          value={downPayment || ''}
+                          placeholder="0"
+                          onChange={(e) => setDownPayment(parseFloat(e.target.value) || 0)}
+                          className="w-full bg-white border border-blue-200 rounded-lg pl-7 pr-3 py-2 text-sm text-gray-800 focus:border-[#1B3A6B] outline-none"
+                          data-testid="input-down-payment"
+                        />
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                       {activeTerms.map((term) => (
                         <div key={term} className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-3">
@@ -1126,135 +1145,196 @@ export default function Calculator() {
 
 // === QUOTE CARD COMPONENT ===
 
-function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: { data: any, termKey: string, formatCurrency: (n: number) => string, showPayoutView: boolean }) {
+function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
+  data: any;
+  termKey: string;
+  formatCurrency: (n: number) => string;
+  showPayoutView: boolean;
+}) {
   const isMonthly = termKey === 'monthly';
   const hasFinancing = !isMonthly && data.financingLow > 0;
+  const hasSavings = !isMonthly && data.totalSavings > 0;
+  const hasDownPayment = data.downPayment > 0;
 
   // MRR = license cost only (no implementation, no SH)
-  // Monthly: totalSoftwareCost × 80%
-  // 1+ years: totalSoftwareCost / 12 (payout spread over 12 months regardless of term length)
-  const mrr = isMonthly
-    ? data.totalSoftwareCost * 0.8
-    : data.totalSoftwareCost / 12;
-
-  // NRR = one-time implementation payout (100% — no commission split specified)
+  const mrr = isMonthly ? data.totalSoftwareCost * 0.8 : data.totalSoftwareCost / 12;
   const nrr = data.implementationCost;
 
   return (
-    <div className="relative group h-full rounded-2xl">
-      
-      <GlassCard className="h-full bg-white hover:shadow-md transition-all relative overflow-hidden group" data-testid={`card-quote-${termKey}`}>
-        <div className="flex flex-col h-full relative z-10">
-          <div className="flex justify-between items-start mb-6">
+    <div className="relative h-full rounded-2xl" data-testid={`card-quote-${termKey}`}>
+      <div className="h-full flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-lg transition-shadow bg-white">
+
+        {/* Card Header — term label + savings badge */}
+        <div className="relative px-5 pt-5 pb-4 bg-gradient-to-br from-[#714B67] to-[#4a2f45]">
+          <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-2xl font-semibold text-gray-800">{data.termLabel}</h3>
-              <p className="text-sm text-gray-500">{isMonthly ? 'Pay as you go' : 'Upfront Commitment'}</p>
+              <p className="text-[11px] font-semibold text-purple-200 uppercase tracking-widest mb-0.5">
+                {isMonthly ? 'Pay as you go' : 'Annual Commitment'}
+              </p>
+              <h3 className="text-2xl font-bold text-white">{data.termLabel}</h3>
             </div>
-          </div>
-
-          <div className="space-y-3 flex-1">
-            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <Code className="w-4 h-4 text-[#714B67]" />
-                <span className="text-sm text-gray-600">Software</span>
-              </div>
-              <span className="text-sm font-mono text-gray-800">{formatCurrency(data.totalSoftwareCost)}</span>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-[#017E84]" />
-                <span className="text-sm text-gray-600">Implementation</span>
-              </div>
-              <span className="text-sm font-mono text-gray-800">{formatCurrency(data.implementationCost)}</span>
-            </div>
-
-            {data.shTotalCost > 0 && (
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Server className="w-4 h-4 text-[#714B67]" />
-                  <span className="text-sm text-gray-600">Odoo SH</span>
-                </div>
-                <span className="text-sm font-mono text-gray-800">{formatCurrency(data.shTotalCost)}</span>
-              </div>
-            )}
-
-            {!isMonthly && data.totalSavings > 0 && (
-              <div className="flex justify-between items-center py-2 bg-green-50 rounded-lg px-3 border border-green-200">
-                <span className="text-xs font-bold text-green-600 uppercase tracking-wide">Savings</span>
-                <span className="text-sm font-mono font-bold text-green-600">-{formatCurrency(data.totalSavings)}</span>
+            {hasSavings && (
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-bold text-green-300 uppercase tracking-wider">You Save</span>
+                <span className="text-lg font-black text-green-300">{formatCurrency(data.totalSavings)}</span>
               </div>
             )}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="text-xs text-gray-500 mb-1">Total Contract</div>
-            <div className="text-2xl font-bold font-mono text-gray-900 mb-4">
-              {formatCurrency(data.totalCost)}
+          {/* Hero: Amortized monthly */}
+          <div className="mt-4 bg-white/10 rounded-xl px-4 py-3">
+            <p className="text-[10px] text-purple-200 uppercase tracking-widest mb-0.5">Amortized Monthly</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-black text-white">{formatCurrency(data.amortizedMonthly)}</span>
+              <span className="text-sm text-purple-200">/mo</span>
             </div>
-            
-            <div className="mb-4">
-              <p className="text-xs text-gray-500 mb-1">Amortized Monthly</p>
-              <div className="text-xl font-bold text-[#714B67]">
-                {formatCurrency(data.amortizedMonthly)}
-                <span className="text-sm font-normal text-gray-400 ml-1">/mo</span>
-              </div>
-            </div>
-
-            {hasFinancing && (
-              <div className="pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="w-4 h-4 text-[#017E84]" />
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Financing Estimate</span>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
-                    <div className="text-[10px] text-emerald-600 font-medium uppercase mb-1">Low Estimate</div>
-                    <div className="text-base font-bold text-emerald-700">{formatCurrency(data.financingLow)}<span className="text-xs font-normal">/mo</span></div>
-                  </div>
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
-                    <div className="text-[10px] text-amber-600 font-medium uppercase mb-1">High Estimate</div>
-                    <div className="text-base font-bold text-amber-700">{formatCurrency(data.financingHigh)}<span className="text-xs font-normal">/mo</span></div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {showPayoutView && (
-              <div className="pt-4 border-t-2 border-amber-300 mt-4">
-                <div className="flex items-center gap-1.5 mb-3">
-                  <DollarSign className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">My Payout</span>
-                  <span className="ml-auto text-[9px] text-amber-500 font-medium bg-amber-100 px-1.5 py-0.5 rounded">Internal</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                    <div>
-                      <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wide">MRR</div>
-                      <div className="text-[9px] text-amber-500">
-                        {isMonthly ? 'License × 80%' : 'License ÷ 12 mo'}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-base font-bold text-amber-700">{formatCurrency(mrr)}</div>
-                      <div className="text-[9px] text-amber-500">/mo</div>
-                    </div>
-                  </div>
-                  {nrr > 0 && (
-                    <div className="flex justify-between items-center bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      <div>
-                        <div className="text-[10px] font-bold text-amber-700 uppercase tracking-wide">NRR</div>
-                        <div className="text-[9px] text-amber-500">One-time impl.</div>
-                      </div>
-                      <div className="text-base font-bold text-amber-700">{formatCurrency(nrr)}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      </GlassCard>
+
+        {/* Cost Breakdown */}
+        <div className="px-5 py-4 space-y-2 flex-1">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">Cost Breakdown</p>
+
+          <div className="flex justify-between items-center py-1.5">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-purple-100 flex items-center justify-center">
+                <Code className="w-3.5 h-3.5 text-[#714B67]" />
+              </div>
+              <span className="text-sm text-gray-600">Software License</span>
+            </div>
+            <span className="text-sm font-semibold font-mono text-gray-800">{formatCurrency(data.totalSoftwareCost)}</span>
+          </div>
+
+          <div className="flex justify-between items-center py-1.5">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-teal-100 flex items-center justify-center">
+                <Cpu className="w-3.5 h-3.5 text-[#017E84]" />
+              </div>
+              <span className="text-sm text-gray-600">Implementation</span>
+            </div>
+            <span className="text-sm font-semibold font-mono text-gray-800">{formatCurrency(data.implementationCost)}</span>
+          </div>
+
+          {data.shTotalCost > 0 && (
+            <div className="flex justify-between items-center py-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-purple-100 flex items-center justify-center">
+                  <Server className="w-3.5 h-3.5 text-[#714B67]" />
+                </div>
+                <span className="text-sm text-gray-600">Odoo SH</span>
+              </div>
+              <span className="text-sm font-semibold font-mono text-gray-800">{formatCurrency(data.shTotalCost)}</span>
+            </div>
+          )}
+
+          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+            <span className="text-sm font-bold text-gray-700">Total Contract</span>
+            <span className="text-lg font-black font-mono text-gray-900">{formatCurrency(data.totalCost)}</span>
+          </div>
+
+          {hasSavings && (
+            <div className="flex justify-between items-center bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-green-600" />
+                <span className="text-xs font-bold text-green-700 uppercase tracking-wide">Savings vs Monthly</span>
+              </div>
+              <span className="text-sm font-black font-mono text-green-700">-{formatCurrency(data.totalSavings)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Catalyst Finance Block */}
+        {hasFinancing && (
+          <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-[#1B3A6B]/20">
+            {/* Header */}
+            <div className="bg-[#1B3A6B] px-4 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-3.5 h-3.5 text-blue-200" />
+                <span className="text-[11px] font-bold text-white uppercase tracking-widest">Finance This</span>
+              </div>
+              <span className="text-[9px] text-blue-200 font-medium">
+                {CATALYST_APR_LOW * 100}%–{CATALYST_APR_HIGH * 100}% APR
+              </span>
+            </div>
+
+            <div className="bg-[#f0f5ff] px-4 py-3 space-y-2">
+              {/* Payment range */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white border border-blue-100 rounded-lg p-2.5 text-center">
+                  <div className="text-[9px] text-blue-400 font-semibold uppercase tracking-wide mb-0.5">Best Rate</div>
+                  <div className="text-base font-black text-[#1B3A6B]">{formatCurrency(data.financingLow)}</div>
+                  <div className="text-[9px] text-blue-400">/mo · {CATALYST_APR_LOW * 100}% APR</div>
+                </div>
+                <div className="bg-white border border-blue-100 rounded-lg p-2.5 text-center">
+                  <div className="text-[9px] text-blue-400 font-semibold uppercase tracking-wide mb-0.5">Standard</div>
+                  <div className="text-base font-black text-[#1B3A6B]">{formatCurrency(data.financingHigh)}</div>
+                  <div className="text-[9px] text-blue-400">/mo · {CATALYST_APR_HIGH * 100}% APR</div>
+                </div>
+              </div>
+
+              {/* Down payment savings */}
+              {hasDownPayment && (
+                <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center justify-between">
+                  <div>
+                    <div className="text-[9px] font-bold text-green-700 uppercase tracking-wide">Down Payment Applied</div>
+                    <div className="text-[9px] text-green-600">{formatCurrency(data.downPayment)} down</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[9px] text-green-600 font-medium">Interest saved</div>
+                    <div className="text-sm font-black text-green-700">
+                      {formatCurrency(data.intSavedLow)}–{formatCurrency(data.intSavedHigh)}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Catalyst Finance attribution */}
+              <div className="flex items-center justify-center gap-1.5 pt-1">
+                <div className="w-4 h-4 rounded-sm bg-[#1B3A6B] flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-black text-[7px]">CF</span>
+                </div>
+                <span className="text-[9px] text-gray-500">Financing offered by</span>
+                <span className="text-[9px] font-bold text-[#1B3A6B]">Catalyst Finance</span>
+                <span className="text-[8px] text-gray-400">· Burlington, ON</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Payout View (internal) */}
+        {showPayoutView && (
+          <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-amber-300">
+            <div className="bg-amber-500 px-4 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <DollarSign className="w-3.5 h-3.5 text-white" />
+                <span className="text-[11px] font-bold text-white uppercase tracking-widest">Partner Payout</span>
+              </div>
+              <span className="text-[9px] bg-amber-600 text-amber-100 px-2 py-0.5 rounded font-medium">Internal</span>
+            </div>
+            <div className="bg-amber-50 px-4 py-3 space-y-2">
+              <div className="flex justify-between items-center bg-white border border-amber-200 rounded-lg px-3 py-2">
+                <div>
+                  <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">MRR</div>
+                  <div className="text-[9px] text-amber-500">{isMonthly ? 'License × 80%' : 'License ÷ 12 mo'}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-base font-black text-amber-700">{formatCurrency(mrr)}</div>
+                  <div className="text-[9px] text-amber-400">/mo</div>
+                </div>
+              </div>
+              {nrr > 0 && (
+                <div className="flex justify-between items-center bg-white border border-amber-200 rounded-lg px-3 py-2">
+                  <div>
+                    <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">NRR</div>
+                    <div className="text-[9px] text-amber-500">One-time impl.</div>
+                  </div>
+                  <div className="text-base font-black text-amber-700">{formatCurrency(nrr)}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
