@@ -135,29 +135,17 @@ function pmtCalc(principal: number, annualRate: number, months: number): number 
 // Calculate monthly financing payment using APR-based amortization
 function calculateFinancingPayment(
   totalAmount: number,
-  termKey: string,
-  downPayment: number = 0
-): { low: number; high: number; intSavedLow: number; intSavedHigh: number } {
-  const zero = { low: 0, high: 0, intSavedLow: 0, intSavedHigh: 0 };
-  if (totalAmount <= 0) return zero;
+  termKey: string
+): { low: number; high: number } {
+  if (totalAmount <= 0) return { low: 0, high: 0 };
 
   const years = parseInt(termKey.replace('year', ''));
-  if (!years || years <= 0) return zero;
+  if (!years || years <= 0) return { low: 0, high: 0 };
   const months = years * 12;
 
-  const dp = Math.min(Math.max(downPayment, 0), totalAmount);
-  const principal = totalAmount - dp;
-
-  const lowFull  = pmtCalc(totalAmount, CATALYST_APR_LOW,  months);
-  const highFull = pmtCalc(totalAmount, CATALYST_APR_HIGH, months);
-  const lowPmt   = pmtCalc(principal,   CATALYST_APR_LOW,  months);
-  const highPmt  = pmtCalc(principal,   CATALYST_APR_HIGH, months);
-
   return {
-    low:         lowPmt,
-    high:        highPmt,
-    intSavedLow:  dp > 0 ? (lowFull  - lowPmt)  * months : 0,
-    intSavedHigh: dp > 0 ? (highFull - highPmt) * months : 0,
+    low:  pmtCalc(totalAmount, CATALYST_APR_LOW,  months),
+    high: pmtCalc(totalAmount, CATALYST_APR_HIGH, months),
   };
 }
 
@@ -204,7 +192,6 @@ export default function Calculator() {
 
   // State
   const [showPayoutView, setShowPayoutView] = useState(false);
-  const [downPayment, setDownPayment] = useState(0);
   const [country, setCountry] = useState<Country>('US');
   const [users, setUsers] = useState(10);
   const [plan, setPlan] = useState<'standard' | 'custom'>('standard');
@@ -1007,33 +994,6 @@ export default function Calculator() {
                       ))}
                     </div>
 
-                    {/* Financing Down Payment */}
-                    <div className="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-xl mb-2">
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 rounded-lg bg-[#1B3A6B] flex items-center justify-center">
-                          <DollarSign className="w-4 h-4 text-white" />
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <label className="text-xs font-semibold text-[#1B3A6B] uppercase tracking-wide block mb-1">
-                          Financing Down Payment
-                        </label>
-                        <p className="text-xs text-blue-500">Optional — reduces financed amount and saves on interest</p>
-                      </div>
-                      <div className="relative w-36">
-                        <span className="absolute left-3 top-2.5 text-gray-400 text-sm">{countryConfig.symbol}</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="100"
-                          value={downPayment || ''}
-                          placeholder="0"
-                          onChange={(e) => setDownPayment(parseFloat(e.target.value) || 0)}
-                          className="w-full bg-white border border-blue-200 rounded-lg pl-7 pr-3 py-2 text-sm text-gray-800 focus:border-[#1B3A6B] outline-none"
-                          data-testid="input-down-payment"
-                        />
-                      </div>
-                    </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                       {activeTerms.map((term) => (
