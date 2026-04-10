@@ -1076,18 +1076,6 @@ export default function Calculator() {
                             ))}
                           </tr>
 
-                          {/* Amortized Monthly */}
-                          <tr style={{ background: 'white' }}>
-                            <td className={lbl} style={{ color: '#5A5750', borderBottom: '1px solid #F0EEEA' }}>
-                              Effective Monthly
-                            </td>
-                            {allQuoteData.map(({ term, data }) => (
-                              <td key={term} className={val} style={{ ...colBorder, color: '#714B67', borderBottom: '1px solid #F0EEEA', fontVariantNumeric: 'tabular-nums' }}>
-                                {formatCurrency(data.amortizedMonthly)}<span className="text-[9px] font-normal" style={{ color: '#B0ADA4' }}> /mo</span>
-                              </td>
-                            ))}
-                          </tr>
-
                           {/* ── SAVINGS ── */}
                           {hasAnySavings && (
                             <tr style={{ background: '#F0FDF4' }}>
@@ -1115,6 +1103,18 @@ export default function Calculator() {
                               ))}
                             </tr>
                           )}
+
+                          {/* Monthly Amortized */}
+                          <tr style={{ background: 'white' }}>
+                            <td className={lbl} style={{ color: '#5A5750', borderBottom: '1px solid #F0EEEA' }}>
+                              Monthly Amortized
+                            </td>
+                            {allQuoteData.map(({ term, data }) => (
+                              <td key={term} className={val} style={{ ...colBorder, color: '#714B67', borderBottom: '1px solid #F0EEEA', fontVariantNumeric: 'tabular-nums' }}>
+                                {formatCurrency(data.amortizedMonthly)}<span className="text-[9px] font-normal" style={{ color: '#B0ADA4' }}> /mo</span>
+                              </td>
+                            ))}
+                          </tr>
 
                           {/* ── FINANCING ── */}
                           {hasAnyFinancing && (
@@ -1164,14 +1164,14 @@ export default function Calculator() {
                                 <td colSpan={colCount + 1} className="px-5 py-2.5">
                                   <div className="flex items-center gap-2.5">
                                     <DollarSign className="w-3.5 h-3.5 text-amber-200" />
-                                    <span className="text-[10px] font-bold text-amber-100 uppercase tracking-[0.18em]">Partner Payout</span>
+                                    <span className="text-[10px] font-bold text-amber-100 uppercase tracking-[0.18em]">Payouts</span>
                                     <span className="text-[8px] bg-white/15 text-amber-200 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ml-auto">Internal</span>
                                   </div>
                                 </td>
                               </tr>
                               <tr style={{ background: '#FFFBEB' }}>
                                 <td className={lbl} style={{ color: '#92400e', borderBottom: '1px solid #FDE68A' }}>
-                                  MRR <span className="text-[9px] font-normal" style={{ color: '#FBBF24' }}>/mo</span>
+                                  MRR
                                 </td>
                                 {allQuoteData.map(({ term, data }) => {
                                   const isMonthly = term === 'monthly';
@@ -1187,7 +1187,7 @@ export default function Calculator() {
                               {hasAnyImpl && (
                                 <tr style={{ background: '#FFFBEB' }}>
                                   <td className={lbl} style={{ color: '#92400e' }}>
-                                    NRR <span className="text-[9px] font-normal" style={{ color: '#FBBF24' }}>one-time</span>
+                                    NRR
                                   </td>
                                   {allQuoteData.map(({ term, data }) => (
                                     <td key={term} className={val} style={{ ...colBorder, borderColor: '#FDE68A', color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
