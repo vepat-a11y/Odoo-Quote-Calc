@@ -63,7 +63,7 @@ const IMPLEMENTATIONS = {
   }
 };
 
-// Odoo SH Pricing (USD only)
+// Odoo SH Pricing (per country)
 const ODOO_SH_PRICING = {
   US: {
     shared: {
@@ -169,7 +169,7 @@ export default function Calculator() {
   const [implementation, setImplementation] = useState<string>('none');
   const [implMultiplier, setImplMultiplier] = useState<number>(1);
 
-  // Odoo SH State (USD only)
+  // Odoo SH State
   const [shEnabled, setShEnabled] = useState(false);
   const [shHostingType, setShHostingType] = useState<ShHostingType>('shared');
   const [shWorkers, setShWorkers] = useState(1);
@@ -213,10 +213,6 @@ export default function Calculator() {
   const handleCountryChange = (newCountry: Country) => {
     setCountry(newCountry);
     setImplementation('none');
-    // Disable SH for Canada (only available for US)
-    if (newCountry === 'CA') {
-      setShEnabled(false);
-    }
   };
 
   // Get SH limits based on hosting type and country
@@ -279,7 +275,7 @@ export default function Calculator() {
     const implCostBeforeDiscount = (implData?.price || 0) * implMultiplier;
     const implementationCost = implCostBeforeDiscount * (1 - implDiscount / 100);
 
-    // Odoo SH cost (USD only, no discounts, aligns with term type)
+    // Odoo SH cost (no discounts, aligns with term type)
     const shMonthlyCost = calculateShMonthlyCost(!isMonthly);
     const shTotalCost = shMonthlyCost * months;
 
@@ -781,8 +777,7 @@ export default function Calculator() {
             </div>
 
             {/* Odoo SH */}
-            {country === 'US' && (
-              <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
+            <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Odoo SH Hosting</div>
                   <button
@@ -847,7 +842,6 @@ export default function Calculator() {
                   </motion.div>
                 )}
               </div>
-            )}
 
             {/* Terms */}
             <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
