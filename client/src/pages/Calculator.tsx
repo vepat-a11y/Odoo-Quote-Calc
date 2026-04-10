@@ -707,7 +707,7 @@ export default function Calculator() {
             {/* Logo */}
             <div className="flex items-center gap-3 pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
               <img src="https://odoocdn.com/openerp_website/static/src/img/assets/png/odoo_logo.png" alt="Odoo" className="h-7" />
-              <span className="text-[12px] font-bold" style={{ color: '#5A5750' }}>Pricing Calculator</span>
+              <span className="text-[12px] font-bold" style={{ color: '#5A5750' }}>Quote Builder</span>
             </div>
 
             {/* Currency */}
