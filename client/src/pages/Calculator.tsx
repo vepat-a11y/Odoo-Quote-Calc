@@ -4,10 +4,7 @@ import {
   Cpu,
   Save,
   Info,
-  Globe,
   Server,
-  HardDrive,
-  Layers,
   FileText,
   TrendingUp,
   DollarSign
@@ -733,29 +730,17 @@ export default function Calculator() {
 
             {/* Users */}
             <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
-              <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-3" style={{ color: '#B0ADA4' }}>Users</div>
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center justify-between">
+                <div className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Users</div>
                 <input
                   type="number" min="1" value={users}
                   onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
-                  className="w-20 text-center text-[18px] font-black rounded-lg px-2 py-1.5 outline-none transition-colors"
+                  className="w-20 text-center text-[16px] font-black rounded-lg px-2 py-1.5 outline-none transition-colors"
                   style={{ border: '1px solid #E6E3DC', color: '#1A1915', fontVariantNumeric: 'tabular-nums' }}
                   onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
                   onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
                   data-testid="input-users"
                 />
-                <div className="flex-1">
-                  <input
-                    type="range" min="1" max="500" value={users}
-                    onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
-                    className="w-full appearance-none cursor-pointer"
-                    style={{ height: '2px', accentColor: '#714B67' }}
-                    data-testid="slider-users"
-                  />
-                </div>
-              </div>
-              <div className="text-[10px] font-semibold" style={{ color: users < 5 ? '#017E84' : users < 50 ? '#714B67' : '#6B6A65' }}>
-                {users < 5 ? 'Small Team' : users < 50 ? 'Growing Business' : 'Enterprise'}
               </div>
             </div>
 
@@ -909,44 +894,52 @@ export default function Calculator() {
               </div>
             </div>
 
-            {/* Discounts (only for active terms) */}
+            {/* Discounts table (only for active terms) */}
             {activeTerms.length > 0 && (
               <div className="pt-1">
                 <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-3" style={{ color: '#B0ADA4' }}>Discounts</div>
-                <div className="space-y-2">
-                  {activeTerms.map((term) => (
-                    <div key={term} className="rounded-lg p-3" style={{ background: '#F9F8F5', border: '1px solid #E6E3DC' }}>
-                      <div className="text-[10px] font-black mb-2" style={{ color: '#714B67' }}>
-                        {term === 'monthly' ? 'Monthly' : term.replace('year', ' Year')}
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          { label: 'Plan', key: 'plan', testid: `input-plan-discount-${term}` },
-                          { label: 'Impl', key: 'impl', testid: `input-impl-discount-${term}` },
-                        ].map(({ label, key, testid }) => (
-                          <div key={key}>
-                            <div className="text-[8px] uppercase tracking-[0.12em] font-semibold mb-0.5" style={{ color: '#B0ADA4' }}>{label} %</div>
-                            <div className="relative">
+                <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #E6E3DC' }}>
+                  <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#F9F8F5' }}>
+                        <th className="text-left text-[8px] uppercase tracking-[0.15em] font-bold px-2.5 py-2" style={{ color: '#B0ADA4', borderBottom: '1px solid #E6E3DC' }}></th>
+                        {activeTerms.map(term => (
+                          <th key={term} className="text-center text-[9px] uppercase tracking-[0.1em] font-black px-1.5 py-2" style={{ color: '#714B67', borderBottom: '1px solid #E6E3DC', borderLeft: '1px solid #E6E3DC' }}>
+                            {term === 'monthly' ? 'Mo' : term.replace('year', 'Y')}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { label: 'Plan %', key: 'plan' as const },
+                        { label: 'Impl %', key: 'impl' as const },
+                      ].map(({ label, key }, rowIdx) => (
+                        <tr key={key} style={{ background: rowIdx % 2 === 0 ? 'white' : '#FDFCFB' }}>
+                          <td className="text-[9px] font-semibold px-2.5 py-1.5 whitespace-nowrap" style={{ color: '#7A7770', borderBottom: rowIdx === 0 ? '1px solid #F0EEEA' : 'none' }}>
+                            {label}
+                          </td>
+                          {activeTerms.map(term => (
+                            <td key={term} className="px-1 py-1" style={{ borderLeft: '1px solid #E6E3DC', borderBottom: rowIdx === 0 ? '1px solid #F0EEEA' : 'none' }}>
                               <input
                                 type="number" min="0" max="100"
-                                value={termDiscounts[term]?.[key as 'plan' | 'impl'] || ''}
+                                value={termDiscounts[term]?.[key] || ''}
                                 onChange={(e) => {
                                   const val = parseFloat(e.target.value) || 0;
                                   setTermDiscounts(prev => ({ ...prev, [term]: { ...prev[term], [key]: val } }));
                                 }}
-                                className="w-full rounded-md px-2 py-1.5 text-[12px] font-bold text-right outline-none transition-colors"
-                                style={{ border: '1px solid #E6E3DC', background: 'white', color: '#1A1915', paddingRight: '18px' }}
-                                onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
-                                onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
-                                data-testid={testid}
+                                className="w-full rounded px-1 py-1 text-[11px] font-bold text-center outline-none transition-colors"
+                                style={{ border: '1px solid transparent', color: '#1A1915', background: 'transparent' }}
+                                onFocus={e => { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.background = 'white'; }}
+                                onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }}
+                                data-testid={`input-${key}-discount-${term}`}
                               />
-                              <span className="absolute right-2 top-1.5 text-[10px]" style={{ color: '#B0ADA4' }}>%</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
@@ -984,25 +977,243 @@ export default function Calculator() {
             </div>
           </div>
 
-          {/* Quote cards grid */}
+          {/* Quote comparison table */}
           <div className="p-6">
             {activeTerms.length > 0 ? (
-              <div className={`grid gap-5 ${
-                activeTerms.length <= 2 ? 'grid-cols-1 lg:grid-cols-2' :
-                activeTerms.length <= 3 ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' :
-                'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
-              }`}>
-                {allQuoteData.map(({ term, data }, index) => (
-                  <motion.div
-                    key={term}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.04 }}
-                  >
-                    <QuoteCard data={data} termKey={term} formatCurrency={formatCurrency} showPayoutView={showPayoutView} />
-                  </motion.div>
-                ))}
-              </div>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+                {(() => {
+                  const hasAnySH = allQuoteData.some(q => q.data.shTotalCost > 0);
+                  const hasAnyImpl = allQuoteData.some(q => q.data.implementationCost > 0);
+                  const hasAnyFinancing = allQuoteData.some(q => q.data.financingLow > 0);
+                  const hasAnySavings = allQuoteData.some(q => q.data.totalSavings > 0);
+
+                  const labelCellClass = "text-[11px] font-medium px-4 py-3 whitespace-nowrap";
+                  const valueCellClass = "text-[12px] font-bold text-right px-4 py-3 font-mono";
+                  const borderStyle = { borderLeft: '1px solid #E6E3DC' };
+                  const rowBorder = { borderBottom: '1px solid #F0EEEA' };
+
+                  return (
+                    <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E6E3DC' }} data-testid="table-quote-comparison">
+                      <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                        {/* Header */}
+                        <thead>
+                          <tr style={{ background: 'linear-gradient(135deg, #4a2347 0%, #714B67 50%, #8B5A7A 100%)' }}>
+                            <th className="text-left text-[10px] uppercase tracking-[0.2em] font-bold text-white/60 px-4 py-3.5" style={{ minWidth: '160px' }}>
+                              Line Item
+                            </th>
+                            {allQuoteData.map(({ term, data }) => (
+                              <th key={term} className="text-center px-4 py-3.5" style={{ ...borderStyle, borderColor: 'rgba(255,255,255,0.1)', minWidth: '130px' }}>
+                                <div className="text-[13px] font-black text-white">{data.termLabel}</div>
+                                <div className="text-[9px] text-white/40 font-medium mt-0.5">
+                                  {term === 'monthly' ? 'Pay as you go' : 'Annual commitment'}
+                                </div>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {/* Per User Rate */}
+                          <tr style={{ ...rowBorder, background: '#FDFCFB' }}>
+                            <td className={labelCellClass} style={{ color: '#7A7770' }}>Per User / Month</td>
+                            {allQuoteData.map(({ term, data }) => {
+                              const rate = data.amortizedMonthly / users;
+                              return (
+                                <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#1A1915', ...rowBorder }}>
+                                  {formatCurrency(rate)}
+                                </td>
+                              );
+                            })}
+                          </tr>
+
+                          {/* Software License */}
+                          <tr style={rowBorder}>
+                            <td className={labelCellClass} style={{ color: '#7A7770' }}>
+                              <div className="flex items-center gap-2">
+                                <Code className="w-3.5 h-3.5" style={{ color: '#714B67' }} />
+                                Software License
+                              </div>
+                            </td>
+                            {allQuoteData.map(({ term, data }) => (
+                              <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#1A1915', ...rowBorder }}>
+                                {formatCurrency(data.totalSoftwareCost)}
+                              </td>
+                            ))}
+                          </tr>
+
+                          {/* Implementation */}
+                          {hasAnyImpl && (
+                            <tr style={rowBorder}>
+                              <td className={labelCellClass} style={{ color: '#7A7770' }}>
+                                <div className="flex items-center gap-2">
+                                  <Cpu className="w-3.5 h-3.5" style={{ color: '#017E84' }} />
+                                  Implementation
+                                </div>
+                              </td>
+                              {allQuoteData.map(({ term, data }) => (
+                                <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#1A1915', ...rowBorder }}>
+                                  {data.implementationCost > 0 ? formatCurrency(data.implementationCost) : <span style={{ color: '#D5D2CB' }}>—</span>}
+                                </td>
+                              ))}
+                            </tr>
+                          )}
+
+                          {/* Odoo SH */}
+                          {hasAnySH && (
+                            <tr style={rowBorder}>
+                              <td className={labelCellClass} style={{ color: '#7A7770' }}>
+                                <div className="flex items-center gap-2">
+                                  <Server className="w-3.5 h-3.5" style={{ color: '#714B67' }} />
+                                  Odoo SH Hosting
+                                </div>
+                              </td>
+                              {allQuoteData.map(({ term, data }) => (
+                                <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#1A1915', ...rowBorder }}>
+                                  {data.shTotalCost > 0 ? formatCurrency(data.shTotalCost) : <span style={{ color: '#D5D2CB' }}>—</span>}
+                                </td>
+                              ))}
+                            </tr>
+                          )}
+
+                          {/* ═══ TOTAL CONTRACT — hero row ═══ */}
+                          <tr style={{ background: 'linear-gradient(135deg, #f7f4f6 0%, #f0eaee 100%)' }}>
+                            <td className="px-4 py-4" style={{ borderTop: '2px solid #714B67', borderBottom: '2px solid #714B67' }}>
+                              <div className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: '#714B67' }}>Total Contract</div>
+                            </td>
+                            {allQuoteData.map(({ term, data }) => (
+                              <td key={term} className="text-right px-4 py-4" style={{ ...borderStyle, borderTop: '2px solid #714B67', borderBottom: '2px solid #714B67' }}>
+                                <span className="text-[20px] font-black tracking-tight" style={{ color: '#4a2347', fontVariantNumeric: 'tabular-nums' }}>
+                                  {formatCurrency(data.totalCost)}
+                                </span>
+                              </td>
+                            ))}
+                          </tr>
+
+                          {/* Amortized Monthly */}
+                          <tr style={{ ...rowBorder, background: '#FDFCFB' }}>
+                            <td className={labelCellClass} style={{ color: '#7A7770' }}>Amortized / Month</td>
+                            {allQuoteData.map(({ term, data }) => (
+                              <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#714B67', ...rowBorder }}>
+                                {formatCurrency(data.amortizedMonthly)}<span className="text-[10px] font-medium text-gray-400">/mo</span>
+                              </td>
+                            ))}
+                          </tr>
+
+                          {/* ═══ SAVINGS — big eye-catching row ═══ */}
+                          {hasAnySavings && (
+                            <tr style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)' }}>
+                              <td className="px-4 py-4" style={{ borderBottom: '1px solid #a7f3d0' }}>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#059669' }}>
+                                    <TrendingUp className="w-3.5 h-3.5 text-white" />
+                                  </div>
+                                  <div>
+                                    <div className="text-[11px] font-black uppercase tracking-[0.15em]" style={{ color: '#065f46' }}>You Save</div>
+                                  </div>
+                                </div>
+                              </td>
+                              {allQuoteData.map(({ term, data }) => (
+                                <td key={term} className="text-right px-4 py-4" style={{ ...borderStyle, borderColor: '#a7f3d0', borderBottom: '1px solid #a7f3d0' }}>
+                                  {data.totalSavings > 0 ? (
+                                    <span className="text-[18px] font-black tracking-tight" style={{ color: '#059669', fontVariantNumeric: 'tabular-nums' }}>
+                                      {formatCurrency(data.totalSavings)}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[13px]" style={{ color: '#a7f3d0' }}>—</span>
+                                  )}
+                                </td>
+                              ))}
+                            </tr>
+                          )}
+
+                          {/* ═══ FINANCING — Catalyst Finance ═══ */}
+                          {hasAnyFinancing && (
+                            <>
+                              <tr style={{ background: '#1B3A6B' }}>
+                                <td colSpan={allQuoteData.length + 1} className="px-4 py-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 rounded-sm bg-white/20 flex items-center justify-center flex-shrink-0">
+                                      <span className="text-white font-black text-[6px]">CF</span>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-white/80 uppercase tracking-[0.15em]">Catalyst Finance</span>
+                                    <span className="text-[9px] text-blue-300/60 font-medium ml-auto">{CATALYST_APR_LOW * 100}–{CATALYST_APR_HIGH * 100}% APR</span>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr style={{ background: '#f4f7fc', ...rowBorder }}>
+                                <td className={labelCellClass} style={{ color: '#1B3A6B' }}>
+                                  Best Rate <span className="text-[9px] font-normal text-blue-400">({CATALYST_APR_LOW * 100}%)</span>
+                                </td>
+                                {allQuoteData.map(({ term, data }) => (
+                                  <td key={term} className={valueCellClass} style={{ ...borderStyle, borderColor: '#e2e8f0', color: '#1B3A6B', ...rowBorder }}>
+                                    {data.financingLow > 0 ? (
+                                      <>{formatCurrency(data.financingLow)}<span className="text-[10px] font-medium text-blue-300">/mo</span></>
+                                    ) : <span style={{ color: '#cbd5e1' }}>—</span>}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr style={{ background: '#f4f7fc' }}>
+                                <td className={labelCellClass} style={{ color: '#1B3A6B' }}>
+                                  Standard <span className="text-[9px] font-normal text-blue-400">({CATALYST_APR_HIGH * 100}%)</span>
+                                </td>
+                                {allQuoteData.map(({ term, data }) => (
+                                  <td key={term} className={valueCellClass} style={{ ...borderStyle, borderColor: '#e2e8f0', color: '#1B3A6B' }}>
+                                    {data.financingHigh > 0 ? (
+                                      <>{formatCurrency(data.financingHigh)}<span className="text-[10px] font-medium text-blue-300">/mo</span></>
+                                    ) : <span style={{ color: '#cbd5e1' }}>—</span>}
+                                  </td>
+                                ))}
+                              </tr>
+                            </>
+                          )}
+
+                          {/* ═══ PARTNER PAYOUT (internal) ═══ */}
+                          {showPayoutView && (
+                            <>
+                              <tr style={{ background: '#F59E0B' }}>
+                                <td colSpan={allQuoteData.length + 1} className="px-4 py-2">
+                                  <div className="flex items-center gap-2">
+                                    <DollarSign className="w-3 h-3 text-white" />
+                                    <span className="text-[10px] font-bold text-white uppercase tracking-[0.15em]">Partner Payout</span>
+                                    <span className="text-[8px] bg-amber-700/40 text-amber-100 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide ml-auto">Internal</span>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr style={{ background: '#fffbeb', ...rowBorder }}>
+                                <td className={labelCellClass} style={{ color: '#92400e' }}>
+                                  MRR <span className="text-[9px] font-normal text-amber-400">/mo</span>
+                                </td>
+                                {allQuoteData.map(({ term, data }) => {
+                                  const isMonthly = term === 'monthly';
+                                  const recurringBase = data.totalSoftwareCost + data.shTotalCost;
+                                  const mrr = isMonthly ? recurringBase * 0.8 : recurringBase / 12;
+                                  return (
+                                    <td key={term} className={valueCellClass} style={{ ...borderStyle, borderColor: '#fde68a', color: '#92400e', ...rowBorder }}>
+                                      {formatCurrency(mrr)}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              {hasAnyImpl && (
+                                <tr style={{ background: '#fffbeb' }}>
+                                  <td className={labelCellClass} style={{ color: '#92400e' }}>
+                                    NRR <span className="text-[9px] font-normal text-amber-400">one-time</span>
+                                  </td>
+                                  {allQuoteData.map(({ term, data }) => (
+                                    <td key={term} className={valueCellClass} style={{ ...borderStyle, borderColor: '#fde68a', color: '#92400e' }}>
+                                      {data.implementationCost > 0 ? formatCurrency(data.implementationCost) : <span style={{ color: '#fde68a' }}>—</span>}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )}
+                            </>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+              </motion.div>
             ) : (
               <div className="h-[calc(100vh-160px)] flex flex-col items-center justify-center rounded-2xl" style={{ border: '2px dashed #E6E3DC' }}>
                 <Info className="w-8 h-8 mb-3" style={{ color: '#D5D2CB' }} />
@@ -1016,189 +1227,3 @@ export default function Calculator() {
   );
 }
 
-// === QUOTE CARD COMPONENT ===
-
-function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
-  data: any;
-  termKey: string;
-  formatCurrency: (n: number) => string;
-  showPayoutView: boolean;
-}) {
-  const isMonthly = termKey === 'monthly';
-  const hasFinancing = !isMonthly && data.financingLow > 0;
-  const hasSavings = !isMonthly && data.totalSavings > 0;
-
-  // MRR = (total license cost + total SH cost over term) × 80% for monthly
-  //       (total license cost + total SH cost over term) ÷ 12  for 1+ year terms
-  const recurringBase = data.totalSoftwareCost + data.shTotalCost;
-  const mrr = isMonthly ? recurringBase * 0.8 : recurringBase / 12;
-  const nrr = data.implementationCost;
-
-  return (
-    <div className="relative h-full rounded-2xl" data-testid={`card-quote-${termKey}`}>
-      <div className="h-full flex flex-col rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 bg-white">
-
-        {/* ── Card Header ── */}
-        <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #4a2347 0%, #714B67 50%, #8B5A7A 100%)' }}>
-          {/* Subtle grid texture */}
-          <div className="absolute inset-0 opacity-[0.06]"
-            style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
-          {/* Top accent line */}
-          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)' }} />
-
-          <div className="relative px-5 pt-5 pb-5">
-            {/* Term type label + savings pill */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[9px] font-bold text-white/50 uppercase tracking-[0.18em]">
-                {isMonthly ? 'Pay as you go' : 'Annual Commitment'}
-              </span>
-              {hasSavings && (
-                <span className="inline-flex items-center gap-1 bg-emerald-400/20 border border-emerald-400/30 text-emerald-300 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
-                  <TrendingUp className="w-2.5 h-2.5" />
-                  Save {formatCurrency(data.totalSavings)}
-                </span>
-              )}
-            </div>
-
-            {/* Term title */}
-            <h3 className="text-[22px] font-black text-white leading-none tracking-tight mb-5">
-              {data.termLabel}
-            </h3>
-
-            {/* Hero monthly number */}
-            <div className="border-t border-white/10 pt-4">
-              <p className="text-[9px] font-semibold text-white/40 uppercase tracking-[0.2em] mb-1.5">
-                {isMonthly ? 'Monthly' : 'Amortized / mo'}
-              </p>
-              <div className="flex items-end gap-1.5">
-                <span className="text-[38px] font-black text-white leading-none tracking-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                  {formatCurrency(data.amortizedMonthly)}
-                </span>
-                <span className="text-sm text-white/40 font-medium mb-1">/mo</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Cost Breakdown ── */}
-        <div className="px-5 pt-5 pb-4 flex-1 flex flex-col">
-          <p className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.18em] mb-3">Breakdown</p>
-
-          <div className="space-y-0 flex-1">
-            <div className="flex justify-between items-center py-2.5 border-b border-gray-50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(113,75,103,0.08)' }}>
-                  <Code className="w-3 h-3 text-[#714B67]" />
-                </div>
-                <span className="text-[13px] text-gray-500 font-medium">Software License</span>
-              </div>
-              <span className="text-[13px] font-semibold font-mono text-gray-700">{formatCurrency(data.totalSoftwareCost)}</span>
-            </div>
-
-            <div className="flex justify-between items-center py-2.5 border-b border-gray-50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(1,126,132,0.08)' }}>
-                  <Cpu className="w-3 h-3 text-[#017E84]" />
-                </div>
-                <span className="text-[13px] text-gray-500 font-medium">Implementation</span>
-              </div>
-              <span className="text-[13px] font-semibold font-mono text-gray-700">{formatCurrency(data.implementationCost)}</span>
-            </div>
-
-            {data.shTotalCost > 0 && (
-              <div className="flex justify-between items-center py-2.5 border-b border-gray-50">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(113,75,103,0.08)' }}>
-                    <Server className="w-3 h-3 text-[#714B67]" />
-                  </div>
-                  <span className="text-[13px] text-gray-500 font-medium">Odoo SH Hosting</span>
-                </div>
-                <span className="text-[13px] font-semibold font-mono text-gray-700">{formatCurrency(data.shTotalCost)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Total Contract — hero row */}
-          <div className="mt-4 rounded-xl px-4 py-3.5 flex justify-between items-center" style={{ background: 'linear-gradient(135deg, #f7f4f6 0%, #f0eaee 100%)', border: '1px solid rgba(113,75,103,0.12)' }}>
-            <div>
-              <p className="text-[9px] font-bold text-[#714B67]/50 uppercase tracking-[0.16em] mb-0.5">Total Contract</p>
-              <p className="text-[11px] text-gray-400 font-medium">
-                {isMonthly ? 'Per month' : `Over ${data.termLabel.toLowerCase()}`}
-              </p>
-            </div>
-            <span className="text-[22px] font-black font-mono text-[#4a2347] tracking-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {formatCurrency(data.totalCost)}
-            </span>
-          </div>
-        </div>
-
-        {/* ── Catalyst Finance ── */}
-        {hasFinancing && (
-          <div className="mx-4 mb-4 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(27,58,107,0.15)' }}>
-            <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: '#1B3A6B' }}>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-3 h-3 text-blue-300" />
-                <span className="text-[10px] font-bold text-white uppercase tracking-[0.15em]">Finance This</span>
-              </div>
-              <span className="text-[9px] text-blue-300/70 font-medium">{CATALYST_APR_LOW * 100}–{CATALYST_APR_HIGH * 100}% APR</span>
-            </div>
-            <div className="px-4 py-3 space-y-2.5" style={{ background: '#f4f7fc' }}>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white rounded-lg p-2.5 text-center" style={{ border: '1px solid rgba(27,58,107,0.08)' }}>
-                  <div className="text-[8px] text-[#1B3A6B]/40 font-bold uppercase tracking-wider mb-1">Best Rate</div>
-                  <div className="text-[15px] font-black text-[#1B3A6B]" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(data.financingLow)}</div>
-                  <div className="text-[8px] text-[#1B3A6B]/40 mt-0.5">/mo · {CATALYST_APR_LOW * 100}% APR</div>
-                </div>
-                <div className="bg-white rounded-lg p-2.5 text-center" style={{ border: '1px solid rgba(27,58,107,0.08)' }}>
-                  <div className="text-[8px] text-[#1B3A6B]/40 font-bold uppercase tracking-wider mb-1">Standard</div>
-                  <div className="text-[15px] font-black text-[#1B3A6B]" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(data.financingHigh)}</div>
-                  <div className="text-[8px] text-[#1B3A6B]/40 mt-0.5">/mo · {CATALYST_APR_HIGH * 100}% APR</div>
-                </div>
-              </div>
-              <div className="flex items-center justify-center gap-1.5">
-                <div className="w-3.5 h-3.5 rounded-sm bg-[#1B3A6B] flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-black text-[6px]">CF</span>
-                </div>
-                <span className="text-[8px] text-gray-400">Financing by <strong className="text-[#1B3A6B]">Catalyst Finance</strong> · Burlington, ON</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Partner Payout (internal) ── */}
-        {showPayoutView && (
-          <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-amber-200">
-            <div className="bg-amber-500 px-4 py-2 flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <DollarSign className="w-3 h-3 text-white" />
-                <span className="text-[10px] font-bold text-white uppercase tracking-[0.15em]">Partner Payout</span>
-              </div>
-              <span className="text-[8px] bg-amber-700/40 text-amber-100 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">Internal</span>
-            </div>
-            <div className="bg-amber-50 px-4 py-3 space-y-2">
-              <div className="flex justify-between items-center bg-white border border-amber-100 rounded-lg px-3 py-2.5">
-                <div>
-                  <div className="text-[9px] font-bold text-amber-800 uppercase tracking-wider">MRR</div>
-                  <div className="text-[8px] text-amber-400 mt-0.5">{isMonthly ? '(License + SH) × 80%' : '(License + SH total) ÷ 12'}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[15px] font-black text-amber-700" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(mrr)}</div>
-                  <div className="text-[8px] text-amber-400">/mo</div>
-                </div>
-              </div>
-              {nrr > 0 && (
-                <div className="flex justify-between items-center bg-white border border-amber-100 rounded-lg px-3 py-2.5">
-                  <div>
-                    <div className="text-[9px] font-bold text-amber-800 uppercase tracking-wider">NRR</div>
-                    <div className="text-[8px] text-amber-400 mt-0.5">One-time implementation</div>
-                  </div>
-                  <div className="text-[15px] font-black text-amber-700" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(nrr)}</div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}

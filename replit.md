@@ -55,9 +55,9 @@ Preferred communication style: Simple, everyday language.
 ### UI Layout
 - **Pattern**: Two-panel sidebar + main panel (h-screen flex)
 - **Sidebar** (340-380px): All configuration controls — currency toggle, users slider/input, plan buttons, implementation select, Odoo SH toggle+config, term checkboxes, per-term discounts (progressive disclosure)
-- **Main Panel** (flex-1): Sticky config summary bar + responsive quote card grid + payout toggle
+- **Main Panel** (flex-1): Sticky config summary bar + comparison table + payout toggle
 - **Design System**: Warm off-white bg (#F4F3EF), white sidebar, hairline borders (#E6E3DC), Odoo purple accents (#714B67), teal secondary (#017E84)
-- **Quote Cards**: Gradient header, savings pill badge, hero monthly price, financing range, total contract block
+- **Comparison Table**: Single table with label column + one column per selected term. Rows: Per User/Mo, Software License, Implementation, SH, Total Contract (hero), Amortized/Mo, You Save (green gradient), Catalyst Finance (navy), Partner Payout (amber). Discounts in sidebar also use compact table format.
 
 ### Build System
 - Development: `tsx server/index.ts` with Vite middleware for HMR
