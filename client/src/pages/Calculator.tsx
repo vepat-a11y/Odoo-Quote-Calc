@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import { 
-  Users, 
-  Package, 
-  Zap, 
+import {
   Code,
-  Cpu, 
+  Cpu,
   Save,
   Info,
   Globe,
@@ -16,7 +13,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { GlassCard, Button, InputField, Select } from '@/components/ui-custom';
+import { Button, Select } from '@/components/ui-custom';
 import { useCreateQuote } from '@/hooks/use-quotes';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
@@ -670,423 +667,390 @@ export default function Calculator() {
   };
 
   return (
-    <div className="min-h-screen pb-20 bg-[#FAFAFA]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <OdooLogo />
-            <div className="h-5 w-px bg-gray-200" />
-            <span className="text-sm text-gray-500 font-medium hidden sm:block">Pricing Calculator</span>
+    <div className="min-h-screen" style={{ background: '#F4F3EF' }}>
+
+      {/* ── Navigation ── */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white flex items-center px-6 lg:px-12" style={{ borderBottom: '1px solid #E6E3DC', height: '56px' }}>
+        <div className="flex-1 flex items-center gap-5">
+          <OdooLogo />
+          <div style={{ width: '1px', height: '14px', background: '#E6E3DC' }} />
+          <span className="text-[10px] uppercase tracking-[0.22em] font-semibold hidden sm:block" style={{ color: '#B0ADA4' }}>
+            Pricing Calculator
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ border: '1px solid #E6E3DC' }}>
+            <Globe className="w-3.5 h-3.5" style={{ color: '#B0ADA4' }} />
+            <select
+              value={country}
+              onChange={(e) => handleCountryChange(e.target.value as Country)}
+              className="bg-transparent text-[13px] font-semibold outline-none cursor-pointer"
+              style={{ color: '#1A1915' }}
+              data-testid="select-country"
+            >
+              <option value="US">USD</option>
+              <option value="CA">CAD</option>
+            </select>
           </div>
-          
-          <div className="flex items-center gap-3">
-            {/* Country Selector */}
-            <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
-              <Globe className="w-4 h-4 text-gray-400" />
-              <select
-                value={country}
-                onChange={(e) => handleCountryChange(e.target.value as Country)}
-                className="bg-transparent text-gray-700 text-sm font-medium outline-none cursor-pointer"
-                data-testid="select-country"
-              >
-                <option value="US">USD</option>
-                <option value="CA">CAD</option>
-              </select>
-            </div>
-            
-            <Button variant="secondary" onClick={handleExportPDF} className="hidden md:flex text-gray-600 bg-gray-100 hover:bg-gray-200 border-0" data-testid="button-export-pdf">
-              <FileText className="w-4 h-4 mr-2" />
-              Export PDF
-            </Button>
-            <Button onClick={handleSaveQuote} isLoading={createQuote.isPending} className="bg-[#714B67] hover:bg-[#5d3d55] text-white">
-              <Save className="w-4 h-4 mr-2" />
-              Save Quote
-            </Button>
-          </div>
+          <button
+            onClick={handleExportPDF}
+            className="hidden md:flex items-center gap-2 px-4 py-1.5 text-[12px] font-semibold rounded-lg transition-colors"
+            style={{ border: '1px solid #E6E3DC', color: '#5A5750', background: 'white' }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#F4F3EF')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'white')}
+            data-testid="button-export-pdf"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            Export PDF
+          </button>
+          <Button
+            onClick={handleSaveQuote}
+            isLoading={createQuote.isPending}
+            className="text-[12px] font-bold px-5 py-1.5 rounded-lg"
+            style={{ background: '#714B67', color: 'white' }}
+          >
+            <Save className="w-3.5 h-3.5 mr-1.5" />
+            Save
+          </Button>
         </div>
       </header>
 
-      <main className="w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
-        {/* Section 1: Configuration - Full Width */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <GlassCard 
-            title="Configuration" 
-            description={`Set your user count and plan details • Prices in ${countryConfig.currency}`}
-            className="relative overflow-hidden bg-white"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-              {/* Users Input */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#714B67]" /> Number of Users
-                </label>
-                <div className="relative">
-                  <input
-                    type="range"
-                    min="1"
-                    max="500"
-                    value={users}
-                    onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#714B67]"
-                    data-testid="slider-users"
-                  />
-                  <div className="mt-4 flex items-center gap-4">
-                    <InputField 
-                      type="number" 
-                      min="1" 
-                      value={users} 
-                      onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
-                      className="font-mono text-lg text-center bg-gray-50 border-gray-200 text-gray-800"
-                      data-testid="input-users"
-                    />
-                    <div className="text-xs text-gray-500">
-                      {users < 5 ? 'Small Team' : users < 50 ? 'Growing Business' : 'Enterprise'}
-                    </div>
+      {/* ── Hero ── */}
+      <div className="pt-[56px]">
+        <div className="px-6 lg:px-12 pt-14 pb-12 bg-white" style={{ borderBottom: '1px solid #E6E3DC' }}>
+          <p className="text-[10px] uppercase tracking-[0.32em] font-bold mb-6" style={{ color: '#714B67' }}>
+            Odoo Enterprise · Partner Pricing Tool
+          </p>
+          <div className="flex items-end justify-between gap-8 flex-wrap">
+            <h1 className="font-black leading-none" style={{ fontSize: 'clamp(44px, 7vw, 80px)', color: '#1A1915', letterSpacing: '-0.03em', lineHeight: 0.9 }}>
+              Quote<br />
+              <span style={{ color: '#714B67' }}>Builder</span>
+            </h1>
+            <div className="pb-1 space-y-1 hidden md:block">
+              <div className="text-[10px] uppercase tracking-[0.22em] font-semibold" style={{ color: '#B0ADA4' }}>Markets Supported</div>
+              <div className="text-[16px] font-bold" style={{ color: '#1A1915' }}>United States · Canada</div>
+              <div className="text-[12px]" style={{ color: '#B0ADA4' }}>USD · CAD · Prices in {countryConfig.currency}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Main ── */}
+      <main className="px-6 lg:px-12 py-14 space-y-14 pb-28">
+
+        {/* ── 01 Configure ── */}
+        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+          <div className="flex items-center gap-5 mb-8">
+            <span className="text-[10px] uppercase tracking-[0.28em] font-black" style={{ color: '#714B67' }}>01</span>
+            <div style={{ flex: 1, height: '1px', background: '#E6E3DC' }} />
+            <span className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: '#B0ADA4' }}>Configure</span>
+          </div>
+
+          <div className="bg-white rounded-2xl p-8 lg:p-10" style={{ border: '1px solid #E6E3DC' }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+              {/* Users */}
+              <div className="space-y-5">
+                <div>
+                  <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-2" style={{ color: '#B0ADA4' }}>Number of Users</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-black" style={{ fontSize: '36px', color: '#1A1915', letterSpacing: '-0.03em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{users}</span>
+                    <span className="text-[14px] font-medium" style={{ color: '#B0ADA4' }}>users</span>
+                  </div>
+                  <div className="text-[11px] font-semibold mt-1" style={{ color: users < 5 ? '#017E84' : users < 50 ? '#714B67' : '#1A1915' }}>
+                    {users < 5 ? 'Small Team' : users < 50 ? 'Growing Business' : 'Enterprise'}
                   </div>
                 </div>
+                <input
+                  type="range" min="1" max="500" value={users}
+                  onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
+                  className="w-full appearance-none cursor-pointer"
+                  style={{ height: '2px', accentColor: '#714B67' }}
+                  data-testid="slider-users"
+                />
+                <input
+                  type="number" min="1" value={users}
+                  onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
+                  className="w-28 text-center text-[15px] font-bold rounded-xl px-3 py-2.5 outline-none transition-colors"
+                  style={{ border: '1px solid #E6E3DC', color: '#1A1915', background: '#F9F8F5', fontVariantNumeric: 'tabular-nums' }}
+                  onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                  onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
+                  data-testid="input-users"
+                />
               </div>
 
-              {/* Plan Selection */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-[#017E84]" /> Odoo Plan
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setPlan('standard')}
-                    data-testid="button-plan-standard"
-                    className={`p-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden ${
-                      plan === 'standard' 
-                        ? 'bg-[#714B67]/10 border-[#714B67] text-gray-800' 
-                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <div className="font-semibold mb-1">Standard</div>
-                    <div className="text-xs opacity-70">Core modules + Online</div>
-                    {plan === 'standard' && <motion.div layoutId="plan-active" className="absolute inset-0 border-2 border-[#714B67] rounded-xl pointer-events-none" />}
-                  </button>
-                  <button
-                    onClick={() => setPlan('custom')}
-                    data-testid="button-plan-custom"
-                    className={`p-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden ${
-                      plan === 'custom' 
-                        ? 'bg-[#017E84]/10 border-[#017E84] text-gray-800' 
-                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <div className="font-semibold mb-1">Custom</div>
-                    <div className="text-xs opacity-70">Odoo Studio + API</div>
-                    {plan === 'custom' && <motion.div layoutId="plan-active" className="absolute inset-0 border-2 border-[#017E84] rounded-xl pointer-events-none" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Implementation Selection */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <Package className="w-4 h-4 text-[#017E84]" /> Implementation Pack
-                </label>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <Select
-                      options={Object.entries(currentImplementations).map(([key, val]) => ({
-                        value: key,
-                        label: val.label
-                      }))}
-                      value={implementation}
-                      onChange={(e) => setImplementation(e.target.value)}
-                      data-testid="select-implementation"
-                    />
-                  </div>
-                  <div className="w-24">
-                    <div className="relative">
-                      <input
-                        type="number"
-                        min="0.1"
-                        max="10"
-                        step="0.1"
-                        value={implMultiplier}
-                        onChange={(e) => setImplMultiplier(parseFloat(e.target.value) || 1)}
-                        disabled={implementation === 'none'}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-center text-gray-800 focus:border-[#714B67] outline-none disabled:opacity-40 disabled:cursor-not-allowed"
-                        data-testid="input-impl-multiplier"
-                      />
-                      <span className="absolute right-2 top-2.5 text-gray-400 text-xs">x</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-xs text-gray-500 px-1">
-                  <span>
-                    {implMultiplier !== 1 && implementation !== 'none' ? (
-                      <>
-                        {(currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0)} x {implMultiplier} = {' '}
-                        <span className="text-[#017E84] font-medium">
-                          {((currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0) * implMultiplier).toFixed(0)} hours
-                        </span>
-                      </>
-                    ) : (
-                      <>Includes {currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0} hours</>
-                    )}
-                  </span>
-                  <span className="text-gray-700 font-mono">
-                    {implMultiplier !== 1 && implementation !== 'none' ? (
-                      <span className="text-[#017E84]">{formatCurrency((currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0) * implMultiplier)}</span>
-                    ) : (
-                      formatCurrency(currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0)
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              {/* Odoo SH Section (USD Only) */}
-              {country === 'US' && (
-                <div className="md:col-span-3 mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Server className="w-4 h-4 text-[#714B67]" /> Odoo SH (Dedicated Hosting)
-                    </label>
+              {/* Plan */}
+              <div className="space-y-4">
+                <div className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Odoo Plan</div>
+                <div className="space-y-2">
+                  {[
+                    { key: 'standard' as const, label: 'Standard', sub: 'Core modules · Online', accent: '#714B67' },
+                    { key: 'custom' as const, label: 'Custom', sub: 'Odoo Studio · API access', accent: '#017E84' },
+                  ].map(({ key, label, sub, accent }) => (
                     <button
-                      onClick={() => setShEnabled(!shEnabled)}
-                      data-testid="button-toggle-sh"
-                      className={`relative w-12 h-6 rounded-full transition-colors ${shEnabled ? 'bg-[#714B67]' : 'bg-gray-200'}`}
+                      key={key}
+                      onClick={() => setPlan(key)}
+                      data-testid={`button-plan-${key}`}
+                      className="w-full p-4 rounded-xl text-left transition-all duration-150"
+                      style={{
+                        border: plan === key ? `2px solid ${accent}` : '1px solid #E6E3DC',
+                        background: plan === key ? `${accent}08` : '#F9F8F5',
+                      }}
                     >
-                      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${shEnabled ? 'left-7' : 'left-1'}`} />
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-[14px] font-bold" style={{ color: '#1A1915' }}>{label}</div>
+                          <div className="text-[11px] mt-0.5" style={{ color: '#B0ADA4' }}>{sub}</div>
+                        </div>
+                        {plan === key && <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />}
+                      </div>
                     </button>
-                  </div>
-                  
-                  {shEnabled && (
-                    <div className="space-y-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
-                      {/* Hosting Type Toggle */}
-                      <div className="flex items-center gap-4">
-                        <span className="text-xs text-gray-500">Hosting Type:</span>
-                        <div className="flex rounded-lg overflow-hidden border border-gray-200">
-                          <button
-                            onClick={() => {
-                              setShHostingType('shared');
-                              setShWorkers(Math.min(Math.max(shWorkers, 1), 8));
-                              setShStorage(Math.min(shStorage, 512));
-                            }}
-                            data-testid="button-sh-shared"
-                            className={`px-4 py-2 text-sm font-medium transition-colors ${shHostingType === 'shared' ? 'bg-[#714B67] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-                          >
-                            Shared
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShHostingType('dedicated');
-                              setShWorkers(Math.max(shWorkers, 4));
-                            }}
-                            data-testid="button-sh-dedicated"
-                            className={`px-4 py-2 text-sm font-medium transition-colors ${shHostingType === 'dedicated' ? 'bg-[#714B67] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-                          >
-                            Dedicated
-                          </button>
-                        </div>
-                        {shHostingType === 'dedicated' && (
-                          <span className="text-xs text-[#714B67]">+$480/mo (annual) or +$600/mo (monthly)</span>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {/* Workers */}
-                        <div className="space-y-2">
-                          <label className="text-xs text-gray-500 flex items-center gap-1">
-                            <Cpu className="w-3 h-3" /> Workers
-                          </label>
-                          <input
-                            type="number"
-                            min={shLimits.workerMin}
-                            max={shLimits.workerMax}
-                            value={shWorkers}
-                            onChange={(e) => setShWorkers(Math.min(Math.max(parseInt(e.target.value) || shLimits.workerMin, shLimits.workerMin), shLimits.workerMax))}
-                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-[#714B67] outline-none"
-                            data-testid="input-sh-workers"
-                          />
-                          <div className="text-xs text-gray-400">{shLimits.workerMin}-{shLimits.workerMax} workers</div>
-                        </div>
-                        
-                        {/* Storage */}
-                        <div className="space-y-2">
-                          <label className="text-xs text-gray-500 flex items-center gap-1">
-                            <HardDrive className="w-3 h-3" /> Storage (GB)
-                          </label>
-                          <input
-                            type="number"
-                            min={shLimits.storageMin}
-                            max={shLimits.storageMax}
-                            value={shStorage}
-                            onChange={(e) => setShStorage(Math.min(Math.max(parseInt(e.target.value) || shLimits.storageMin, shLimits.storageMin), shLimits.storageMax))}
-                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-[#714B67] outline-none"
-                            data-testid="input-sh-storage"
-                          />
-                          <div className="text-xs text-gray-400">{shLimits.storageMin}-{shLimits.storageMax} GB</div>
-                        </div>
-                        
-                        {/* Staging Environments */}
-                        <div className="space-y-2">
-                          <label className="text-xs text-gray-500 flex items-center gap-1">
-                            <Layers className="w-3 h-3" /> Staging Env.
-                          </label>
-                          <input
-                            type="number"
-                            min={shLimits.stagingMin}
-                            max={shLimits.stagingMax}
-                            value={shStaging}
-                            onChange={(e) => setShStaging(Math.min(Math.max(parseInt(e.target.value) || 0, shLimits.stagingMin), shLimits.stagingMax))}
-                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-[#714B67] outline-none"
-                            data-testid="input-sh-staging"
-                          />
-                          <div className="text-xs text-gray-400">0-{shLimits.stagingMax} environments</div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-xs text-gray-500 pt-2 border-t border-gray-200">
-                        Odoo SH: <span className="text-[#714B67] font-mono font-medium">{formatCurrency(calculateShMonthlyCost(true))}/mo</span> (annual) | <span className="text-[#714B67] font-mono font-medium">{formatCurrency(calculateShMonthlyCost(false))}/mo</span> (monthly)
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
-              )}
+              </div>
+
+              {/* Implementation */}
+              <div className="space-y-4">
+                <div className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Implementation Pack</div>
+                <Select
+                  options={Object.entries(currentImplementations).map(([key, val]) => ({ value: key, label: val.label }))}
+                  value={implementation}
+                  onChange={(e) => setImplementation(e.target.value)}
+                  data-testid="select-implementation"
+                />
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] font-medium" style={{ color: '#B0ADA4' }}>Multiplier</span>
+                  <div className="relative flex-1">
+                    <input
+                      type="number" min="0.1" max="10" step="0.1"
+                      value={implMultiplier}
+                      onChange={(e) => setImplMultiplier(parseFloat(e.target.value) || 1)}
+                      disabled={implementation === 'none'}
+                      className="w-full rounded-xl px-3 py-2.5 text-[14px] font-bold text-center outline-none transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{ border: '1px solid #E6E3DC', color: '#1A1915', background: '#F9F8F5', paddingRight: '24px' }}
+                      onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                      onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
+                      data-testid="input-impl-multiplier"
+                    />
+                    <span className="absolute right-3 top-2.5 text-[12px]" style={{ color: '#B0ADA4' }}>×</span>
+                  </div>
+                </div>
+                {implementation !== 'none' && (
+                  <div className="flex justify-between items-center pt-1" style={{ borderTop: '1px solid #E6E3DC' }}>
+                    <span className="text-[11px]" style={{ color: '#B0ADA4' }}>
+                      {((currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0) * implMultiplier).toFixed(0)} hours
+                    </span>
+                    <span className="text-[14px] font-black" style={{ color: '#017E84', fontVariantNumeric: 'tabular-nums' }}>
+                      {formatCurrency((currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0) * implMultiplier)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
             </div>
-          </GlassCard>
-        </motion.section>
 
-        {/* Section 2: Advanced Pricing & Discounts - Full Width (Always Visible) */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <GlassCard 
-            title="Advanced Pricing & Discounts"
-            description="Configure term visibility and optional discounts"
-            className="overflow-visible bg-white"
-          >
-            <div className="space-y-6">
-                    <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">Select Terms to Display</div>
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {Object.keys(selectedTerms).map((term) => (
-                        <button
-                          key={term}
-                          onClick={() => setSelectedTerms(prev => ({...prev, [term]: !prev[term as TermKey]}))}
-                          data-testid={`button-term-${term}`}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
-                            selectedTerms[term as TermKey]
-                              ? 'bg-[#714B67] border-[#714B67] text-white'
-                              : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
-                          }`}
-                        >
-                          {term === 'monthly' ? 'Monthly' : term.replace('year', ' Year')}
-                        </button>
-                      ))}
+            {/* Odoo SH */}
+            {country === 'US' && (
+              <div className="mt-10 pt-8" style={{ borderTop: '1px solid #E6E3DC' }}>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-0.5" style={{ color: '#B0ADA4' }}>Odoo SH Hosting</div>
+                    <div className="text-[14px] font-bold" style={{ color: '#1A1915' }}>Dedicated Cloud Infrastructure</div>
+                  </div>
+                  <button
+                    onClick={() => setShEnabled(!shEnabled)}
+                    data-testid="button-toggle-sh"
+                    className="relative rounded-full transition-colors duration-200 flex-shrink-0"
+                    style={{ width: '44px', height: '24px', background: shEnabled ? '#714B67' : '#E6E3DC' }}
+                  >
+                    <span
+                      className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200"
+                      style={{ transform: shEnabled ? 'translateX(22px)' : 'translateX(4px)' }}
+                    />
+                  </button>
+                </div>
+
+                {shEnabled && (
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl p-6 space-y-5" style={{ background: '#F4F3EF', border: '1px solid #E6E3DC' }}>
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <span className="text-[11px] font-semibold" style={{ color: '#7A7770' }}>Hosting Type</span>
+                      <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid #E6E3DC' }}>
+                        {(['shared', 'dedicated'] as const).map((type) => (
+                          <button
+                            key={type}
+                            onClick={() => {
+                              setShHostingType(type);
+                              if (type === 'shared') { setShWorkers(Math.min(Math.max(shWorkers, 1), 8)); setShStorage(Math.min(shStorage, 512)); }
+                              else setShWorkers(Math.max(shWorkers, 4));
+                            }}
+                            data-testid={`button-sh-${type}`}
+                            className="px-4 py-1.5 text-[12px] font-semibold transition-colors"
+                            style={{
+                              background: shHostingType === type ? '#714B67' : 'white',
+                              color: shHostingType === type ? 'white' : '#7A7770',
+                            }}
+                          >
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                      {shHostingType === 'dedicated' && (
+                        <span className="text-[11px] font-semibold" style={{ color: '#714B67' }}>+$480/mo annual · +$600/mo monthly</span>
+                      )}
                     </div>
-
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                      {activeTerms.map((term) => (
-                        <div key={term} className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-3">
-                          <div className="text-sm font-medium text-gray-700 capitalize">
-                            {term === 'monthly' ? 'Monthly' : term.replace('year', ' Year')}
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { label: 'Workers', icon: <Cpu className="w-3 h-3" />, value: shWorkers, min: shLimits.workerMin, max: shLimits.workerMax, set: (v: number) => setShWorkers(v), testid: 'input-sh-workers', hint: `${shLimits.workerMin}–${shLimits.workerMax}` },
+                        { label: 'Storage (GB)', icon: <HardDrive className="w-3 h-3" />, value: shStorage, min: shLimits.storageMin, max: shLimits.storageMax, set: (v: number) => setShStorage(v), testid: 'input-sh-storage', hint: `${shLimits.storageMin}–${shLimits.storageMax} GB` },
+                        { label: 'Staging Env.', icon: <Layers className="w-3 h-3" />, value: shStaging, min: shLimits.stagingMin, max: shLimits.stagingMax, set: (v: number) => setShStaging(v), testid: 'input-sh-staging', hint: `0–${shLimits.stagingMax} envs` },
+                      ].map(({ label, icon, value, min, max, set, testid, hint }) => (
+                        <div key={label} className="space-y-2">
+                          <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: '#B0ADA4' }}>
+                            {icon} {label}
                           </div>
-                          <div className="space-y-2">
-                            <div>
-                              <label className="text-xs text-gray-500 block mb-1">Plan % Off</label>
-                              <div className="relative">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  value={termDiscounts[term]?.plan || ''}
-                                  onChange={(e) => {
-                                    const val = parseFloat(e.target.value) || 0;
-                                    setTermDiscounts(prev => ({
-                                      ...prev,
-                                      [term]: { ...prev[term], plan: val }
-                                    }));
-                                  }}
-                                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-right pr-7 text-gray-800 focus:border-[#714B67] outline-none"
-                                  data-testid={`input-plan-discount-${term}`}
-                                />
-                                <span className="absolute right-2 top-2 text-gray-400 text-sm">%</span>
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-xs text-gray-500 block mb-1">Impl % Off</label>
-                              <div className="relative">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  value={termDiscounts[term]?.impl || ''}
-                                  onChange={(e) => {
-                                    const val = parseFloat(e.target.value) || 0;
-                                    setTermDiscounts(prev => ({
-                                      ...prev,
-                                      [term]: { ...prev[term], impl: val }
-                                    }));
-                                  }}
-                                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-right pr-7 text-gray-800 focus:border-[#714B67] outline-none"
-                                  data-testid={`input-impl-discount-${term}`}
-                                />
-                                <span className="absolute right-2 top-2 text-gray-400 text-sm">%</span>
-                              </div>
-                            </div>
-                          </div>
+                          <input
+                            type="number" min={min} max={max} value={value}
+                            onChange={(e) => set(Math.min(Math.max(parseInt(e.target.value) || min, min), max))}
+                            className="w-full rounded-xl px-3 py-2.5 text-[15px] font-black text-center outline-none transition-colors"
+                            style={{ border: '1px solid #E6E3DC', background: 'white', color: '#1A1915', fontVariantNumeric: 'tabular-nums' }}
+                            onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                            onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
+                            data-testid={testid}
+                          />
+                          <div className="text-[10px]" style={{ color: '#B0ADA4' }}>{hint}</div>
                         </div>
                       ))}
                     </div>
-            </div>
-          </GlassCard>
+                    <div className="flex items-center gap-2 pt-3 flex-wrap" style={{ borderTop: '1px solid #E6E3DC' }}>
+                      <span className="text-[11px] font-medium" style={{ color: '#B0ADA4' }}>Odoo SH estimate:</span>
+                      <span className="text-[12px] font-black" style={{ color: '#714B67', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(calculateShMonthlyCost(true))}/mo</span>
+                      <span className="text-[11px]" style={{ color: '#B0ADA4' }}>annual ·</span>
+                      <span className="text-[12px] font-black" style={{ color: '#714B67', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(calculateShMonthlyCost(false))}/mo</span>
+                      <span className="text-[11px]" style={{ color: '#B0ADA4' }}>monthly</span>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
+          </div>
         </motion.section>
 
-        {/* Section 3: Quote Cards - Full Width Grid */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#714B67', letterSpacing: '0.08em' }}>Quote Comparison</h2>
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-500">{activeTerms.length} terms selected</div>
+        {/* ── 02 Terms & Discounts ── */}
+        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.1 }}>
+          <div className="flex items-center gap-5 mb-8">
+            <span className="text-[10px] uppercase tracking-[0.28em] font-black" style={{ color: '#017E84' }}>02</span>
+            <div style={{ flex: 1, height: '1px', background: '#E6E3DC' }} />
+            <span className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: '#B0ADA4' }}>Terms & Discounts</span>
+          </div>
+
+          <div className="bg-white rounded-2xl p-8 lg:p-10" style={{ border: '1px solid #E6E3DC' }}>
+            <div className="mb-6">
+              <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-4" style={{ color: '#B0ADA4' }}>Select Terms to Display</div>
+              <div className="flex flex-wrap gap-2">
+                {Object.keys(selectedTerms).map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => setSelectedTerms(prev => ({ ...prev, [term]: !prev[term as TermKey] }))}
+                    data-testid={`button-term-${term}`}
+                    className="px-4 py-2 rounded-lg text-[12px] font-semibold transition-all duration-150"
+                    style={{
+                      border: selectedTerms[term as TermKey] ? '2px solid #714B67' : '1px solid #E6E3DC',
+                      background: selectedTerms[term as TermKey] ? 'rgba(113,75,103,0.07)' : '#F9F8F5',
+                      color: selectedTerms[term as TermKey] ? '#714B67' : '#B0ADA4',
+                    }}
+                  >
+                    {term === 'monthly' ? 'Monthly' : term.replace('year', ' Yr')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {activeTerms.length > 0 && (
+              <>
+                <div style={{ height: '1px', background: '#E6E3DC', margin: '24px 0' }} />
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {activeTerms.map((term) => (
+                    <div key={term} className="rounded-xl p-4 space-y-3" style={{ background: '#F4F3EF', border: '1px solid #E6E3DC' }}>
+                      <div className="text-[10px] uppercase tracking-[0.2em] font-black" style={{ color: '#714B67' }}>
+                        {term === 'monthly' ? 'Monthly' : term.replace('year', ' Year')}
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { label: 'Plan % Off', key: 'plan', testid: `input-plan-discount-${term}` },
+                          { label: 'Impl % Off', key: 'impl', testid: `input-impl-discount-${term}` },
+                        ].map(({ label, key, testid }) => (
+                          <div key={key}>
+                            <div className="text-[9px] uppercase tracking-[0.15em] font-semibold mb-1" style={{ color: '#B0ADA4' }}>{label}</div>
+                            <div className="relative">
+                              <input
+                                type="number" min="0" max="100"
+                                value={termDiscounts[term]?.[key as 'plan' | 'impl'] || ''}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setTermDiscounts(prev => ({ ...prev, [term]: { ...prev[term], [key]: val } }));
+                                }}
+                                className="w-full rounded-lg px-3 py-2 text-[13px] font-semibold text-right outline-none transition-colors"
+                                style={{ border: '1px solid #E6E3DC', background: 'white', color: '#1A1915', paddingRight: '22px' }}
+                                onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                                onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
+                                data-testid={testid}
+                              />
+                              <span className="absolute right-2.5 top-2 text-[11px]" style={{ color: '#B0ADA4' }}>%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </motion.section>
+
+        {/* ── 03 Quote Comparison ── */}
+        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.2 }}>
+          <div className="flex items-center gap-5 mb-8">
+            <span className="text-[10px] uppercase tracking-[0.28em] font-black" style={{ color: '#1A1915' }}>03</span>
+            <div style={{ flex: 1, height: '1px', background: '#E6E3DC' }} />
+            <div className="flex items-center gap-4">
+              <span className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: '#B0ADA4' }}>
+                {activeTerms.length} {activeTerms.length === 1 ? 'Term' : 'Terms'}
+              </span>
               <button
                 data-testid="toggle-payout-view"
                 onClick={() => setShowPayoutView(v => !v)}
-                className={`flex items-center justify-center w-8 h-8 rounded border transition-all ${
-                  showPayoutView
-                    ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
-                    : 'bg-white border-gray-300 text-gray-400 hover:border-amber-400 hover:text-amber-500'
-                }`}
+                className="flex items-center justify-center rounded-lg transition-all duration-150"
+                style={{
+                  width: '30px', height: '30px',
+                  border: showPayoutView ? '2px solid #F59E0B' : '1px solid #E6E3DC',
+                  background: showPayoutView ? '#F59E0B' : 'white',
+                  color: showPayoutView ? 'white' : '#B0ADA4',
+                }}
                 title="Partner payout view (internal only)"
               >
-                <DollarSign className="w-4 h-4" />
+                <DollarSign className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
-          
+
           {activeTerms.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {allQuoteData.map(({ term, data }, index) => (
                 <motion.div
                   key={term}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: index * 0.06 }}
                 >
                   <QuoteCard data={data} termKey={term} formatCurrency={formatCurrency} showPayoutView={showPayoutView} />
                 </motion.div>
               ))}
             </div>
           ) : (
-            <div className="h-64 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl bg-white">
-              <Info className="w-12 h-12 mb-4 opacity-50" />
-              <p>Select terms from the Discounts section to view quotes</p>
+            <div className="h-52 flex flex-col items-center justify-center rounded-2xl" style={{ border: '2px dashed #E6E3DC' }}>
+              <Info className="w-7 h-7 mb-3" style={{ color: '#D5D2CB' }} />
+              <p className="text-[13px] font-medium" style={{ color: '#B0ADA4' }}>Select terms above to generate quotes</p>
             </div>
           )}
         </motion.section>
