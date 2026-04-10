@@ -65,48 +65,28 @@ const IMPLEMENTATIONS = {
 
 // Odoo SH Pricing (USD only)
 const ODOO_SH_PRICING = {
-  shared: {
-    yearly: {
-      worker: 57.60,
-      storage: 0.20,
-      staging: 14.40,
-      base: 0
+  US: {
+    shared: {
+      yearly: { worker: 57.60, storage: 0.20, staging: 14.40, base: 0 },
+      monthly: { worker: 72.00, storage: 0.25, staging: 18.00, base: 0 },
+      limits: { workerMin: 1, workerMax: 8, storageMin: 1, storageMax: 512, stagingMin: 0, stagingMax: 20 }
     },
-    monthly: {
-      worker: 72.00,
-      storage: 0.25,
-      staging: 18.00,
-      base: 0
-    },
-    limits: {
-      workerMin: 1,
-      workerMax: 8,
-      storageMin: 1,
-      storageMax: 512,
-      stagingMin: 0,
-      stagingMax: 20
+    dedicated: {
+      yearly: { worker: 57.60, storage: 0.20, staging: 14.40, base: 480.00 },
+      monthly: { worker: 72.00, storage: 0.25, staging: 18.00, base: 600.00 },
+      limits: { workerMin: 4, workerMax: 256, storageMin: 1, storageMax: 4096, stagingMin: 0, stagingMax: 20 }
     }
   },
-  dedicated: {
-    yearly: {
-      worker: 57.60,
-      storage: 0.20,
-      staging: 14.40,
-      base: 480.00
+  CA: {
+    shared: {
+      yearly: { worker: 108.00 * 0.80, storage: 0.32, staging: 21.60, base: 0 },
+      monthly: { worker: 108.00, storage: 0.40, staging: 27.00, base: 0 },
+      limits: { workerMin: 1, workerMax: 8, storageMin: 1, storageMax: 512, stagingMin: 0, stagingMax: 20 }
     },
-    monthly: {
-      worker: 72.00,
-      storage: 0.25,
-      staging: 18.00,
-      base: 600.00
-    },
-    limits: {
-      workerMin: 4,
-      workerMax: 256,
-      storageMin: 1,
-      storageMax: 4096,
-      stagingMin: 0,
-      stagingMax: 20
+    dedicated: {
+      yearly: { worker: 108.00 * 0.80, storage: 0.32, staging: 21.60, base: 653.00 },
+      monthly: { worker: 108.00, storage: 0.40, staging: 27.00, base: 816.00 },
+      limits: { workerMin: 4, workerMax: 256, storageMin: 1, storageMax: 4096, stagingMin: 0, stagingMax: 20 }
     }
   }
 };
@@ -239,13 +219,13 @@ export default function Calculator() {
     }
   };
 
-  // Get SH limits based on hosting type
-  const shLimits = ODOO_SH_PRICING[shHostingType].limits;
+  // Get SH limits based on hosting type and country
+  const shLimits = ODOO_SH_PRICING[country][shHostingType].limits;
 
   // Calculate SH monthly cost (aligns with term type: monthly quote = monthly SH, annual quotes = annual SH)
   const calculateShMonthlyCost = (isAnnual: boolean) => {
-    if (!shEnabled || country !== 'US') return 0;
-    const pricing = isAnnual ? ODOO_SH_PRICING[shHostingType].yearly : ODOO_SH_PRICING[shHostingType].monthly;
+    if (!shEnabled) return 0;
+    const pricing = isAnnual ? ODOO_SH_PRICING[country][shHostingType].yearly : ODOO_SH_PRICING[country][shHostingType].monthly;
     const workerCost = shWorkers * pricing.worker;
     const storageCost = shStorage * pricing.storage;
     const stagingCost = shStaging * pricing.staging;
