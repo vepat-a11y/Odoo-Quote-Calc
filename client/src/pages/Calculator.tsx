@@ -668,9 +668,9 @@ export default function Calculator() {
 
       {/* ── Top Navigation ── */}
       <header className="flex-shrink-0 bg-white flex items-center px-5 lg:px-6 z-50" style={{ borderBottom: '1px solid #E6E3DC', height: '52px' }}>
-        <div className="flex-1 flex items-center gap-4">
-          <OdooLogo />
-          <div style={{ width: '1px', height: '12px', background: '#E6E3DC' }} />
+        <div className="flex-1 flex items-center gap-3">
+          <img src="https://odoocdn.com/openerp_website/static/src/img/assets/png/odoo_logo.png" alt="Odoo" className="h-6" />
+          <div style={{ width: '1px', height: '14px', background: '#E6E3DC' }} />
           <span className="text-[11px] font-bold hidden sm:block" style={{ color: '#714B67' }}>
             Quote Builder
           </span>
@@ -703,12 +703,6 @@ export default function Calculator() {
         {/* ── LEFT: Controls Sidebar ── */}
         <aside className="w-[340px] lg:w-[380px] flex-shrink-0 bg-white overflow-y-auto" style={{ borderRight: '1px solid #E6E3DC' }}>
           <div className="p-5 space-y-1">
-
-            {/* Logo */}
-            <div className="flex items-center gap-3 pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
-              <img src="https://odoocdn.com/openerp_website/static/src/img/assets/png/odoo_logo.png" alt="Odoo" className="h-7" />
-              <span className="text-[12px] font-bold" style={{ color: '#5A5750' }}>Quote Builder</span>
-            </div>
 
             {/* Currency */}
             <div className="flex items-center justify-between pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
