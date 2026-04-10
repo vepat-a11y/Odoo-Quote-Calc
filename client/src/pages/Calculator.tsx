@@ -666,321 +666,266 @@ export default function Calculator() {
     });
   };
 
-  return (
-    <div className="min-h-screen" style={{ background: '#F4F3EF' }}>
+  const implData = currentImplementations[implementation as keyof typeof currentImplementations];
+  const configSummary = `${users} users · ${plan === 'standard' ? 'Standard' : 'Custom'} · ${countryConfig.currency}${implementation !== 'none' && implData ? ` · ${implData.label}` : ''}${shEnabled ? ' · SH' : ''}`;
 
-      {/* ── Navigation ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white flex items-center px-6 lg:px-12" style={{ borderBottom: '1px solid #E6E3DC', height: '56px' }}>
-        <div className="flex-1 flex items-center gap-5">
+  return (
+    <div className="h-screen flex flex-col" style={{ background: '#F4F3EF' }}>
+
+      {/* ── Top Navigation ── */}
+      <header className="flex-shrink-0 bg-white flex items-center px-5 lg:px-6 z-50" style={{ borderBottom: '1px solid #E6E3DC', height: '52px' }}>
+        <div className="flex-1 flex items-center gap-4">
           <OdooLogo />
-          <div style={{ width: '1px', height: '14px', background: '#E6E3DC' }} />
-          <span className="text-[10px] uppercase tracking-[0.22em] font-semibold hidden sm:block" style={{ color: '#B0ADA4' }}>
-            Pricing Calculator
+          <div style={{ width: '1px', height: '12px', background: '#E6E3DC' }} />
+          <span className="text-[11px] font-bold hidden sm:block" style={{ color: '#714B67' }}>
+            Quote Builder
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ border: '1px solid #E6E3DC' }}>
-            <Globe className="w-3.5 h-3.5" style={{ color: '#B0ADA4' }} />
-            <select
-              value={country}
-              onChange={(e) => handleCountryChange(e.target.value as Country)}
-              className="bg-transparent text-[13px] font-semibold outline-none cursor-pointer"
-              style={{ color: '#1A1915' }}
-              data-testid="select-country"
-            >
-              <option value="US">USD</option>
-              <option value="CA">CAD</option>
-            </select>
-          </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={handleExportPDF}
-            className="hidden md:flex items-center gap-2 px-4 py-1.5 text-[12px] font-semibold rounded-lg transition-colors"
-            style={{ border: '1px solid #E6E3DC', color: '#5A5750', background: 'white' }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#F4F3EF')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'white')}
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-md transition-colors hover:bg-gray-50"
+            style={{ border: '1px solid #E6E3DC', color: '#6B6A65' }}
             data-testid="button-export-pdf"
           >
-            <FileText className="w-3.5 h-3.5" />
-            Export PDF
+            <FileText className="w-3 h-3" />
+            Export
           </button>
           <Button
             onClick={handleSaveQuote}
             isLoading={createQuote.isPending}
-            className="text-[12px] font-bold px-5 py-1.5 rounded-lg"
-            style={{ background: '#714B67', color: 'white' }}
+            className="text-[11px] font-bold px-3 py-1.5 rounded-md"
+            data-testid="button-save-quote"
           >
-            <Save className="w-3.5 h-3.5 mr-1.5" />
+            <Save className="w-3 h-3 mr-1" />
             Save
           </Button>
         </div>
       </header>
 
-      {/* ── Hero ── */}
-      <div className="pt-[56px]">
-        <div className="px-6 lg:px-12 pt-14 pb-12 bg-white" style={{ borderBottom: '1px solid #E6E3DC' }}>
-          <p className="text-[10px] uppercase tracking-[0.32em] font-bold mb-6" style={{ color: '#714B67' }}>
-            Odoo Enterprise · Partner Pricing Tool
-          </p>
-          <div className="flex items-end justify-between gap-8 flex-wrap">
-            <h1 className="font-black leading-none" style={{ fontSize: 'clamp(44px, 7vw, 80px)', color: '#1A1915', letterSpacing: '-0.03em', lineHeight: 0.9 }}>
-              Quote<br />
-              <span style={{ color: '#714B67' }}>Builder</span>
-            </h1>
-            <div className="pb-1 space-y-1 hidden md:block">
-              <div className="text-[10px] uppercase tracking-[0.22em] font-semibold" style={{ color: '#B0ADA4' }}>Markets Supported</div>
-              <div className="text-[16px] font-bold" style={{ color: '#1A1915' }}>United States · Canada</div>
-              <div className="text-[12px]" style={{ color: '#B0ADA4' }}>USD · CAD · Prices in {countryConfig.currency}</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* ── Two-Panel Layout ── */}
+      <div className="flex-1 flex overflow-hidden">
 
-      {/* ── Main ── */}
-      <main className="px-6 lg:px-12 py-14 space-y-14 pb-28">
+        {/* ── LEFT: Controls Sidebar ── */}
+        <aside className="w-[340px] lg:w-[380px] flex-shrink-0 bg-white overflow-y-auto" style={{ borderRight: '1px solid #E6E3DC' }}>
+          <div className="p-5 space-y-1">
 
-        {/* ── 01 Configure ── */}
-        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-          <div className="flex items-center gap-5 mb-8">
-            <span className="text-[10px] uppercase tracking-[0.28em] font-black" style={{ color: '#714B67' }}>01</span>
-            <div style={{ flex: 1, height: '1px', background: '#E6E3DC' }} />
-            <span className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: '#B0ADA4' }}>Configure</span>
-          </div>
-
-          <div className="bg-white rounded-2xl p-8 lg:p-10" style={{ border: '1px solid #E6E3DC' }}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-
-              {/* Users */}
-              <div className="space-y-5">
-                <div>
-                  <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-2" style={{ color: '#B0ADA4' }}>Number of Users</div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-black" style={{ fontSize: '36px', color: '#1A1915', letterSpacing: '-0.03em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{users}</span>
-                    <span className="text-[14px] font-medium" style={{ color: '#B0ADA4' }}>users</span>
-                  </div>
-                  <div className="text-[11px] font-semibold mt-1" style={{ color: users < 5 ? '#017E84' : users < 50 ? '#714B67' : '#1A1915' }}>
-                    {users < 5 ? 'Small Team' : users < 50 ? 'Growing Business' : 'Enterprise'}
-                  </div>
-                </div>
-                <input
-                  type="range" min="1" max="500" value={users}
-                  onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
-                  className="w-full appearance-none cursor-pointer"
-                  style={{ height: '2px', accentColor: '#714B67' }}
-                  data-testid="slider-users"
-                />
-                <input
-                  type="number" min="1" value={users}
-                  onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
-                  className="w-28 text-center text-[15px] font-bold rounded-xl px-3 py-2.5 outline-none transition-colors"
-                  style={{ border: '1px solid #E6E3DC', color: '#1A1915', background: '#F9F8F5', fontVariantNumeric: 'tabular-nums' }}
-                  onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
-                  onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
-                  data-testid="input-users"
-                />
-              </div>
-
-              {/* Plan */}
-              <div className="space-y-4">
-                <div className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Odoo Plan</div>
-                <div className="space-y-2">
-                  {[
-                    { key: 'standard' as const, label: 'Standard', sub: 'Core modules · Online', accent: '#714B67' },
-                    { key: 'custom' as const, label: 'Custom', sub: 'Odoo Studio · API access', accent: '#017E84' },
-                  ].map(({ key, label, sub, accent }) => (
-                    <button
-                      key={key}
-                      onClick={() => setPlan(key)}
-                      data-testid={`button-plan-${key}`}
-                      className="w-full p-4 rounded-xl text-left transition-all duration-150"
-                      style={{
-                        border: plan === key ? `2px solid ${accent}` : '1px solid #E6E3DC',
-                        background: plan === key ? `${accent}08` : '#F9F8F5',
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-[14px] font-bold" style={{ color: '#1A1915' }}>{label}</div>
-                          <div className="text-[11px] mt-0.5" style={{ color: '#B0ADA4' }}>{sub}</div>
-                        </div>
-                        {plan === key && <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: accent }} />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Implementation */}
-              <div className="space-y-4">
-                <div className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Implementation Pack</div>
-                <Select
-                  options={Object.entries(currentImplementations).map(([key, val]) => ({ value: key, label: val.label }))}
-                  value={implementation}
-                  onChange={(e) => setImplementation(e.target.value)}
-                  data-testid="select-implementation"
-                />
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px] font-medium" style={{ color: '#B0ADA4' }}>Multiplier</span>
-                  <div className="relative flex-1">
-                    <input
-                      type="number" min="0.1" max="10" step="0.1"
-                      value={implMultiplier}
-                      onChange={(e) => setImplMultiplier(parseFloat(e.target.value) || 1)}
-                      disabled={implementation === 'none'}
-                      className="w-full rounded-xl px-3 py-2.5 text-[14px] font-bold text-center outline-none transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{ border: '1px solid #E6E3DC', color: '#1A1915', background: '#F9F8F5', paddingRight: '24px' }}
-                      onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
-                      onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
-                      data-testid="input-impl-multiplier"
-                    />
-                    <span className="absolute right-3 top-2.5 text-[12px]" style={{ color: '#B0ADA4' }}>×</span>
-                  </div>
-                </div>
-                {implementation !== 'none' && (
-                  <div className="flex justify-between items-center pt-1" style={{ borderTop: '1px solid #E6E3DC' }}>
-                    <span className="text-[11px]" style={{ color: '#B0ADA4' }}>
-                      {((currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0) * implMultiplier).toFixed(0)} hours
-                    </span>
-                    <span className="text-[14px] font-black" style={{ color: '#017E84', fontVariantNumeric: 'tabular-nums' }}>
-                      {formatCurrency((currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0) * implMultiplier)}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-            </div>
-
-            {/* Odoo SH */}
-            {country === 'US' && (
-              <div className="mt-10 pt-8" style={{ borderTop: '1px solid #E6E3DC' }}>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-0.5" style={{ color: '#B0ADA4' }}>Odoo SH Hosting</div>
-                    <div className="text-[14px] font-bold" style={{ color: '#1A1915' }}>Dedicated Cloud Infrastructure</div>
-                  </div>
+            {/* Currency */}
+            <div className="flex items-center justify-between pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
+              <span className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Currency</span>
+              <div className="flex rounded-md overflow-hidden" style={{ border: '1px solid #E6E3DC' }}>
+                {(['US', 'CA'] as const).map(c => (
                   <button
-                    onClick={() => setShEnabled(!shEnabled)}
-                    data-testid="button-toggle-sh"
-                    className="relative rounded-full transition-colors duration-200 flex-shrink-0"
-                    style={{ width: '44px', height: '24px', background: shEnabled ? '#714B67' : '#E6E3DC' }}
-                  >
-                    <span
-                      className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200"
-                      style={{ transform: shEnabled ? 'translateX(22px)' : 'translateX(4px)' }}
-                    />
-                  </button>
-                </div>
-
-                {shEnabled && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl p-6 space-y-5" style={{ background: '#F4F3EF', border: '1px solid #E6E3DC' }}>
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <span className="text-[11px] font-semibold" style={{ color: '#7A7770' }}>Hosting Type</span>
-                      <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid #E6E3DC' }}>
-                        {(['shared', 'dedicated'] as const).map((type) => (
-                          <button
-                            key={type}
-                            onClick={() => {
-                              setShHostingType(type);
-                              if (type === 'shared') { setShWorkers(Math.min(Math.max(shWorkers, 1), 8)); setShStorage(Math.min(shStorage, 512)); }
-                              else setShWorkers(Math.max(shWorkers, 4));
-                            }}
-                            data-testid={`button-sh-${type}`}
-                            className="px-4 py-1.5 text-[12px] font-semibold transition-colors"
-                            style={{
-                              background: shHostingType === type ? '#714B67' : 'white',
-                              color: shHostingType === type ? 'white' : '#7A7770',
-                            }}
-                          >
-                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                          </button>
-                        ))}
-                      </div>
-                      {shHostingType === 'dedicated' && (
-                        <span className="text-[11px] font-semibold" style={{ color: '#714B67' }}>+$480/mo annual · +$600/mo monthly</span>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      {[
-                        { label: 'Workers', icon: <Cpu className="w-3 h-3" />, value: shWorkers, min: shLimits.workerMin, max: shLimits.workerMax, set: (v: number) => setShWorkers(v), testid: 'input-sh-workers', hint: `${shLimits.workerMin}–${shLimits.workerMax}` },
-                        { label: 'Storage (GB)', icon: <HardDrive className="w-3 h-3" />, value: shStorage, min: shLimits.storageMin, max: shLimits.storageMax, set: (v: number) => setShStorage(v), testid: 'input-sh-storage', hint: `${shLimits.storageMin}–${shLimits.storageMax} GB` },
-                        { label: 'Staging Env.', icon: <Layers className="w-3 h-3" />, value: shStaging, min: shLimits.stagingMin, max: shLimits.stagingMax, set: (v: number) => setShStaging(v), testid: 'input-sh-staging', hint: `0–${shLimits.stagingMax} envs` },
-                      ].map(({ label, icon, value, min, max, set, testid, hint }) => (
-                        <div key={label} className="space-y-2">
-                          <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: '#B0ADA4' }}>
-                            {icon} {label}
-                          </div>
-                          <input
-                            type="number" min={min} max={max} value={value}
-                            onChange={(e) => set(Math.min(Math.max(parseInt(e.target.value) || min, min), max))}
-                            className="w-full rounded-xl px-3 py-2.5 text-[15px] font-black text-center outline-none transition-colors"
-                            style={{ border: '1px solid #E6E3DC', background: 'white', color: '#1A1915', fontVariantNumeric: 'tabular-nums' }}
-                            onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
-                            onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
-                            data-testid={testid}
-                          />
-                          <div className="text-[10px]" style={{ color: '#B0ADA4' }}>{hint}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-2 pt-3 flex-wrap" style={{ borderTop: '1px solid #E6E3DC' }}>
-                      <span className="text-[11px] font-medium" style={{ color: '#B0ADA4' }}>Odoo SH estimate:</span>
-                      <span className="text-[12px] font-black" style={{ color: '#714B67', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(calculateShMonthlyCost(true))}/mo</span>
-                      <span className="text-[11px]" style={{ color: '#B0ADA4' }}>annual ·</span>
-                      <span className="text-[12px] font-black" style={{ color: '#714B67', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(calculateShMonthlyCost(false))}/mo</span>
-                      <span className="text-[11px]" style={{ color: '#B0ADA4' }}>monthly</span>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-            )}
-          </div>
-        </motion.section>
-
-        {/* ── 02 Terms & Discounts ── */}
-        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.1 }}>
-          <div className="flex items-center gap-5 mb-8">
-            <span className="text-[10px] uppercase tracking-[0.28em] font-black" style={{ color: '#017E84' }}>02</span>
-            <div style={{ flex: 1, height: '1px', background: '#E6E3DC' }} />
-            <span className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: '#B0ADA4' }}>Terms & Discounts</span>
-          </div>
-
-          <div className="bg-white rounded-2xl p-8 lg:p-10" style={{ border: '1px solid #E6E3DC' }}>
-            <div className="mb-6">
-              <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-4" style={{ color: '#B0ADA4' }}>Select Terms to Display</div>
-              <div className="flex flex-wrap gap-2">
-                {Object.keys(selectedTerms).map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => setSelectedTerms(prev => ({ ...prev, [term]: !prev[term as TermKey] }))}
-                    data-testid={`button-term-${term}`}
-                    className="px-4 py-2 rounded-lg text-[12px] font-semibold transition-all duration-150"
+                    key={c}
+                    onClick={() => handleCountryChange(c)}
+                    className="px-3 py-1 text-[11px] font-bold transition-colors"
                     style={{
-                      border: selectedTerms[term as TermKey] ? '2px solid #714B67' : '1px solid #E6E3DC',
-                      background: selectedTerms[term as TermKey] ? 'rgba(113,75,103,0.07)' : '#F9F8F5',
-                      color: selectedTerms[term as TermKey] ? '#714B67' : '#B0ADA4',
+                      background: country === c ? '#714B67' : 'white',
+                      color: country === c ? 'white' : '#B0ADA4',
                     }}
+                    data-testid={`button-currency-${c.toLowerCase()}`}
                   >
-                    {term === 'monthly' ? 'Monthly' : term.replace('year', ' Yr')}
+                    {COUNTRY_CONFIG[c].currency}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Users */}
+            <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
+              <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-3" style={{ color: '#B0ADA4' }}>Users</div>
+              <div className="flex items-center gap-3 mb-3">
+                <input
+                  type="number" min="1" value={users}
+                  onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
+                  className="w-20 text-center text-[18px] font-black rounded-lg px-2 py-1.5 outline-none transition-colors"
+                  style={{ border: '1px solid #E6E3DC', color: '#1A1915', fontVariantNumeric: 'tabular-nums' }}
+                  onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                  onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
+                  data-testid="input-users"
+                />
+                <div className="flex-1">
+                  <input
+                    type="range" min="1" max="500" value={users}
+                    onChange={(e) => setUsers(parseInt(e.target.value) || 0)}
+                    className="w-full appearance-none cursor-pointer"
+                    style={{ height: '2px', accentColor: '#714B67' }}
+                    data-testid="slider-users"
+                  />
+                </div>
+              </div>
+              <div className="text-[10px] font-semibold" style={{ color: users < 5 ? '#017E84' : users < 50 ? '#714B67' : '#6B6A65' }}>
+                {users < 5 ? 'Small Team' : users < 50 ? 'Growing Business' : 'Enterprise'}
+              </div>
+            </div>
+
+            {/* Plan */}
+            <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
+              <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-3" style={{ color: '#B0ADA4' }}>Plan</div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { key: 'standard' as const, label: 'Standard', accent: '#714B67' },
+                  { key: 'custom' as const, label: 'Custom', accent: '#017E84' },
+                ].map(({ key, label, accent }) => (
+                  <button
+                    key={key}
+                    onClick={() => setPlan(key)}
+                    data-testid={`button-plan-${key}`}
+                    className="px-3 py-2.5 rounded-lg text-[12px] font-bold text-center transition-all duration-150"
+                    style={{
+                      border: plan === key ? `2px solid ${accent}` : '1px solid #E6E3DC',
+                      background: plan === key ? `${accent}0A` : '#F9F8F5',
+                      color: plan === key ? accent : '#B0ADA4',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Implementation */}
+            <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
+              <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-3" style={{ color: '#B0ADA4' }}>Implementation</div>
+              <Select
+                options={Object.entries(currentImplementations).map(([key, val]) => ({ value: key, label: val.label }))}
+                value={implementation}
+                onChange={(e) => setImplementation(e.target.value)}
+                data-testid="select-implementation"
+              />
+              {implementation !== 'none' && (
+                <>
+                  <div className="flex items-center gap-2 mt-3">
+                    <span className="text-[10px] font-semibold" style={{ color: '#B0ADA4' }}>×</span>
+                    <input
+                      type="number" min="0.1" max="10" step="0.1"
+                      value={implMultiplier}
+                      onChange={(e) => setImplMultiplier(parseFloat(e.target.value) || 1)}
+                      className="w-16 rounded-md px-2 py-1 text-[13px] font-bold text-center outline-none transition-colors"
+                      style={{ border: '1px solid #E6E3DC', color: '#1A1915' }}
+                      onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                      onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
+                      data-testid="input-impl-multiplier"
+                    />
+                    <span className="text-[10px]" style={{ color: '#B0ADA4' }}>
+                      = {((currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0) * implMultiplier).toFixed(0)} hrs
+                    </span>
+                    <span className="ml-auto text-[12px] font-black" style={{ color: '#017E84', fontVariantNumeric: 'tabular-nums' }}>
+                      {formatCurrency((currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0) * implMultiplier)}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Odoo SH */}
+            {country === 'US' && (
+              <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Odoo SH Hosting</div>
+                  <button
+                    onClick={() => setShEnabled(!shEnabled)}
+                    data-testid="button-toggle-sh"
+                    className="relative rounded-full transition-colors duration-200 flex-shrink-0"
+                    style={{ width: '36px', height: '20px', background: shEnabled ? '#714B67' : '#E6E3DC' }}
+                  >
+                    <span
+                      className="absolute top-[2px] w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200"
+                      style={{ transform: shEnabled ? 'translateX(18px)' : 'translateX(2px)' }}
+                    />
+                  </button>
+                </div>
+                {shEnabled && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-3">
+                    <div className="flex rounded-md overflow-hidden" style={{ border: '1px solid #E6E3DC' }}>
+                      {(['shared', 'dedicated'] as const).map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            setShHostingType(type);
+                            if (type === 'shared') { setShWorkers(Math.min(Math.max(shWorkers, 1), 8)); setShStorage(Math.min(shStorage, 512)); }
+                            else setShWorkers(Math.max(shWorkers, 4));
+                          }}
+                          data-testid={`button-sh-${type}`}
+                          className="flex-1 px-3 py-1.5 text-[11px] font-bold transition-colors"
+                          style={{
+                            background: shHostingType === type ? '#714B67' : 'white',
+                            color: shHostingType === type ? 'white' : '#B0ADA4',
+                          }}
+                        >
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { label: 'Workers', value: shWorkers, min: shLimits.workerMin, max: shLimits.workerMax, set: (v: number) => setShWorkers(v), testid: 'input-sh-workers' },
+                        { label: 'Storage', value: shStorage, min: shLimits.storageMin, max: shLimits.storageMax, set: (v: number) => setShStorage(v), testid: 'input-sh-storage' },
+                        { label: 'Staging', value: shStaging, min: shLimits.stagingMin, max: shLimits.stagingMax, set: (v: number) => setShStaging(v), testid: 'input-sh-staging' },
+                      ].map(({ label, value, min, max, set, testid }) => (
+                        <div key={label}>
+                          <div className="text-[8px] uppercase tracking-[0.15em] font-bold mb-1" style={{ color: '#B0ADA4' }}>{label}</div>
+                          <input
+                            type="number" min={min} max={max} value={value}
+                            onChange={(e) => set(Math.min(Math.max(parseInt(e.target.value) || min, min), max))}
+                            className="w-full rounded-md px-2 py-1.5 text-[13px] font-black text-center outline-none transition-colors"
+                            style={{ border: '1px solid #E6E3DC', color: '#1A1915', fontVariantNumeric: 'tabular-nums' }}
+                            onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                            onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
+                            data-testid={testid}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-[10px] font-bold" style={{ color: '#714B67', fontVariantNumeric: 'tabular-nums' }}>
+                      {formatCurrency(calculateShMonthlyCost(true))}/mo <span style={{ color: '#B0ADA4', fontWeight: 500 }}>annual</span>
+                      {' · '}
+                      {formatCurrency(calculateShMonthlyCost(false))}/mo <span style={{ color: '#B0ADA4', fontWeight: 500 }}>monthly</span>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
+
+            {/* Terms */}
+            <div className="pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
+              <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-3" style={{ color: '#B0ADA4' }}>Terms to Compare</div>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.keys(selectedTerms).map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => setSelectedTerms(prev => ({ ...prev, [term]: !prev[term as TermKey] }))}
+                    data-testid={`button-term-${term}`}
+                    className="px-3 py-1.5 rounded-md text-[11px] font-bold transition-all duration-150"
+                    style={{
+                      border: selectedTerms[term as TermKey] ? '2px solid #714B67' : '1px solid #E6E3DC',
+                      background: selectedTerms[term as TermKey] ? 'rgba(113,75,103,0.08)' : '#F9F8F5',
+                      color: selectedTerms[term as TermKey] ? '#714B67' : '#B0ADA4',
+                    }}
+                  >
+                    {term === 'monthly' ? 'Mo' : term.replace('year', 'Y')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Discounts (only for active terms) */}
             {activeTerms.length > 0 && (
-              <>
-                <div style={{ height: '1px', background: '#E6E3DC', margin: '24px 0' }} />
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="pt-1">
+                <div className="text-[9px] uppercase tracking-[0.24em] font-bold mb-3" style={{ color: '#B0ADA4' }}>Discounts</div>
+                <div className="space-y-2">
                   {activeTerms.map((term) => (
-                    <div key={term} className="rounded-xl p-4 space-y-3" style={{ background: '#F4F3EF', border: '1px solid #E6E3DC' }}>
-                      <div className="text-[10px] uppercase tracking-[0.2em] font-black" style={{ color: '#714B67' }}>
+                    <div key={term} className="rounded-lg p-3" style={{ background: '#F9F8F5', border: '1px solid #E6E3DC' }}>
+                      <div className="text-[10px] font-black mb-2" style={{ color: '#714B67' }}>
                         {term === 'monthly' ? 'Monthly' : term.replace('year', ' Year')}
                       </div>
-                      <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
                         {[
-                          { label: 'Plan % Off', key: 'plan', testid: `input-plan-discount-${term}` },
-                          { label: 'Impl % Off', key: 'impl', testid: `input-impl-discount-${term}` },
+                          { label: 'Plan', key: 'plan', testid: `input-plan-discount-${term}` },
+                          { label: 'Impl', key: 'impl', testid: `input-impl-discount-${term}` },
                         ].map(({ label, key, testid }) => (
                           <div key={key}>
-                            <div className="text-[9px] uppercase tracking-[0.15em] font-semibold mb-1" style={{ color: '#B0ADA4' }}>{label}</div>
+                            <div className="text-[8px] uppercase tracking-[0.12em] font-semibold mb-0.5" style={{ color: '#B0ADA4' }}>{label} %</div>
                             <div className="relative">
                               <input
                                 type="number" min="0" max="100"
@@ -989,13 +934,13 @@ export default function Calculator() {
                                   const val = parseFloat(e.target.value) || 0;
                                   setTermDiscounts(prev => ({ ...prev, [term]: { ...prev[term], [key]: val } }));
                                 }}
-                                className="w-full rounded-lg px-3 py-2 text-[13px] font-semibold text-right outline-none transition-colors"
-                                style={{ border: '1px solid #E6E3DC', background: 'white', color: '#1A1915', paddingRight: '22px' }}
+                                className="w-full rounded-md px-2 py-1.5 text-[12px] font-bold text-right outline-none transition-colors"
+                                style={{ border: '1px solid #E6E3DC', background: 'white', color: '#1A1915', paddingRight: '18px' }}
                                 onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
                                 onBlur={e => (e.currentTarget.style.borderColor = '#E6E3DC')}
                                 data-testid={testid}
                               />
-                              <span className="absolute right-2.5 top-2 text-[11px]" style={{ color: '#B0ADA4' }}>%</span>
+                              <span className="absolute right-2 top-1.5 text-[10px]" style={{ color: '#B0ADA4' }}>%</span>
                             </div>
                           </div>
                         ))}
@@ -1003,59 +948,70 @@ export default function Calculator() {
                     </div>
                   ))}
                 </div>
-              </>
+              </div>
             )}
-          </div>
-        </motion.section>
 
-        {/* ── 03 Quote Comparison ── */}
-        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.2 }}>
-          <div className="flex items-center gap-5 mb-8">
-            <span className="text-[10px] uppercase tracking-[0.28em] font-black" style={{ color: '#1A1915' }}>03</span>
-            <div style={{ flex: 1, height: '1px', background: '#E6E3DC' }} />
-            <div className="flex items-center gap-4">
-              <span className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: '#B0ADA4' }}>
-                {activeTerms.length} {activeTerms.length === 1 ? 'Term' : 'Terms'}
+          </div>
+        </aside>
+
+        {/* ── RIGHT: Quote Cards ── */}
+        <main className="flex-1 overflow-y-auto" style={{ background: '#F4F3EF' }}>
+          {/* Summary bar */}
+          <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm flex items-center justify-between px-6 py-3" style={{ borderBottom: '1px solid #E6E3DC' }}>
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] font-medium" style={{ color: '#6B6A65' }} data-testid="text-config-summary">
+                {configSummary}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold" style={{ color: '#B0ADA4' }}>
+                {activeTerms.length} {activeTerms.length === 1 ? 'term' : 'terms'}
               </span>
               <button
                 data-testid="toggle-payout-view"
                 onClick={() => setShowPayoutView(v => !v)}
-                className="flex items-center justify-center rounded-lg transition-all duration-150"
+                className="flex items-center justify-center rounded-md transition-all duration-150"
                 style={{
-                  width: '30px', height: '30px',
+                  width: '28px', height: '28px',
                   border: showPayoutView ? '2px solid #F59E0B' : '1px solid #E6E3DC',
                   background: showPayoutView ? '#F59E0B' : 'white',
                   color: showPayoutView ? 'white' : '#B0ADA4',
                 }}
-                title="Partner payout view (internal only)"
+                title="Partner payout view"
               >
                 <DollarSign className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {activeTerms.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {allQuoteData.map(({ term, data }, index) => (
-                <motion.div
-                  key={term}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: index * 0.06 }}
-                >
-                  <QuoteCard data={data} termKey={term} formatCurrency={formatCurrency} showPayoutView={showPayoutView} />
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="h-52 flex flex-col items-center justify-center rounded-2xl" style={{ border: '2px dashed #E6E3DC' }}>
-              <Info className="w-7 h-7 mb-3" style={{ color: '#D5D2CB' }} />
-              <p className="text-[13px] font-medium" style={{ color: '#B0ADA4' }}>Select terms above to generate quotes</p>
-            </div>
-          )}
-        </motion.section>
-
-      </main>
+          {/* Quote cards grid */}
+          <div className="p-6">
+            {activeTerms.length > 0 ? (
+              <div className={`grid gap-5 ${
+                activeTerms.length <= 2 ? 'grid-cols-1 lg:grid-cols-2' :
+                activeTerms.length <= 3 ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' :
+                'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
+              }`}>
+                {allQuoteData.map(({ term, data }, index) => (
+                  <motion.div
+                    key={term}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.04 }}
+                  >
+                    <QuoteCard data={data} termKey={term} formatCurrency={formatCurrency} showPayoutView={showPayoutView} />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-[calc(100vh-160px)] flex flex-col items-center justify-center rounded-2xl" style={{ border: '2px dashed #E6E3DC' }}>
+                <Info className="w-8 h-8 mb-3" style={{ color: '#D5D2CB' }} />
+                <p className="text-[13px] font-medium" style={{ color: '#B0ADA4' }}>Select terms in the sidebar to generate quotes</p>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

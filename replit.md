@@ -15,7 +15,7 @@ Preferred communication style: Simple, everyday language.
 - **Build Tool**: Vite with custom configuration for Replit environment
 - **Routing**: Wouter (lightweight React router)
 - **State Management**: TanStack React Query for server state
-- **Styling**: Tailwind CSS with custom dark theme and glassmorphism design
+- **Styling**: Tailwind CSS with Odoo brand palette (#714B67 purple, #017E84 teal)
 - **UI Components**: Shadcn/ui component library with Radix UI primitives
 - **Animations**: Framer Motion for smooth transitions
 - **Path Aliases**: `@/` maps to `client/src/`, `@shared/` maps to `shared/`
@@ -51,6 +51,13 @@ Preferred communication style: Simple, everyday language.
 │   └── routes.ts        # API contract definitions
 └── migrations/          # Database migrations
 ```
+
+### UI Layout
+- **Pattern**: Two-panel sidebar + main panel (h-screen flex)
+- **Sidebar** (340-380px): All configuration controls — currency toggle, users slider/input, plan buttons, implementation select, Odoo SH toggle+config, term checkboxes, per-term discounts (progressive disclosure)
+- **Main Panel** (flex-1): Sticky config summary bar + responsive quote card grid + payout toggle
+- **Design System**: Warm off-white bg (#F4F3EF), white sidebar, hairline borders (#E6E3DC), Odoo purple accents (#714B67), teal secondary (#017E84)
+- **Quote Cards**: Gradient header, savings pill badge, hero monthly price, financing range, total contract block
 
 ### Build System
 - Development: `tsx server/index.ts` with Vite middleware for HMR
