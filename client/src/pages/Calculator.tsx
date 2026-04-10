@@ -704,6 +704,12 @@ export default function Calculator() {
         <aside className="w-[340px] lg:w-[380px] flex-shrink-0 bg-white overflow-y-auto" style={{ borderRight: '1px solid #E6E3DC' }}>
           <div className="p-5 space-y-1">
 
+            {/* Logo */}
+            <div className="flex items-center gap-3 pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
+              <img src="https://odoocdn.com/openerp_website/static/src/img/assets/png/odoo_logo.png" alt="Odoo" className="h-7" />
+              <span className="text-[12px] font-bold" style={{ color: '#5A5750' }}>Pricing Calculator</span>
+            </div>
+
             {/* Currency */}
             <div className="flex items-center justify-between pb-4 mb-1" style={{ borderBottom: '1px solid #E6E3DC' }}>
               <span className="text-[9px] uppercase tracking-[0.24em] font-bold" style={{ color: '#B0ADA4' }}>Currency</span>
@@ -812,8 +818,8 @@ export default function Calculator() {
                     style={{ width: '36px', height: '20px', background: shEnabled ? '#714B67' : '#E6E3DC' }}
                   >
                     <span
-                      className="absolute top-[2px] w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200"
-                      style={{ transform: shEnabled ? 'translateX(18px)' : 'translateX(2px)' }}
+                      className="absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200"
+                      style={{ transform: shEnabled ? 'translateX(16px)' : 'translateX(0px)' }}
                     />
                   </button>
                 </div>
