@@ -1116,157 +1116,163 @@ function QuoteCard({ data, termKey, formatCurrency, showPayoutView }: {
 
   return (
     <div className="relative h-full rounded-2xl" data-testid={`card-quote-${termKey}`}>
-      <div className="h-full flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-lg transition-shadow bg-white">
+      <div className="h-full flex flex-col rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 bg-white">
 
-        {/* Card Header — term label + savings badge */}
-        <div className="relative px-5 pt-5 pb-4 bg-gradient-to-br from-[#714B67] to-[#4a2f45]">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[11px] font-semibold text-purple-200 uppercase tracking-widest mb-0.5">
+        {/* ── Card Header ── */}
+        <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #4a2347 0%, #714B67 50%, #8B5A7A 100%)' }}>
+          {/* Subtle grid texture */}
+          <div className="absolute inset-0 opacity-[0.06]"
+            style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+          {/* Top accent line */}
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)' }} />
+
+          <div className="relative px-5 pt-5 pb-5">
+            {/* Term type label + savings pill */}
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[9px] font-bold text-white/50 uppercase tracking-[0.18em]">
                 {isMonthly ? 'Pay as you go' : 'Annual Commitment'}
-              </p>
-              <h3 className="text-2xl font-bold text-white">{data.termLabel}</h3>
+              </span>
+              {hasSavings && (
+                <span className="inline-flex items-center gap-1 bg-emerald-400/20 border border-emerald-400/30 text-emerald-300 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                  <TrendingUp className="w-2.5 h-2.5" />
+                  Save {formatCurrency(data.totalSavings)}
+                </span>
+              )}
             </div>
-            {hasSavings && (
-              <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold text-green-300 uppercase tracking-wider">You Save</span>
-                <span className="text-lg font-black text-green-300">{formatCurrency(data.totalSavings)}</span>
+
+            {/* Term title */}
+            <h3 className="text-[22px] font-black text-white leading-none tracking-tight mb-5">
+              {data.termLabel}
+            </h3>
+
+            {/* Hero monthly number */}
+            <div className="border-t border-white/10 pt-4">
+              <p className="text-[9px] font-semibold text-white/40 uppercase tracking-[0.2em] mb-1.5">
+                {isMonthly ? 'Monthly' : 'Amortized / mo'}
+              </p>
+              <div className="flex items-end gap-1.5">
+                <span className="text-[38px] font-black text-white leading-none tracking-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {formatCurrency(data.amortizedMonthly)}
+                </span>
+                <span className="text-sm text-white/40 font-medium mb-1">/mo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Cost Breakdown ── */}
+        <div className="px-5 pt-5 pb-4 flex-1 flex flex-col">
+          <p className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.18em] mb-3">Breakdown</p>
+
+          <div className="space-y-0 flex-1">
+            <div className="flex justify-between items-center py-2.5 border-b border-gray-50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(113,75,103,0.08)' }}>
+                  <Code className="w-3 h-3 text-[#714B67]" />
+                </div>
+                <span className="text-[13px] text-gray-500 font-medium">Software License</span>
+              </div>
+              <span className="text-[13px] font-semibold font-mono text-gray-700">{formatCurrency(data.totalSoftwareCost)}</span>
+            </div>
+
+            <div className="flex justify-between items-center py-2.5 border-b border-gray-50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(1,126,132,0.08)' }}>
+                  <Cpu className="w-3 h-3 text-[#017E84]" />
+                </div>
+                <span className="text-[13px] text-gray-500 font-medium">Implementation</span>
+              </div>
+              <span className="text-[13px] font-semibold font-mono text-gray-700">{formatCurrency(data.implementationCost)}</span>
+            </div>
+
+            {data.shTotalCost > 0 && (
+              <div className="flex justify-between items-center py-2.5 border-b border-gray-50">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(113,75,103,0.08)' }}>
+                    <Server className="w-3 h-3 text-[#714B67]" />
+                  </div>
+                  <span className="text-[13px] text-gray-500 font-medium">Odoo SH Hosting</span>
+                </div>
+                <span className="text-[13px] font-semibold font-mono text-gray-700">{formatCurrency(data.shTotalCost)}</span>
               </div>
             )}
           </div>
 
-          {/* Hero: Amortized monthly */}
-          <div className="mt-4 bg-white/10 rounded-xl px-4 py-3">
-            <p className="text-[10px] text-purple-200 uppercase tracking-widest mb-0.5">Amortized Monthly</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-white">{formatCurrency(data.amortizedMonthly)}</span>
-              <span className="text-sm text-purple-200">/mo</span>
+          {/* Total Contract — hero row */}
+          <div className="mt-4 rounded-xl px-4 py-3.5 flex justify-between items-center" style={{ background: 'linear-gradient(135deg, #f7f4f6 0%, #f0eaee 100%)', border: '1px solid rgba(113,75,103,0.12)' }}>
+            <div>
+              <p className="text-[9px] font-bold text-[#714B67]/50 uppercase tracking-[0.16em] mb-0.5">Total Contract</p>
+              <p className="text-[11px] text-gray-400 font-medium">
+                {isMonthly ? 'Per month' : `Over ${data.termLabel.toLowerCase()}`}
+              </p>
             </div>
+            <span className="text-[22px] font-black font-mono text-[#4a2347] tracking-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              {formatCurrency(data.totalCost)}
+            </span>
           </div>
         </div>
 
-        {/* Cost Breakdown */}
-        <div className="px-5 py-4 space-y-2 flex-1">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">Cost Breakdown</p>
-
-          <div className="flex justify-between items-center py-1.5">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-purple-100 flex items-center justify-center">
-                <Code className="w-3.5 h-3.5 text-[#714B67]" />
-              </div>
-              <span className="text-sm text-gray-600">Software License</span>
-            </div>
-            <span className="text-sm font-semibold font-mono text-gray-800">{formatCurrency(data.totalSoftwareCost)}</span>
-          </div>
-
-          <div className="flex justify-between items-center py-1.5">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-teal-100 flex items-center justify-center">
-                <Cpu className="w-3.5 h-3.5 text-[#017E84]" />
-              </div>
-              <span className="text-sm text-gray-600">Implementation</span>
-            </div>
-            <span className="text-sm font-semibold font-mono text-gray-800">{formatCurrency(data.implementationCost)}</span>
-          </div>
-
-          {data.shTotalCost > 0 && (
-            <div className="flex justify-between items-center py-1.5">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-purple-100 flex items-center justify-center">
-                  <Server className="w-3.5 h-3.5 text-[#714B67]" />
-                </div>
-                <span className="text-sm text-gray-600">Odoo SH</span>
-              </div>
-              <span className="text-sm font-semibold font-mono text-gray-800">{formatCurrency(data.shTotalCost)}</span>
-            </div>
-          )}
-
-          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-            <span className="text-sm font-bold text-gray-700">Total Contract</span>
-            <span className="text-lg font-black font-mono text-gray-900">{formatCurrency(data.totalCost)}</span>
-          </div>
-
-          {hasSavings && (
-            <div className="flex justify-between items-center bg-green-50 border border-green-200 rounded-xl px-3 py-2">
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-green-600" />
-                <span className="text-xs font-bold text-green-700 uppercase tracking-wide">Savings vs Monthly</span>
-              </div>
-              <span className="text-sm font-black font-mono text-green-700">-{formatCurrency(data.totalSavings)}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Catalyst Finance Block */}
+        {/* ── Catalyst Finance ── */}
         {hasFinancing && (
-          <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-[#1B3A6B]/20">
-            {/* Header */}
-            <div className="bg-[#1B3A6B] px-4 py-2.5 flex items-center justify-between">
+          <div className="mx-4 mb-4 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(27,58,107,0.15)' }}>
+            <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: '#1B3A6B' }}>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-3.5 h-3.5 text-blue-200" />
-                <span className="text-[11px] font-bold text-white uppercase tracking-widest">Finance This</span>
+                <TrendingUp className="w-3 h-3 text-blue-300" />
+                <span className="text-[10px] font-bold text-white uppercase tracking-[0.15em]">Finance This</span>
               </div>
-              <span className="text-[9px] text-blue-200 font-medium">
-                {CATALYST_APR_LOW * 100}%–{CATALYST_APR_HIGH * 100}% APR
-              </span>
+              <span className="text-[9px] text-blue-300/70 font-medium">{CATALYST_APR_LOW * 100}–{CATALYST_APR_HIGH * 100}% APR</span>
             </div>
-
-            <div className="bg-[#f0f5ff] px-4 py-3 space-y-2">
-              {/* Payment range */}
+            <div className="px-4 py-3 space-y-2.5" style={{ background: '#f4f7fc' }}>
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white border border-blue-100 rounded-lg p-2.5 text-center">
-                  <div className="text-[9px] text-blue-400 font-semibold uppercase tracking-wide mb-0.5">Best Rate</div>
-                  <div className="text-base font-black text-[#1B3A6B]">{formatCurrency(data.financingLow)}</div>
-                  <div className="text-[9px] text-blue-400">/mo · {CATALYST_APR_LOW * 100}% APR</div>
+                <div className="bg-white rounded-lg p-2.5 text-center" style={{ border: '1px solid rgba(27,58,107,0.08)' }}>
+                  <div className="text-[8px] text-[#1B3A6B]/40 font-bold uppercase tracking-wider mb-1">Best Rate</div>
+                  <div className="text-[15px] font-black text-[#1B3A6B]" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(data.financingLow)}</div>
+                  <div className="text-[8px] text-[#1B3A6B]/40 mt-0.5">/mo · {CATALYST_APR_LOW * 100}% APR</div>
                 </div>
-                <div className="bg-white border border-blue-100 rounded-lg p-2.5 text-center">
-                  <div className="text-[9px] text-blue-400 font-semibold uppercase tracking-wide mb-0.5">Standard</div>
-                  <div className="text-base font-black text-[#1B3A6B]">{formatCurrency(data.financingHigh)}</div>
-                  <div className="text-[9px] text-blue-400">/mo · {CATALYST_APR_HIGH * 100}% APR</div>
+                <div className="bg-white rounded-lg p-2.5 text-center" style={{ border: '1px solid rgba(27,58,107,0.08)' }}>
+                  <div className="text-[8px] text-[#1B3A6B]/40 font-bold uppercase tracking-wider mb-1">Standard</div>
+                  <div className="text-[15px] font-black text-[#1B3A6B]" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(data.financingHigh)}</div>
+                  <div className="text-[8px] text-[#1B3A6B]/40 mt-0.5">/mo · {CATALYST_APR_HIGH * 100}% APR</div>
                 </div>
               </div>
-
-              {/* Catalyst Finance attribution */}
-              <div className="flex items-center justify-center gap-1.5 pt-1">
-                <div className="w-4 h-4 rounded-sm bg-[#1B3A6B] flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-black text-[7px]">CF</span>
+              <div className="flex items-center justify-center gap-1.5">
+                <div className="w-3.5 h-3.5 rounded-sm bg-[#1B3A6B] flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-black text-[6px]">CF</span>
                 </div>
-                <span className="text-[9px] text-gray-500">Financing offered by</span>
-                <span className="text-[9px] font-bold text-[#1B3A6B]">Catalyst Finance</span>
-                <span className="text-[8px] text-gray-400">· Burlington, ON</span>
+                <span className="text-[8px] text-gray-400">Financing by <strong className="text-[#1B3A6B]">Catalyst Finance</strong> · Burlington, ON</span>
               </div>
             </div>
           </div>
         )}
 
-        {/* Payout View (internal) */}
+        {/* ── Partner Payout (internal) ── */}
         {showPayoutView && (
-          <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-amber-300">
+          <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-amber-200">
             <div className="bg-amber-500 px-4 py-2 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5 text-white" />
-                <span className="text-[11px] font-bold text-white uppercase tracking-widest">Partner Payout</span>
+                <DollarSign className="w-3 h-3 text-white" />
+                <span className="text-[10px] font-bold text-white uppercase tracking-[0.15em]">Partner Payout</span>
               </div>
-              <span className="text-[9px] bg-amber-600 text-amber-100 px-2 py-0.5 rounded font-medium">Internal</span>
+              <span className="text-[8px] bg-amber-700/40 text-amber-100 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">Internal</span>
             </div>
             <div className="bg-amber-50 px-4 py-3 space-y-2">
-              <div className="flex justify-between items-center bg-white border border-amber-200 rounded-lg px-3 py-2">
+              <div className="flex justify-between items-center bg-white border border-amber-100 rounded-lg px-3 py-2.5">
                 <div>
-                  <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">MRR</div>
-                  <div className="text-[9px] text-amber-500">{isMonthly ? '(License + SH) × 80%' : '(License + SH total) ÷ 12'}</div>
+                  <div className="text-[9px] font-bold text-amber-800 uppercase tracking-wider">MRR</div>
+                  <div className="text-[8px] text-amber-400 mt-0.5">{isMonthly ? '(License + SH) × 80%' : '(License + SH total) ÷ 12'}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-base font-black text-amber-700">{formatCurrency(mrr)}</div>
-                  <div className="text-[9px] text-amber-400">/mo</div>
+                  <div className="text-[15px] font-black text-amber-700" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(mrr)}</div>
+                  <div className="text-[8px] text-amber-400">/mo</div>
                 </div>
               </div>
               {nrr > 0 && (
-                <div className="flex justify-between items-center bg-white border border-amber-200 rounded-lg px-3 py-2">
+                <div className="flex justify-between items-center bg-white border border-amber-100 rounded-lg px-3 py-2.5">
                   <div>
-                    <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wide">NRR</div>
-                    <div className="text-[9px] text-amber-500">One-time impl.</div>
+                    <div className="text-[9px] font-bold text-amber-800 uppercase tracking-wider">NRR</div>
+                    <div className="text-[8px] text-amber-400 mt-0.5">One-time implementation</div>
                   </div>
-                  <div className="text-base font-black text-amber-700">{formatCurrency(nrr)}</div>
+                  <div className="text-[15px] font-black text-amber-700" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(nrr)}</div>
                 </div>
               )}
             </div>
