@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import {
-  Code,
-  Cpu,
   Save,
   Info,
-  Server,
   FileText,
   TrendingUp,
   DollarSign
@@ -986,26 +983,29 @@ export default function Calculator() {
                   const hasAnyImpl = allQuoteData.some(q => q.data.implementationCost > 0);
                   const hasAnyFinancing = allQuoteData.some(q => q.data.financingLow > 0);
                   const hasAnySavings = allQuoteData.some(q => q.data.totalSavings > 0);
+                  const colCount = allQuoteData.length;
 
-                  const labelCellClass = "text-[11px] font-medium px-4 py-3 whitespace-nowrap";
-                  const valueCellClass = "text-[12px] font-bold text-right px-4 py-3 font-mono";
-                  const borderStyle = { borderLeft: '1px solid #E6E3DC' };
-                  const rowBorder = { borderBottom: '1px solid #F0EEEA' };
+                  const lbl = "text-[12px] font-medium pl-5 pr-3 py-3.5 whitespace-nowrap";
+                  const val = "text-[13px] font-semibold text-right pr-5 pl-3 py-3.5";
+                  const colBorder: React.CSSProperties = { borderLeft: '1px solid rgba(113,75,103,0.06)' };
 
                   return (
-                    <div className="bg-white rounded-xl overflow-hidden" style={{ border: '1px solid #E6E3DC' }} data-testid="table-quote-comparison">
+                    <div className="rounded-2xl overflow-hidden shadow-sm" style={{ border: '1px solid #E0DDD6' }} data-testid="table-quote-comparison">
                       <table className="w-full" style={{ borderCollapse: 'collapse' }}>
-                        {/* Header */}
+
+                        {/* ── Header ── */}
                         <thead>
-                          <tr style={{ background: 'linear-gradient(135deg, #4a2347 0%, #714B67 50%, #8B5A7A 100%)' }}>
-                            <th className="text-left text-[10px] uppercase tracking-[0.2em] font-bold text-white/60 px-4 py-3.5" style={{ minWidth: '160px' }}>
-                              Line Item
+                          <tr>
+                            <th className="text-left pl-5 pr-3 py-5" style={{ background: '#2D1B2E', minWidth: '170px' }}>
+                              <div className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                                Quote Breakdown
+                              </div>
                             </th>
                             {allQuoteData.map(({ term, data }) => (
-                              <th key={term} className="text-center px-4 py-3.5" style={{ ...borderStyle, borderColor: 'rgba(255,255,255,0.1)', minWidth: '130px' }}>
-                                <div className="text-[13px] font-black text-white">{data.termLabel}</div>
-                                <div className="text-[9px] text-white/40 font-medium mt-0.5">
-                                  {term === 'monthly' ? 'Pay as you go' : 'Annual commitment'}
+                              <th key={term} className="text-center px-5 py-5" style={{ background: '#2D1B2E', borderLeft: '1px solid rgba(255,255,255,0.06)', minWidth: '140px' }}>
+                                <div className="text-[15px] font-black text-white tracking-tight">{data.termLabel}</div>
+                                <div className="text-[9px] font-medium mt-1 uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                                  {term === 'monthly' ? 'Pay as you go' : `${data.years}yr commitment`}
                                 </div>
                               </th>
                             ))}
@@ -1013,29 +1013,16 @@ export default function Calculator() {
                         </thead>
 
                         <tbody>
-                          {/* Per User Rate */}
-                          <tr style={{ ...rowBorder, background: '#FDFCFB' }}>
-                            <td className={labelCellClass} style={{ color: '#7A7770' }}>Per User / Month</td>
-                            {allQuoteData.map(({ term, data }) => {
-                              const rate = data.amortizedMonthly / users;
-                              return (
-                                <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#1A1915', ...rowBorder }}>
-                                  {formatCurrency(rate)}
-                                </td>
-                              );
-                            })}
-                          </tr>
-
                           {/* Software License */}
-                          <tr style={rowBorder}>
-                            <td className={labelCellClass} style={{ color: '#7A7770' }}>
-                              <div className="flex items-center gap-2">
-                                <Code className="w-3.5 h-3.5" style={{ color: '#714B67' }} />
+                          <tr style={{ background: 'white' }}>
+                            <td className={lbl} style={{ color: '#5A5750', borderBottom: '1px solid #F0EEEA' }}>
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-[5px] h-[5px] rounded-full" style={{ background: '#714B67' }} />
                                 Software License
                               </div>
                             </td>
                             {allQuoteData.map(({ term, data }) => (
-                              <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#1A1915', ...rowBorder }}>
+                              <td key={term} className={val} style={{ ...colBorder, color: '#1A1915', borderBottom: '1px solid #F0EEEA', fontVariantNumeric: 'tabular-nums' }}>
                                 {formatCurrency(data.totalSoftwareCost)}
                               </td>
                             ))}
@@ -1043,15 +1030,15 @@ export default function Calculator() {
 
                           {/* Implementation */}
                           {hasAnyImpl && (
-                            <tr style={rowBorder}>
-                              <td className={labelCellClass} style={{ color: '#7A7770' }}>
-                                <div className="flex items-center gap-2">
-                                  <Cpu className="w-3.5 h-3.5" style={{ color: '#017E84' }} />
+                            <tr style={{ background: '#FDFCFB' }}>
+                              <td className={lbl} style={{ color: '#5A5750', borderBottom: '1px solid #F0EEEA' }}>
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-[5px] h-[5px] rounded-full" style={{ background: '#017E84' }} />
                                   Implementation
                                 </div>
                               </td>
                               {allQuoteData.map(({ term, data }) => (
-                                <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#1A1915', ...rowBorder }}>
+                                <td key={term} className={val} style={{ ...colBorder, color: '#1A1915', borderBottom: '1px solid #F0EEEA', fontVariantNumeric: 'tabular-nums' }}>
                                   {data.implementationCost > 0 ? formatCurrency(data.implementationCost) : <span style={{ color: '#D5D2CB' }}>—</span>}
                                 </td>
                               ))}
@@ -1060,29 +1047,29 @@ export default function Calculator() {
 
                           {/* Odoo SH */}
                           {hasAnySH && (
-                            <tr style={rowBorder}>
-                              <td className={labelCellClass} style={{ color: '#7A7770' }}>
-                                <div className="flex items-center gap-2">
-                                  <Server className="w-3.5 h-3.5" style={{ color: '#714B67' }} />
+                            <tr style={{ background: 'white' }}>
+                              <td className={lbl} style={{ color: '#5A5750', borderBottom: '1px solid #F0EEEA' }}>
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-[5px] h-[5px] rounded-full" style={{ background: '#714B67' }} />
                                   Odoo SH Hosting
                                 </div>
                               </td>
                               {allQuoteData.map(({ term, data }) => (
-                                <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#1A1915', ...rowBorder }}>
+                                <td key={term} className={val} style={{ ...colBorder, color: '#1A1915', borderBottom: '1px solid #F0EEEA', fontVariantNumeric: 'tabular-nums' }}>
                                   {data.shTotalCost > 0 ? formatCurrency(data.shTotalCost) : <span style={{ color: '#D5D2CB' }}>—</span>}
                                 </td>
                               ))}
                             </tr>
                           )}
 
-                          {/* ═══ TOTAL CONTRACT — hero row ═══ */}
-                          <tr style={{ background: 'linear-gradient(135deg, #f7f4f6 0%, #f0eaee 100%)' }}>
-                            <td className="px-4 py-4" style={{ borderTop: '2px solid #714B67', borderBottom: '2px solid #714B67' }}>
-                              <div className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: '#714B67' }}>Total Contract</div>
+                          {/* ── TOTAL CONTRACT ── */}
+                          <tr style={{ background: '#F8F6F4' }}>
+                            <td className="pl-5 pr-3 py-5" style={{ borderTop: '1px solid #D8D4CD', borderBottom: '1px solid #D8D4CD' }}>
+                              <div className="text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: '#714B67' }}>Total Contract</div>
                             </td>
                             {allQuoteData.map(({ term, data }) => (
-                              <td key={term} className="text-right px-4 py-4" style={{ ...borderStyle, borderTop: '2px solid #714B67', borderBottom: '2px solid #714B67' }}>
-                                <span className="text-[20px] font-black tracking-tight" style={{ color: '#4a2347', fontVariantNumeric: 'tabular-nums' }}>
+                              <td key={term} className="text-right pr-5 pl-3 py-5" style={{ ...colBorder, borderTop: '1px solid #D8D4CD', borderBottom: '1px solid #D8D4CD', fontVariantNumeric: 'tabular-nums' }}>
+                                <span className="text-[17px] font-extrabold tracking-tight" style={{ color: '#2D1B2E' }}>
                                   {formatCurrency(data.totalCost)}
                                 </span>
                               </td>
@@ -1090,76 +1077,79 @@ export default function Calculator() {
                           </tr>
 
                           {/* Amortized Monthly */}
-                          <tr style={{ ...rowBorder, background: '#FDFCFB' }}>
-                            <td className={labelCellClass} style={{ color: '#7A7770' }}>Amortized / Month</td>
+                          <tr style={{ background: 'white' }}>
+                            <td className={lbl} style={{ color: '#5A5750', borderBottom: '1px solid #F0EEEA' }}>
+                              Effective Monthly
+                            </td>
                             {allQuoteData.map(({ term, data }) => (
-                              <td key={term} className={valueCellClass} style={{ ...borderStyle, color: '#714B67', ...rowBorder }}>
-                                {formatCurrency(data.amortizedMonthly)}<span className="text-[10px] font-medium text-gray-400">/mo</span>
+                              <td key={term} className={val} style={{ ...colBorder, color: '#714B67', borderBottom: '1px solid #F0EEEA', fontVariantNumeric: 'tabular-nums' }}>
+                                {formatCurrency(data.amortizedMonthly)}<span className="text-[9px] font-normal" style={{ color: '#B0ADA4' }}> /mo</span>
                               </td>
                             ))}
                           </tr>
 
-                          {/* ═══ SAVINGS — big eye-catching row ═══ */}
+                          {/* ── SAVINGS ── */}
                           {hasAnySavings && (
-                            <tr style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)' }}>
-                              <td className="px-4 py-4" style={{ borderBottom: '1px solid #a7f3d0' }}>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#059669' }}>
+                            <tr style={{ background: '#F0FDF4' }}>
+                              <td className="pl-5 pr-3 py-5" style={{ borderBottom: '1px solid #BBF7D0' }}>
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: '#059669' }}>
                                     <TrendingUp className="w-3.5 h-3.5 text-white" />
                                   </div>
                                   <div>
-                                    <div className="text-[11px] font-black uppercase tracking-[0.15em]" style={{ color: '#065f46' }}>You Save</div>
+                                    <div className="text-[12px] font-extrabold" style={{ color: '#065f46' }}>You Save</div>
+                                    <div className="text-[9px] font-medium" style={{ color: '#6ee7b7' }}>vs. monthly billing</div>
                                   </div>
                                 </div>
                               </td>
                               {allQuoteData.map(({ term, data }) => (
-                                <td key={term} className="text-right px-4 py-4" style={{ ...borderStyle, borderColor: '#a7f3d0', borderBottom: '1px solid #a7f3d0' }}>
+                                <td key={term} className="text-right pr-5 pl-3 py-5" style={{ ...colBorder, borderColor: '#BBF7D0', borderBottom: '1px solid #BBF7D0', fontVariantNumeric: 'tabular-nums' }}>
                                   {data.totalSavings > 0 ? (
-                                    <span className="text-[18px] font-black tracking-tight" style={{ color: '#059669', fontVariantNumeric: 'tabular-nums' }}>
+                                    <span className="text-[18px] font-extrabold tracking-tight" style={{ color: '#059669' }}>
                                       {formatCurrency(data.totalSavings)}
                                     </span>
                                   ) : (
-                                    <span className="text-[13px]" style={{ color: '#a7f3d0' }}>—</span>
+                                    <span className="text-[12px] font-medium" style={{ color: '#a7f3d0' }}>—</span>
                                   )}
                                 </td>
                               ))}
                             </tr>
                           )}
 
-                          {/* ═══ FINANCING — Catalyst Finance ═══ */}
+                          {/* ── FINANCING ── */}
                           {hasAnyFinancing && (
                             <>
                               <tr style={{ background: '#1B3A6B' }}>
-                                <td colSpan={allQuoteData.length + 1} className="px-4 py-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded-sm bg-white/20 flex items-center justify-center flex-shrink-0">
-                                      <span className="text-white font-black text-[6px]">CF</span>
+                                <td colSpan={colCount + 1} className="px-5 py-2.5">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                                      <span className="text-white font-black text-[7px]">CF</span>
                                     </div>
-                                    <span className="text-[10px] font-bold text-white/80 uppercase tracking-[0.15em]">Catalyst Finance</span>
-                                    <span className="text-[9px] text-blue-300/60 font-medium ml-auto">{CATALYST_APR_LOW * 100}–{CATALYST_APR_HIGH * 100}% APR</span>
+                                    <span className="text-[10px] font-bold text-white/90 uppercase tracking-[0.18em]">Catalyst Finance</span>
+                                    <span className="text-[9px] font-medium ml-auto" style={{ color: 'rgba(147,197,253,0.6)' }}>{CATALYST_APR_LOW * 100}–{CATALYST_APR_HIGH * 100}% APR</span>
                                   </div>
                                 </td>
                               </tr>
-                              <tr style={{ background: '#f4f7fc', ...rowBorder }}>
-                                <td className={labelCellClass} style={{ color: '#1B3A6B' }}>
-                                  Best Rate <span className="text-[9px] font-normal text-blue-400">({CATALYST_APR_LOW * 100}%)</span>
+                              <tr style={{ background: '#F0F4FA' }}>
+                                <td className={lbl} style={{ color: '#1B3A6B', borderBottom: '1px solid #E2E8F0' }}>
+                                  Best Rate <span className="text-[9px] font-normal" style={{ color: '#93C5FD' }}>({CATALYST_APR_LOW * 100}%)</span>
                                 </td>
                                 {allQuoteData.map(({ term, data }) => (
-                                  <td key={term} className={valueCellClass} style={{ ...borderStyle, borderColor: '#e2e8f0', color: '#1B3A6B', ...rowBorder }}>
+                                  <td key={term} className={val} style={{ ...colBorder, borderColor: '#E2E8F0', color: '#1B3A6B', borderBottom: '1px solid #E2E8F0', fontVariantNumeric: 'tabular-nums' }}>
                                     {data.financingLow > 0 ? (
-                                      <>{formatCurrency(data.financingLow)}<span className="text-[10px] font-medium text-blue-300">/mo</span></>
+                                      <>{formatCurrency(data.financingLow)}<span className="text-[9px] font-normal" style={{ color: '#93C5FD' }}> /mo</span></>
                                     ) : <span style={{ color: '#cbd5e1' }}>—</span>}
                                   </td>
                                 ))}
                               </tr>
-                              <tr style={{ background: '#f4f7fc' }}>
-                                <td className={labelCellClass} style={{ color: '#1B3A6B' }}>
-                                  Standard <span className="text-[9px] font-normal text-blue-400">({CATALYST_APR_HIGH * 100}%)</span>
+                              <tr style={{ background: '#F0F4FA' }}>
+                                <td className={lbl} style={{ color: '#1B3A6B' }}>
+                                  Standard <span className="text-[9px] font-normal" style={{ color: '#93C5FD' }}>({CATALYST_APR_HIGH * 100}%)</span>
                                 </td>
                                 {allQuoteData.map(({ term, data }) => (
-                                  <td key={term} className={valueCellClass} style={{ ...borderStyle, borderColor: '#e2e8f0', color: '#1B3A6B' }}>
+                                  <td key={term} className={val} style={{ ...colBorder, borderColor: '#E2E8F0', color: '#1B3A6B', fontVariantNumeric: 'tabular-nums' }}>
                                     {data.financingHigh > 0 ? (
-                                      <>{formatCurrency(data.financingHigh)}<span className="text-[10px] font-medium text-blue-300">/mo</span></>
+                                      <>{formatCurrency(data.financingHigh)}<span className="text-[9px] font-normal" style={{ color: '#93C5FD' }}> /mo</span></>
                                     ) : <span style={{ color: '#cbd5e1' }}>—</span>}
                                   </td>
                                 ))}
@@ -1167,41 +1157,41 @@ export default function Calculator() {
                             </>
                           )}
 
-                          {/* ═══ PARTNER PAYOUT (internal) ═══ */}
+                          {/* ── PARTNER PAYOUT ── */}
                           {showPayoutView && (
                             <>
-                              <tr style={{ background: '#F59E0B' }}>
-                                <td colSpan={allQuoteData.length + 1} className="px-4 py-2">
-                                  <div className="flex items-center gap-2">
-                                    <DollarSign className="w-3 h-3 text-white" />
-                                    <span className="text-[10px] font-bold text-white uppercase tracking-[0.15em]">Partner Payout</span>
-                                    <span className="text-[8px] bg-amber-700/40 text-amber-100 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide ml-auto">Internal</span>
+                              <tr style={{ background: '#92400e' }}>
+                                <td colSpan={colCount + 1} className="px-5 py-2.5">
+                                  <div className="flex items-center gap-2.5">
+                                    <DollarSign className="w-3.5 h-3.5 text-amber-200" />
+                                    <span className="text-[10px] font-bold text-amber-100 uppercase tracking-[0.18em]">Partner Payout</span>
+                                    <span className="text-[8px] bg-white/15 text-amber-200 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ml-auto">Internal</span>
                                   </div>
                                 </td>
                               </tr>
-                              <tr style={{ background: '#fffbeb', ...rowBorder }}>
-                                <td className={labelCellClass} style={{ color: '#92400e' }}>
-                                  MRR <span className="text-[9px] font-normal text-amber-400">/mo</span>
+                              <tr style={{ background: '#FFFBEB' }}>
+                                <td className={lbl} style={{ color: '#92400e', borderBottom: '1px solid #FDE68A' }}>
+                                  MRR <span className="text-[9px] font-normal" style={{ color: '#FBBF24' }}>/mo</span>
                                 </td>
                                 {allQuoteData.map(({ term, data }) => {
                                   const isMonthly = term === 'monthly';
                                   const recurringBase = data.totalSoftwareCost + data.shTotalCost;
                                   const mrr = isMonthly ? recurringBase * 0.8 : recurringBase / 12;
                                   return (
-                                    <td key={term} className={valueCellClass} style={{ ...borderStyle, borderColor: '#fde68a', color: '#92400e', ...rowBorder }}>
+                                    <td key={term} className={val} style={{ ...colBorder, borderColor: '#FDE68A', color: '#92400e', borderBottom: '1px solid #FDE68A', fontVariantNumeric: 'tabular-nums' }}>
                                       {formatCurrency(mrr)}
                                     </td>
                                   );
                                 })}
                               </tr>
                               {hasAnyImpl && (
-                                <tr style={{ background: '#fffbeb' }}>
-                                  <td className={labelCellClass} style={{ color: '#92400e' }}>
-                                    NRR <span className="text-[9px] font-normal text-amber-400">one-time</span>
+                                <tr style={{ background: '#FFFBEB' }}>
+                                  <td className={lbl} style={{ color: '#92400e' }}>
+                                    NRR <span className="text-[9px] font-normal" style={{ color: '#FBBF24' }}>one-time</span>
                                   </td>
                                   {allQuoteData.map(({ term, data }) => (
-                                    <td key={term} className={valueCellClass} style={{ ...borderStyle, borderColor: '#fde68a', color: '#92400e' }}>
-                                      {data.implementationCost > 0 ? formatCurrency(data.implementationCost) : <span style={{ color: '#fde68a' }}>—</span>}
+                                    <td key={term} className={val} style={{ ...colBorder, borderColor: '#FDE68A', color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
+                                      {data.implementationCost > 0 ? formatCurrency(data.implementationCost) : <span style={{ color: '#FDE68A' }}>—</span>}
                                     </td>
                                   ))}
                                 </tr>
