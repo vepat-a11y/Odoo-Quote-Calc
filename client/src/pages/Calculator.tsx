@@ -996,15 +996,15 @@ export default function Calculator() {
                         {/* ── Header ── */}
                         <thead>
                           <tr>
-                            <th className="text-left pl-5 pr-3 py-5" style={{ background: '#2D1B2E', minWidth: '170px' }}>
-                              <div className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                            <th className="text-left pl-5 pr-3 py-5" style={{ background: '#714B67', minWidth: '170px' }}>
+                              <div className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>
                                 Quote Breakdown
                               </div>
                             </th>
                             {allQuoteData.map(({ term, data }) => (
-                              <th key={term} className="text-center px-5 py-5" style={{ background: '#2D1B2E', borderLeft: '1px solid rgba(255,255,255,0.06)', minWidth: '140px' }}>
+                              <th key={term} className="text-center px-5 py-5" style={{ background: '#714B67', borderLeft: '1px solid rgba(255,255,255,0.1)', minWidth: '140px' }}>
                                 <div className="text-[15px] font-black text-white tracking-tight">{data.termLabel}</div>
-                                <div className="text-[9px] font-medium mt-1 uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                                <div className="text-[9px] font-medium mt-1 uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.45)' }}>
                                   {term === 'monthly' ? 'Pay as you go' : `${data.years}yr commitment`}
                                 </div>
                               </th>
@@ -1078,26 +1078,21 @@ export default function Calculator() {
 
                           {/* ── SAVINGS ── */}
                           {hasAnySavings && (
-                            <tr style={{ background: '#F0FDF4' }}>
-                              <td className="pl-5 pr-3 py-5" style={{ borderBottom: '1px solid #BBF7D0' }}>
+                            <tr style={{ background: '#F7FBF8' }}>
+                              <td className={lbl} style={{ color: '#059669', borderBottom: '1px solid #E5F0E8' }}>
                                 <div className="flex items-center gap-2.5">
-                                  <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: '#059669' }}>
-                                    <TrendingUp className="w-3.5 h-3.5 text-white" />
-                                  </div>
-                                  <div>
-                                    <div className="text-[12px] font-extrabold" style={{ color: '#065f46' }}>You Save</div>
-                                    <div className="text-[9px] font-medium" style={{ color: '#6ee7b7' }}>vs. monthly billing</div>
-                                  </div>
+                                  <TrendingUp className="w-3.5 h-3.5" style={{ color: '#059669' }} />
+                                  You Save
                                 </div>
                               </td>
                               {allQuoteData.map(({ term, data }) => (
-                                <td key={term} className="text-right pr-5 pl-3 py-5" style={{ ...colBorder, borderColor: '#BBF7D0', borderBottom: '1px solid #BBF7D0', fontVariantNumeric: 'tabular-nums' }}>
+                                <td key={term} className={val} style={{ ...colBorder, borderBottom: '1px solid #E5F0E8', fontVariantNumeric: 'tabular-nums' }}>
                                   {data.totalSavings > 0 ? (
-                                    <span className="text-[18px] font-extrabold tracking-tight" style={{ color: '#059669' }}>
+                                    <span className="text-[14px] font-bold" style={{ color: '#059669' }}>
                                       {formatCurrency(data.totalSavings)}
                                     </span>
                                   ) : (
-                                    <span className="text-[12px] font-medium" style={{ color: '#a7f3d0' }}>—</span>
+                                    <span className="text-[12px] font-medium" style={{ color: '#c6e9cc' }}>—</span>
                                   )}
                                 </td>
                               ))}
