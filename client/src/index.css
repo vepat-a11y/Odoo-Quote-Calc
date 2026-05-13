@@ -50,10 +50,26 @@ input[type='number'] { -moz-appearance: textfield; }
   body { background: white !important; }
 }
 
-/* Elegant sidebar — single unified card, gentle spacing between sections (no dividers) */
-.sidebar-elegant > div { margin-bottom: 14px !important; }
-.sidebar-elegant > div:first-child { margin-bottom: 10px !important; }
+/* Elegant sidebar — single unified card, gentle spacing between sections */
+.sidebar-elegant > div { margin-bottom: 16px !important; }
+.sidebar-elegant > div:first-child {
+  margin-bottom: 14px !important;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(113, 75, 103, 0.08);
+}
 .sidebar-elegant > div:last-child { margin-bottom: 0 !important; }
-.sidebar-elegant button:hover { filter: brightness(0.97); }
+
+.sidebar-elegant input,
+.sidebar-elegant select,
+.sidebar-elegant button { transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1); }
+.sidebar-elegant button:not([data-no-hover]):hover { filter: brightness(0.97); transform: translateY(-0.5px); }
+.sidebar-elegant button:not([data-no-hover]):active { transform: translateY(0.5px); }
 .sidebar-elegant input:focus,
-.sidebar-elegant select:focus { box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.12); }
+.sidebar-elegant select:focus {
+  box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.14);
+  background: #FFFFFF !important;
+}
+
+/* Smooth scrollbar inside sidebar */
+.sidebar-shell::-webkit-scrollbar { width: 4px; }
+.sidebar-shell::-webkit-scrollbar-thumb { background: #DCD7CB; border-radius: 99px; }

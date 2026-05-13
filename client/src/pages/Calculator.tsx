@@ -378,11 +378,11 @@ export function Calculator() {
   const SectionLabel = ({ children, icon: Icon }: {
     children: React.ReactNode; icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color?: string;
   }) => (
-    <div className="flex items-center gap-1.5 mb-2">
-      {Icon && <Icon className="w-4 h-4" style={{ color: BRAND.ink, opacity: 0.6 }} />}
+    <div className="flex items-center gap-2 mb-2.5">
+      {Icon && <Icon className="w-3.5 h-3.5" style={{ color: "#9A938A" }} strokeWidth={1.75} />}
       <h3
-        className="text-[11px] uppercase tracking-[0.16em] font-semibold"
-        style={{ fontFamily: FONT_BODY, color: BRAND.ink }}
+        className="text-[10px] uppercase font-semibold"
+        style={{ fontFamily: FONT_BODY, color: "#7A7368", letterSpacing: "0.14em" }}
       >
         {children}
       </h3>
@@ -395,12 +395,12 @@ export function Calculator() {
     <button
       onClick={onClick}
       data-testid={testId}
-      className="flex-1 py-2 px-3 text-sm font-medium rounded-2xl transition-all"
+      className="flex-1 py-2 px-3 text-[13px] font-medium rounded-full"
       style={{
-        background: active ? `${color}1F` : BRAND.card,
-        color: active ? color : BRAND.ink,
+        background: active ? `${color}10` : "transparent",
+        color: active ? color : "#6B6258",
         fontFamily: FONT_BODY,
-        border: active ? `1px solid ${color}66` : "1px solid transparent",
+        border: `1px solid ${active ? `${color}40` : "rgba(60,50,40,0.10)"}`,
       }}
     >
       {children}
@@ -497,12 +497,20 @@ export function Calculator() {
 
         {/* ── LEFT SIDEBAR ── */}
         <aside
-          className="v6-no-print w-[280px] overflow-y-auto flex-shrink-0 px-4 py-4"
-          style={{ background: "#FAF8F3", borderRight: `1px solid ${BRAND.hairline}` }}
+          className="v6-no-print sidebar-shell w-[290px] overflow-y-auto flex-shrink-0 px-4 py-5"
+          style={{
+            background: "linear-gradient(180deg, #FAF8F3 0%, #F4F1E9 100%)",
+            borderRight: `1px solid ${BRAND.hairline}`,
+          }}
         >
           <div
-            className="sidebar-elegant rounded-2xl p-4"
-            style={{ background: BRAND.paper, border: `1px solid ${BRAND.hairline}`, boxShadow: "0 1px 2px rgba(0,0,0,0.02)" }}
+            className="sidebar-elegant rounded-[22px] p-5"
+            style={{
+              background: BRAND.paper,
+              border: "1px solid rgba(113, 75, 103, 0.08)",
+              boxShadow:
+                "0 1px 2px rgba(31, 31, 31, 0.03), 0 8px 24px -12px rgba(31, 31, 31, 0.08), inset 0 1px 0 rgba(255,255,255,0.6)",
+            }}
           >
           {/* Sidebar title */}
           <div>
@@ -527,27 +535,27 @@ export function Calculator() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setUsers(Math.max(1, users - 1))}
-                className="w-8 h-8 flex items-center justify-center rounded-xl transition"
-                style={{ background: BRAND.card, color: BRAND.ink }}
+                className="w-9 h-9 flex items-center justify-center rounded-full"
+                style={{ background: "transparent", color: "#6B6258", border: "1px solid rgba(60,50,40,0.10)" }}
                 data-testid="button-users-minus"
               >
-                <Minus className="w-3.5 h-3.5" />
+                <Minus className="w-3.5 h-3.5" strokeWidth={1.75} />
               </button>
               <input
                 type="number"
                 value={users}
                 onChange={(e) => setUsers(Math.max(1, parseInt(e.target.value) || 1))}
-                className="flex-1 text-center font-semibold text-sm h-8 rounded-xl outline-none"
-                style={{ background: BRAND.card, color: BRAND.ink, fontFamily: FONT_BODY }}
+                className="flex-1 text-center font-semibold text-base h-9 outline-none bg-transparent"
+                style={{ color: BRAND.ink, fontFamily: FONT_BODY, borderBottom: "1px solid rgba(60,50,40,0.12)" }}
                 data-testid="input-users"
               />
               <button
                 onClick={() => setUsers(users + 1)}
-                className="w-8 h-8 flex items-center justify-center rounded-xl transition"
-                style={{ background: BRAND.card, color: BRAND.ink }}
+                className="w-9 h-9 flex items-center justify-center rounded-full"
+                style={{ background: "transparent", color: "#6B6258", border: "1px solid rgba(60,50,40,0.10)" }}
                 data-testid="button-users-plus"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5" strokeWidth={1.75} />
               </button>
             </div>
           </div>
@@ -568,8 +576,8 @@ export function Calculator() {
               <select
                 value={implementation}
                 onChange={(e) => setImplementation(e.target.value)}
-                className="w-full appearance-none rounded-xl px-3 py-2 text-xs font-medium outline-none cursor-pointer pr-9"
-                style={{ background: BRAND.card, color: BRAND.ink, fontFamily: FONT_BODY }}
+                className="w-full appearance-none rounded-full px-4 py-2.5 text-xs font-medium outline-none cursor-pointer pr-9"
+                style={{ background: "transparent", color: BRAND.ink, fontFamily: FONT_BODY, border: "1px solid rgba(60,50,40,0.12)" }}
                 data-testid="select-implementation"
               >
                 {Object.entries(IMPLEMENTATIONS[country]).map(([key, v]) => (
@@ -642,12 +650,12 @@ export function Calculator() {
                   <button
                     key={t}
                     onClick={() => setSelected({ ...selected, [t]: !active })}
-                    className="py-1.5 text-xs font-semibold rounded-xl transition"
+                    className="py-2 text-xs font-semibold rounded-full"
                     style={{
-                      background: active ? `${BRAND.purple}1F` : BRAND.card,
-                      color: active ? BRAND.purple : BRAND.ink,
+                      background: active ? `${BRAND.purple}10` : "transparent",
+                      color: active ? BRAND.purple : "#6B6258",
                       fontFamily: FONT_BODY,
-                      border: active ? `1px solid ${BRAND.purple}66` : "1px solid transparent",
+                      border: `1px solid ${active ? `${BRAND.purple}40` : "rgba(60,50,40,0.10)"}`,
                     }}
                     data-testid={`pill-term-${t}`}
                   >
@@ -661,7 +669,7 @@ export function Calculator() {
           {/* Discounts editor — horizontal: rows=Plan/Impl, cols=terms */}
           <div className="mb-5">
             <SectionLabel icon={TrendingDown} color={BRAND.coral}>Discounts %</SectionLabel>
-            <div className="rounded-2xl p-3" style={{ background: BRAND.cardAlt }}>
+            <div className="rounded-2xl p-3" style={{ background: "transparent", border: "1px solid rgba(60,50,40,0.10)" }}>
               {/* Header: blank cell + term labels */}
               <div
                 className="grid gap-1.5 mb-2 items-center"
@@ -700,8 +708,8 @@ export function Calculator() {
                           [t]: { ...discounts[t], plan: Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) },
                         })
                       }
-                      className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-white border border-stone-200 tabular-nums px-1"
-                      style={{ color: BRAND.purple, fontFamily: FONT_BODY }}
+                      className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-transparent tabular-nums px-1"
+                      style={{ color: BRAND.purple, fontFamily: FONT_BODY, border: "1px solid rgba(60,50,40,0.10)" }}
                       aria-label={`${TERM_LABELS[t].short} plan discount percent`}
                       data-testid={`input-disc-plan-${t}`}
                     />
@@ -738,8 +746,8 @@ export function Calculator() {
                         [t]: { ...discounts[t], impl: Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) },
                       })
                     }
-                    className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-white border border-stone-200 tabular-nums px-1"
-                    style={{ color: "#D97706", fontFamily: FONT_BODY }}
+                    className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-transparent tabular-nums px-1"
+                    style={{ color: "#D97706", fontFamily: FONT_BODY, border: "1px solid rgba(60,50,40,0.10)" }}
                     aria-label={`${TERM_LABELS[t].short} implementation discount percent`}
                     data-testid={`input-disc-impl-${t}`}
                   />
