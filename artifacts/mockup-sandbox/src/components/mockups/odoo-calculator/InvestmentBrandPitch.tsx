@@ -616,67 +616,93 @@ export function InvestmentBrandPitch() {
             </p>
           </div>
 
-          {/* Discounts editor */}
+          {/* Discounts editor — horizontal: rows=Plan/Impl, cols=terms */}
           <div className="mb-5">
             <SectionLabel icon={TrendingDown} color={BRAND.coral}>Discounts %</SectionLabel>
             <div className="rounded-2xl p-3" style={{ background: BRAND.cardAlt }}>
-              <div className="grid grid-cols-3 gap-2 mb-2 text-[10px] font-bold tracking-wider uppercase text-stone-500">
-                <span>Term</span>
-                <span className="text-center">Plan</span>
-                <span className="text-center">Impl</span>
+              {/* Header: blank cell + term labels */}
+              <div
+                className="grid gap-1.5 mb-2 items-center"
+                style={{ gridTemplateColumns: `42px repeat(${activeTerms.length}, minmax(0, 1fr))` }}
+              >
+                <span className="text-[10px] font-bold tracking-wider uppercase text-stone-500">Type</span>
+                {activeTerms.map((t) => (
+                  <span
+                    key={t}
+                    className="text-center text-[10px] font-bold tracking-wider uppercase text-stone-500"
+                  >
+                    {TERM_LABELS[t].short}
+                  </span>
+                ))}
               </div>
-              {activeTerms.map((t) => {
-                const planApplies = t !== "monthly" && t !== "1year";
-                return (
-                  <div key={t} className="grid grid-cols-3 gap-2 mb-1.5 items-center">
-                    <span className="text-xs font-semibold" style={{ fontFamily: FONT_BODY, color: BRAND.ink }}>
-                      {TERM_LABELS[t].short}
-                    </span>
-                    {planApplies ? (
-                      <input
-                        type="number"
-                        min={0}
-                        max={50}
-                        value={discounts[t].plan}
-                        onChange={(e) =>
-                          setDiscounts({
-                            ...discounts,
-                            [t]: { ...discounts[t], plan: Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) },
-                          })
-                        }
-                        className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-white border border-stone-200 tabular-nums"
-                        style={{ color: BRAND.purple, fontFamily: FONT_BODY }}
-                        aria-label={`${TERM_LABELS[t].short} plan discount percent`}
-                        data-testid={`input-disc-plan-${t}`}
-                      />
-                    ) : (
-                      <div
-                        className="w-full h-7 text-center text-xs rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400"
-                        title="Plan discount applies to multi-year terms only"
-                        aria-label={`${TERM_LABELS[t].short} plan discount not applicable`}
-                      >
-                        —
-                      </div>
-                    )}
+              {/* Plan row */}
+              <div
+                className="grid gap-1.5 mb-1.5 items-center"
+                style={{ gridTemplateColumns: `42px repeat(${activeTerms.length}, minmax(0, 1fr))` }}
+              >
+                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: BRAND.purple }}>
+                  Plan
+                </span>
+                {activeTerms.map((t) => {
+                  const planApplies = t !== "monthly" && t !== "1year";
+                  return planApplies ? (
                     <input
+                      key={t}
                       type="number"
                       min={0}
                       max={50}
-                      value={discounts[t].impl}
+                      value={discounts[t].plan}
                       onChange={(e) =>
                         setDiscounts({
                           ...discounts,
-                          [t]: { ...discounts[t], impl: Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) },
+                          [t]: { ...discounts[t], plan: Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) },
                         })
                       }
-                      className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-white border border-stone-200 tabular-nums"
-                      style={{ color: "#D97706", fontFamily: FONT_BODY }}
-                      aria-label={`${TERM_LABELS[t].short} implementation discount percent`}
-                      data-testid={`input-disc-impl-${t}`}
+                      className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-white border border-stone-200 tabular-nums px-1"
+                      style={{ color: BRAND.purple, fontFamily: FONT_BODY }}
+                      aria-label={`${TERM_LABELS[t].short} plan discount percent`}
+                      data-testid={`input-disc-plan-${t}`}
                     />
-                  </div>
-                );
-              })}
+                  ) : (
+                    <div
+                      key={t}
+                      className="w-full h-7 text-center text-xs rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400"
+                      title="Plan discount applies to multi-year terms only"
+                      aria-label={`${TERM_LABELS[t].short} plan discount not applicable`}
+                    >
+                      —
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Impl row */}
+              <div
+                className="grid gap-1.5 items-center"
+                style={{ gridTemplateColumns: `42px repeat(${activeTerms.length}, minmax(0, 1fr))` }}
+              >
+                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#D97706" }}>
+                  Impl
+                </span>
+                {activeTerms.map((t) => (
+                  <input
+                    key={t}
+                    type="number"
+                    min={0}
+                    max={50}
+                    value={discounts[t].impl}
+                    onChange={(e) =>
+                      setDiscounts({
+                        ...discounts,
+                        [t]: { ...discounts[t], impl: Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) },
+                      })
+                    }
+                    className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-white border border-stone-200 tabular-nums px-1"
+                    style={{ color: "#D97706", fontFamily: FONT_BODY }}
+                    aria-label={`${TERM_LABELS[t].short} implementation discount percent`}
+                    data-testid={`input-disc-impl-${t}`}
+                  />
+                ))}
+              </div>
               <p className="mt-2 text-[10px] text-stone-400 italic" style={{ fontFamily: FONT_HAND }}>
                 Plan % applies years 2+ · Impl % is one-time
               </p>
