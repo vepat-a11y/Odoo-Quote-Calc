@@ -92,11 +92,11 @@ const PARTNER_RECURRING_PCT = 0.25;
 
 const TERM_LABELS: Record<TermKey, { short: string; long: string; sub: string }> = {
   monthly: { short: "Mo", long: "Monthly", sub: "Pay as you go" },
-  "1year": { short: "1Y", long: "Year 1", sub: "12-month" },
-  "2year": { short: "2Y", long: "Year 2", sub: "24-month" },
-  "3year": { short: "3Y", long: "Year 3", sub: "36-month" },
-  "4year": { short: "4Y", long: "Year 4", sub: "48-month" },
-  "5year": { short: "5Y", long: "Year 5", sub: "60-month" },
+  "1year": { short: "1Y", long: "1 Year", sub: "12-month" },
+  "2year": { short: "2Y", long: "2 Year", sub: "24-month" },
+  "3year": { short: "3Y", long: "3 Year", sub: "36-month" },
+  "4year": { short: "4Y", long: "4 Year", sub: "48-month" },
+  "5year": { short: "5Y", long: "5 Year", sub: "60-month" },
 };
 
 const ALL_TERMS: TermKey[] = ["monthly", "1year", "2year", "3year", "4year", "5year"];
@@ -271,7 +271,7 @@ export function Calculator() {
 
   const config = COUNTRIES[country];
   const fmt0 = (n: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: config.currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+    `${config.symbol}${new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n)}`;
 
   const implPrice = IMPLEMENTATIONS[country][implementation]?.price ?? 0;
 
@@ -763,8 +763,6 @@ export function Calculator() {
               Subscription &amp; Implementation
             </p>
             <div className="mt-3 flex items-center gap-4 text-xs text-stone-500" style={{ fontFamily: FONT_BODY }}>
-              <span><span className="font-semibold" style={{ color: BRAND.purple }}>VEDANG PATEL</span>, Business Advisor</span>
-              <span className="text-stone-300">·</span>
               <span>{users} users · {plan === "standard" ? "Standard" : "Custom"} plan</span>
               <span className="text-stone-300">·</span>
               <span>{config.label}</span>
@@ -794,20 +792,18 @@ export function Calculator() {
                         {TERM_LABELS[q.termKey].sub}
                       </p>
                       <div className="relative inline-block px-3 py-1">
-                        {isBest && <HandCircle color={BRAND.yellow} />}
                         <p
                           className="text-2xl font-bold tabular-nums relative"
-                          style={{ color: BRAND.ink, fontFamily: FONT_BODY, zIndex: 1 }}
+                          style={{
+                            color: isBest ? BRAND.purple : BRAND.ink,
+                            fontFamily: FONT_BODY,
+                            zIndex: 1,
+                          }}
                         >
                           {q.isMonthly ? `${fmt0(q.softwareList)}` : fmt0(q.perMonth)}
                           <span className="text-xs font-normal text-stone-500">/mo</span>
                         </p>
                       </div>
-                      {!q.isMonthly && (
-                        <p className="text-[11px] text-stone-500 mt-1" style={{ fontFamily: FONT_HAND }}>
-                          {fmt0(q.totalContract)} total
-                        </p>
-                      )}
                     </div>
                   );
                 })}
@@ -843,7 +839,7 @@ export function Calculator() {
                 </div>
                 {quotes.some((q) => q.year1Promo > 0 || q.multiYearSoftware > 0) && (
                   <div className="mt-2 pt-2 border-t border-stone-200/70 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
-                    <span className="text-xs text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>
+                    <span className="text-sm font-semibold" style={{ color: BRAND.purple, fontFamily: FONT_HAND }}>
                       Multi-year savings
                     </span>
                     {quotes.map((q) => (
@@ -882,7 +878,7 @@ export function Calculator() {
                   </div>
                   {quotes.some((q) => q.implDiscount > 0) && (
                     <div className="mt-2 pt-2 border-t border-stone-200/70 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
-                      <span className="text-xs text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>
+                      <span className="text-sm font-semibold" style={{ color: "#D97706", fontFamily: FONT_HAND }}>
                         Implementation discount
                       </span>
                       {quotes.map((q) => (
@@ -922,7 +918,7 @@ export function Calculator() {
                   </div>
                   {quotes.some((q) => q.shMultiYear > 0) && (
                     <div className="mt-2 pt-2 border-t border-stone-200/70 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
-                      <span className="text-xs text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>
+                      <span className="text-sm font-semibold" style={{ color: BRAND.teal, fontFamily: FONT_HAND }}>
                         Multi-year savings
                       </span>
                       {quotes.map((q) => (
