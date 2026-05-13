@@ -1,535 +1,900 @@
-import React from "react";
-import { Download, CheckCircle, ChevronDown, Users, Server, Globe, CreditCard, ChevronRight } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import {
+  Download,
+  ChevronDown,
+  Users,
+  Server,
+  Globe,
+  Sparkles,
+  TrendingDown,
+  Wallet,
+  CreditCard,
+  Check,
+  Minus,
+  Plus,
+  FileText,
+  ShieldCheck,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 
+// ─── Pricing data (copied from production Calculator) ───────────────────────
+
+type Country = "US" | "CA";
+type PlanKey = "standard" | "custom";
+type ShType = "shared" | "dedicated";
+type TermKey = "monthly" | "1year" | "2year" | "3year" | "4year" | "5year";
+
+const COUNTRIES: Record<Country, { label: string; currency: string; symbol: string }> = {
+  US: { label: "United States", currency: "USD", symbol: "$" },
+  CA: { label: "Canada", currency: "CAD", symbol: "$" },
+};
+
+const PRICING: Record<Country, Record<PlanKey, { monthly: { year1: number; year2plus: number }; yearly: { year1: number; year2plus: number } }>> = {
+  US: {
+    standard: { monthly: { year1: 31.1, year2plus: 38.9 }, yearly: { year1: 24.9, year2plus: 31.1 } },
+    custom: { monthly: { year1: 61.1, year2plus: 76.2 }, yearly: { year1: 49.0, year2plus: 61.0 } },
+  },
+  CA: {
+    standard: { monthly: { year1: 43.7, year2plus: 54.7 }, yearly: { year1: 35.0, year2plus: 43.7 } },
+    custom: { monthly: { year1: 68.7, year2plus: 85.7 }, yearly: { year1: 55.0, year2plus: 68.7 } },
+  },
+};
+
+const IMPLEMENTATIONS: Record<Country, Record<string, { label: string; price: number }>> = {
+  US: {
+    none: { label: "None (Self-Service)", price: 0 },
+    express: { label: "Express (4h)", price: 580 },
+    starter: { label: "Starter (25h)", price: 3600 },
+    basic: { label: "Basic (50h)", price: 7000 },
+    standard: { label: "Standard (100h)", price: 12500 },
+    custom: { label: "Custom (200h)", price: 25000 },
+  },
+  CA: {
+    none: { label: "None (Self-Service)", price: 0 },
+    starter: { label: "Starter (4h)", price: 850 },
+    basic: { label: "Basic (25h)", price: 5250 },
+    standard: { label: "Standard (50h)", price: 10300 },
+    custom: { label: "Custom (100h)", price: 18250 },
+    pro: { label: "Pro (200h)", price: 36500 },
+  },
+};
+
+const SH: Record<Country, Record<ShType, { yearly: { worker: number; storage: number; staging: number; base: number }; monthly: { worker: number; storage: number; staging: number; base: number } }>> = {
+  US: {
+    shared: {
+      yearly: { worker: 57.6, storage: 0.2, staging: 14.4, base: 0 },
+      monthly: { worker: 72.0, storage: 0.25, staging: 18.0, base: 0 },
+    },
+    dedicated: {
+      yearly: { worker: 57.6, storage: 0.2, staging: 14.4, base: 480.0 },
+      monthly: { worker: 72.0, storage: 0.25, staging: 18.0, base: 600.0 },
+    },
+  },
+  CA: {
+    shared: {
+      yearly: { worker: 86.4, storage: 0.32, staging: 21.6, base: 0 },
+      monthly: { worker: 108.0, storage: 0.4, staging: 27.0, base: 0 },
+    },
+    dedicated: {
+      yearly: { worker: 86.4, storage: 0.32, staging: 21.6, base: 653.0 },
+      monthly: { worker: 108.0, storage: 0.4, staging: 27.0, base: 816.0 },
+    },
+  },
+};
+
+const APR_LOW = 0.06;
+const APR_HIGH = 0.13;
+
+const TERM_LABELS: Record<TermKey, { short: string; long: string; sub: string }> = {
+  monthly: { short: "Mo", long: "Monthly", sub: "Pay as you go" },
+  "1year": { short: "1Y", long: "1 Year", sub: "12-month term" },
+  "2year": { short: "2Y", long: "2 Years", sub: "24-month term" },
+  "3year": { short: "3Y", long: "3 Years", sub: "36-month term" },
+  "4year": { short: "4Y", long: "4 Years", sub: "48-month term" },
+  "5year": { short: "5Y", long: "5 Years", sub: "60-month term" },
+};
+
+const ALL_TERMS: TermKey[] = ["monthly", "1year", "2year", "3year", "4year", "5year"];
+
+interface TermQuote {
+  termKey: TermKey;
+  isMonthly: boolean;
+  years: number;
+  months: number;
+  softwareList: number;
+  year1Promo: number;
+  multiYearSoftware: number;
+  softwareSubtotal: number;
+  implList: number;
+  implDiscount: number;
+  implSubtotal: number;
+  shList: number;
+  shMultiYear: number;
+  shSubtotal: number;
+  totalContract: number;
+  perMonth: number;
+  savings: number;
+  finLow: number;
+  finHigh: number;
+}
+
+// ─── Component ──────────────────────────────────────────────────────────────
+
 export function InvestmentCompact() {
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+  // — State —
+  const [country, setCountry] = useState<Country>("US");
+  const [users, setUsers] = useState(25);
+  const [plan, setPlan] = useState<PlanKey>("standard");
+  const [implementation, setImplementation] = useState("basic");
+  const [shEnabled, setShEnabled] = useState(true);
+  const [shType, setShType] = useState<ShType>("shared");
+  const [shWorkers, setShWorkers] = useState(3);
+  const [shStorage, setShStorage] = useState(1);
+  const [shStaging, setShStaging] = useState(0);
+
+  const [selected, setSelected] = useState<Record<TermKey, boolean>>({
+    monthly: true, "1year": true, "2year": false, "3year": true, "4year": false, "5year": true,
+  });
+  const [discounts, setDiscounts] = useState<Record<TermKey, { plan: number; impl: number }>>({
+    monthly: { plan: 0, impl: 5 },
+    "1year": { plan: 0, impl: 5 },
+    "2year": { plan: 5, impl: 5 },
+    "3year": { plan: 10, impl: 5 },
+    "4year": { plan: 10, impl: 5 },
+    "5year": { plan: 10, impl: 5 },
   });
 
+  const config = COUNTRIES[country];
+  const fmt = (n: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: config.currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(n);
+  const fmt0 = (n: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: config.currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(n);
+
+  const implPrice = IMPLEMENTATIONS[country][implementation]?.price ?? 0;
+  const implLabel = IMPLEMENTATIONS[country][implementation]?.label ?? "";
+
+  const shMonthlyAt = (annual: boolean) => {
+    if (!shEnabled) return 0;
+    const p = annual ? SH[country][shType].yearly : SH[country][shType].monthly;
+    return p.base + shWorkers * p.worker + shStorage * p.storage + shStaging * p.staging;
+  };
+  const shAnnualMo = shMonthlyAt(true);
+  const shMonthlyMo = shMonthlyAt(false);
+
+  // — Compute one term —
+  const compute = (termKey: TermKey): TermQuote => {
+    const isMonthly = termKey === "monthly";
+    const years = isMonthly ? 0 : parseInt(termKey.replace("year", ""));
+    const months = isMonthly ? 1 : years * 12;
+    const planDisc = discounts[termKey].plan;
+    const implDisc = discounts[termKey].impl;
+
+    const yY1 = PRICING[country][plan].yearly.year1;
+    const yY2 = PRICING[country][plan].yearly.year2plus;
+    const mY1 = PRICING[country][plan].monthly.year1;
+    const mY2 = PRICING[country][plan].monthly.year2plus;
+
+    let softwareList = 0, year1Promo = 0, multiYearSoftware = 0, softwareSubtotal = 0;
+    if (isMonthly) {
+      softwareList = users * mY1;
+      softwareSubtotal = softwareList;
+    } else if (years === 1) {
+      softwareList = users * yY2 * 12;
+      year1Promo = users * (yY2 - yY1) * 12;
+      softwareSubtotal = users * yY1 * 12;
+    } else {
+      softwareList = users * yY2 * 12 * years;
+      year1Promo = users * (yY2 - yY1) * 12;
+      multiYearSoftware = users * yY2 * 12 * (years - 1) * (planDisc / 100);
+      softwareSubtotal = softwareList - year1Promo - multiYearSoftware;
+    }
+
+    const implList = implPrice;
+    const implDiscount = implList * (implDisc / 100);
+    const implSubtotal = implList - implDiscount;
+
+    let shList = 0, shMultiYear = 0, shSubtotal = 0;
+    if (shEnabled) {
+      if (isMonthly) {
+        shList = shMonthlyMo;
+        shSubtotal = shList;
+      } else if (years === 1) {
+        shList = shAnnualMo * 12;
+        shSubtotal = shList;
+      } else {
+        shList = shAnnualMo * 12 * years;
+        shMultiYear = shAnnualMo * 12 * (years - 1) * (planDisc / 100);
+        shSubtotal = shList - shMultiYear;
+      }
+    }
+
+    const totalContract = softwareSubtotal + implSubtotal + shSubtotal;
+    const perMonth = totalContract / months;
+
+    let savings = 0;
+    if (!isMonthly) {
+      const fullMonthlySoftware = years === 1 ? users * mY1 * 12 : users * mY2 * months;
+      const fullMonthlySh = shEnabled ? shMonthlyMo * months : 0;
+      savings = (fullMonthlySoftware - softwareSubtotal) + (fullMonthlySh - shSubtotal) + implDiscount;
+    }
+
+    let finLow = 0, finHigh = 0;
+    if (!isMonthly && totalContract > 0) {
+      const pmt = (rate: number) => {
+        const r = rate / 12;
+        return (totalContract * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1);
+      };
+      finLow = pmt(APR_LOW);
+      finHigh = pmt(APR_HIGH);
+    }
+
+    return {
+      termKey, isMonthly, years, months,
+      softwareList, year1Promo, multiYearSoftware, softwareSubtotal,
+      implList, implDiscount, implSubtotal,
+      shList, shMultiYear, shSubtotal,
+      totalContract, perMonth, savings, finLow, finHigh,
+    };
+  };
+
+  const activeTerms = useMemo(() => ALL_TERMS.filter((t) => selected[t]), [selected]);
+  const quotes = useMemo(() => activeTerms.map(compute), [
+    activeTerms, country, users, plan, implementation, shEnabled, shType, shWorkers, shStorage, shStaging, discounts,
+  ]);
+
+  const N = quotes.length;
+  const labelColPct = 26;
+  const dataColPct = N > 0 ? (100 - labelColPct) / N : 0;
+
+  // — Reusable cells —
+  const HCell = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <div
+      className={`text-right pr-4 ${className}`}
+      style={{ width: `${dataColPct}%` }}
+    >
+      {children}
+    </div>
+  );
+  const Lbl = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <div className={className} style={{ width: `${labelColPct}%` }}>
+      {children}
+    </div>
+  );
+  const dash = <span className="text-stone-300">—</span>;
+
+  // — Sidebar atoms —
+  const SectionLabel = ({ children, icon: Icon }: { children: React.ReactNode; icon?: React.ComponentType<{ className?: string }> }) => (
+    <div className="flex items-center gap-1.5 mb-2.5">
+      {Icon && <Icon className="w-3 h-3 text-[#714B67]" />}
+      <label className="text-[10px] font-bold tracking-[0.18em] text-stone-500 uppercase">
+        {children}
+      </label>
+    </div>
+  );
+  const SegBtn = ({ active, onClick, children, testId }: { active: boolean; onClick: () => void; children: React.ReactNode; testId?: string }) => (
+    <button
+      onClick={onClick}
+      data-testid={testId}
+      className={`flex-1 py-1.5 text-xs rounded transition-all ${
+        active
+          ? "bg-white text-stone-900 font-semibold shadow-sm"
+          : "text-stone-500 font-medium hover:text-stone-800"
+      }`}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF7] text-stone-900 selection:bg-[#714B67] selection:text-white pb-0">
-      {/* TOP BAR */}
-      <header className="flex-shrink-0 h-14 bg-white border-b border-stone-200 px-6 flex items-center justify-between z-20 sticky top-0 shadow-sm">
+    <div className="min-h-screen flex flex-col font-sans bg-[#F7F5F0] text-stone-900 selection:bg-[#714B67] selection:text-white">
+      {/* ── TOP BAR ─────────────────────────────────────────────────────── */}
+      <header className="flex-shrink-0 h-14 bg-white border-b border-stone-200 px-6 flex items-center justify-between z-30 sticky top-0">
         <div className="flex items-center gap-4">
-          <img
-            src="/__mockup/images/odoo-brand/odoo_logo.png"
-            alt="Odoo"
-            className="h-5"
-          />
-          <div className="w-px h-5 bg-stone-200"></div>
-          <span className="font-medium text-stone-600 tracking-wide text-xs uppercase">
-            Investment Proposal
-          </span>
+          <img src="/__mockup/images/odoo-brand/odoo_logo.png" alt="Odoo" className="h-5" />
+          <div className="w-px h-5 bg-stone-200" />
+          <div className="flex items-baseline gap-2">
+            <span className="text-[11px] font-bold tracking-[0.22em] text-[#714B67] uppercase">
+              Investment Proposal
+            </span>
+            <span className="text-[10px] text-stone-400 font-medium tracking-wider">
+              · ODO-2026-0142
+            </span>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-[#714B67] border-[#714B67] hover:bg-[#714B67] hover:text-white transition-colors h-8 text-xs"
-        >
-          <Download className="w-3.5 h-3.5 mr-2" />
-          Export PDF
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200">
+            <ShieldCheck className="w-3 h-3 text-[#017E84]" />
+            <span className="text-[10px] font-semibold text-stone-700 tracking-wide uppercase">
+              Gold Partner Quote
+            </span>
+          </div>
+          <Button
+            size="sm"
+            className="h-8 text-xs bg-[#714B67] hover:bg-[#5a3b53] text-white shadow-sm"
+            data-testid="button-export-pdf"
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            Export PDF
+          </Button>
+        </div>
       </header>
 
-      {/* BODY */}
+      {/* ── BODY ────────────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
-        {/* LEFT SIDEBAR */}
-        <aside className="w-[340px] bg-white border-r border-stone-200 overflow-y-auto flex-shrink-0 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
-          <div className="p-6">
-            <h2 className="text-xs font-bold tracking-[0.2em] text-stone-400 uppercase mb-6">
-              Configuration Sheet
-            </h2>
+        {/* ── LEFT SIDEBAR ───────────────────────────────────────────── */}
+        <aside className="w-[340px] bg-white border-r border-stone-200 overflow-y-auto flex-shrink-0 shadow-[2px_0_12px_rgba(0,0,0,0.03)]">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-5 pb-3 border-b border-stone-100">
+              <h2 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">
+                Configuration
+              </h2>
+              <span className="text-[9px] font-medium text-stone-400 italic">
+                live
+              </span>
+            </div>
 
-            <div className="flex flex-col gap-0">
-              {/* 1. Country / Currency */}
-              <div className="py-4 border-b border-stone-100">
-                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
-                  Country / Currency
-                </label>
-                <div className="flex p-1 bg-stone-100 rounded-md">
-                  <button className="flex-1 py-1.5 text-xs font-semibold bg-white rounded shadow-sm text-stone-800">
-                    USD
-                  </button>
-                  <button className="flex-1 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800">
-                    CAD
-                  </button>
-                </div>
+            {/* 1. Country */}
+            <div className="pb-4 mb-4 border-b border-stone-100">
+              <SectionLabel icon={Globe}>Country / Currency</SectionLabel>
+              <div className="flex p-1 bg-stone-100 rounded-md">
+                <SegBtn active={country === "US"} onClick={() => setCountry("US")} testId="segment-country-us">
+                  USD · United States
+                </SegBtn>
+                <SegBtn active={country === "CA"} onClick={() => setCountry("CA")} testId="segment-country-ca">
+                  CAD · Canada
+                </SegBtn>
               </div>
+            </div>
 
-              {/* 2. Users */}
-              <div className="py-4 border-b border-stone-100">
-                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
-                  Users
-                </label>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    defaultValue={25}
-                    className="pl-9 bg-stone-50 border-stone-200 focus-visible:ring-[#714B67]"
-                  />
-                  <Users className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                </div>
+            {/* 2. Users */}
+            <div className="pb-4 mb-4 border-b border-stone-100">
+              <SectionLabel icon={Users}>Users</SectionLabel>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setUsers(Math.max(1, users - 1))}
+                  className="w-8 h-9 flex items-center justify-center bg-stone-50 border border-stone-200 rounded text-stone-600 hover:bg-stone-100 transition"
+                  data-testid="button-users-dec"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <Input
+                  type="number"
+                  value={users}
+                  onChange={(e) => setUsers(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="text-center font-semibold text-base h-9 bg-stone-50 border-stone-200 focus-visible:ring-[#714B67]"
+                  data-testid="input-users"
+                />
+                <button
+                  onClick={() => setUsers(users + 1)}
+                  className="w-8 h-9 flex items-center justify-center bg-stone-50 border border-stone-200 rounded text-stone-600 hover:bg-stone-100 transition"
+                  data-testid="button-users-inc"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
               </div>
+            </div>
 
-              {/* 3. Plan */}
-              <div className="py-4 border-b border-stone-100">
-                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
-                  Plan
-                </label>
-                <div className="flex p-1 bg-stone-100 rounded-md">
-                  <button className="flex-1 py-1.5 text-xs font-semibold bg-white rounded shadow-sm text-stone-800">
-                    Standard
-                  </button>
-                  <button className="flex-1 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800">
-                    Custom
-                  </button>
-                </div>
+            {/* 3. Plan */}
+            <div className="pb-4 mb-4 border-b border-stone-100">
+              <SectionLabel icon={Sparkles}>Plan</SectionLabel>
+              <div className="flex p-1 bg-stone-100 rounded-md">
+                <SegBtn active={plan === "standard"} onClick={() => setPlan("standard")} testId="segment-plan-standard">
+                  Standard
+                </SegBtn>
+                <SegBtn active={plan === "custom"} onClick={() => setPlan("custom")} testId="segment-plan-custom">
+                  Custom
+                </SegBtn>
               </div>
+            </div>
 
-              {/* 4. Implementation */}
-              <div className="py-4 border-b border-stone-100">
-                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
-                  Implementation
-                </label>
-                <div className="relative bg-stone-50 border border-stone-200 rounded-md px-3 py-2 flex items-center justify-between cursor-pointer">
-                  <span className="text-sm font-medium text-stone-800">
-                    Basic (50h) — $7,000
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-stone-400" />
-                </div>
+            {/* 4. Implementation */}
+            <div className="pb-4 mb-4 border-b border-stone-100">
+              <SectionLabel icon={FileText}>Implementation</SectionLabel>
+              <div className="relative">
+                <select
+                  value={implementation}
+                  onChange={(e) => setImplementation(e.target.value)}
+                  className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-md px-3 py-2 text-sm font-medium text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#714B67]/30 cursor-pointer pr-9"
+                  data-testid="select-implementation"
+                >
+                  {Object.entries(IMPLEMENTATIONS[country]).map(([key, v]) => (
+                    <option key={key} value={key}>
+                      {v.label} {v.price > 0 && `— ${fmt0(v.price)}`}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
+            </div>
 
-              {/* 5. Odoo SH Hosting */}
-              <div className="py-4 border-b border-stone-100">
-                <div className="flex items-center justify-between mb-4">
-                  <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase">
-                    Odoo SH Hosting
-                  </label>
-                  <Switch
-                    checked={true}
-                    className="data-[state=checked]:bg-[#714B67]"
-                  />
-                </div>
-                <div className="bg-stone-50 border border-stone-100 rounded-md p-4 space-y-4">
-                  <div className="flex p-1 bg-stone-200/50 rounded-md">
-                    <button className="flex-1 py-1 text-xs font-semibold bg-white rounded shadow-sm text-stone-800">
+            {/* 5. SH */}
+            <div className="pb-4 mb-4 border-b border-stone-100">
+              <div className="flex items-center justify-between mb-3">
+                <SectionLabel icon={Server}>Odoo SH Hosting</SectionLabel>
+                <Switch
+                  checked={shEnabled}
+                  onCheckedChange={setShEnabled}
+                  className="data-[state=checked]:bg-[#017E84]"
+                  data-testid="switch-sh-enabled"
+                />
+              </div>
+              {shEnabled && (
+                <div className="bg-stone-50 border border-stone-100 rounded-md p-3 space-y-3">
+                  <div className="flex p-0.5 bg-stone-200/60 rounded">
+                    <SegBtn active={shType === "shared"} onClick={() => setShType("shared")} testId="segment-sh-shared">
                       Shared
-                    </button>
-                    <button className="flex-1 py-1 text-xs font-medium text-stone-500 hover:text-stone-800">
+                    </SegBtn>
+                    <SegBtn active={shType === "dedicated"} onClick={() => setShType("dedicated")} testId="segment-sh-dedicated">
                       Dedicated
-                    </button>
+                    </SegBtn>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-stone-500">Workers</span>
-                      <span className="text-sm font-medium">3</span>
+                  {[
+                    { label: "Workers", val: shWorkers, setVal: setShWorkers, min: 1, testId: "sh-workers" },
+                    { label: "Storage GB", val: shStorage, setVal: setShStorage, min: 1, testId: "sh-storage" },
+                    { label: "Staging", val: shStaging, setVal: setShStaging, min: 0, testId: "sh-staging" },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-stone-500 font-medium">{row.label}</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => row.setVal(Math.max(row.min, row.val - 1))}
+                          className="w-6 h-6 flex items-center justify-center bg-white border border-stone-200 rounded text-stone-500 hover:bg-stone-100"
+                          data-testid={`button-${row.testId}-dec`}
+                        >
+                          <Minus className="w-2.5 h-2.5" />
+                        </button>
+                        <span className="text-xs font-semibold w-7 text-center" data-testid={`text-${row.testId}`}>
+                          {row.val}
+                        </span>
+                        <button
+                          onClick={() => row.setVal(row.val + 1)}
+                          className="w-6 h-6 flex items-center justify-center bg-white border border-stone-200 rounded text-stone-500 hover:bg-stone-100"
+                          data-testid={`button-${row.testId}-inc`}
+                        >
+                          <Plus className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-stone-500">Storage GB</span>
-                      <span className="text-sm font-medium">1</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-stone-500">
-                        Staging branches
-                      </span>
-                      <span className="text-sm font-medium">0</span>
-                    </div>
-                  </div>
-                  <div className="pt-3 border-t border-stone-200 text-center">
-                    <span className="text-[10px] font-medium text-stone-500">
-                      $172.80/mo annual · $216/mo monthly
+                  ))}
+                  <div className="pt-2 border-t border-stone-200 flex justify-between items-baseline">
+                    <span className="text-[10px] text-stone-500 italic">annual rate</span>
+                    <span className="text-xs font-bold text-[#017E84] tabular-nums">
+                      {fmt(shAnnualMo)}<span className="text-[9px] font-normal">/mo</span>
                     </span>
                   </div>
                 </div>
-              </div>
+              )}
+            </div>
 
-              {/* 6. Terms to Compare */}
-              <div className="py-4 border-b border-stone-100">
-                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
-                  Terms to Compare
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {["Mo", "1Y", "2Y", "3Y", "4Y", "5Y"].map((term) => {
-                    const isActive = ["Mo", "1Y", "3Y", "5Y"].includes(term);
-                    return (
-                      <button
-                        key={term}
-                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                          isActive
-                            ? "bg-stone-800 text-white border-stone-800 font-medium shadow-sm"
-                            : "bg-white text-stone-400 border-stone-200 hover:border-stone-300"
-                        }`}
-                      >
-                        {term}
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* 6. Terms */}
+            <div className="pb-4 mb-4 border-b border-stone-100">
+              <SectionLabel icon={Wallet}>Terms to Compare</SectionLabel>
+              <div className="grid grid-cols-3 gap-1.5">
+                {ALL_TERMS.map((t) => {
+                  const active = selected[t];
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setSelected({ ...selected, [t]: !active })}
+                      className={`py-1.5 text-xs rounded border transition-all ${
+                        active
+                          ? "bg-[#714B67] text-white border-[#714B67] font-semibold shadow-sm"
+                          : "bg-white text-stone-500 border-stone-200 hover:border-stone-300"
+                      }`}
+                      data-testid={`button-term-${t}`}
+                    >
+                      {TERM_LABELS[t].short}
+                    </button>
+                  );
+                })}
               </div>
+            </div>
 
-              {/* 7. Discounts */}
-              <div className="py-4">
-                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
-                  Discounts Applied
-                </label>
-                <div className="bg-stone-50 border border-stone-100 rounded-md overflow-hidden text-xs">
-                  <table className="w-full text-center">
-                    <thead>
-                      <tr className="bg-stone-100/50 text-stone-500 border-b border-stone-100">
-                        <th className="font-normal py-1.5 px-2 text-left">
-                          Type
-                        </th>
-                        <th className="font-normal py-1.5 px-2">Mo</th>
-                        <th className="font-normal py-1.5 px-2">1Y</th>
-                        <th className="font-normal py-1.5 px-2">3Y</th>
-                        <th className="font-normal py-1.5 px-2">5Y</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-stone-700 font-medium">
-                      <tr className="border-b border-stone-100">
-                        <td className="py-2 px-2 text-left font-normal text-stone-500">
-                          Plan %
-                        </td>
-                        <td className="py-2 px-2 text-stone-300">—</td>
-                        <td className="py-2 px-2 text-stone-300">—</td>
-                        <td className="py-2 px-2">10</td>
-                        <td className="py-2 px-2">10</td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 px-2 text-left font-normal text-stone-500">
-                          Impl %
-                        </td>
-                        <td className="py-2 px-2">5</td>
-                        <td className="py-2 px-2">5</td>
-                        <td className="py-2 px-2">5</td>
-                        <td className="py-2 px-2">5</td>
-                      </tr>
-                    </tbody>
-                  </table>
+            {/* 7. Discounts */}
+            <div>
+              <SectionLabel icon={TrendingDown}>Discounts %</SectionLabel>
+              <div className="bg-stone-50 border border-stone-100 rounded-md overflow-hidden">
+                <div
+                  className="grid text-[10px] bg-stone-100/70 text-stone-500 font-semibold uppercase tracking-wider"
+                  style={{ gridTemplateColumns: `1fr repeat(${activeTerms.length || 1}, 1fr)` }}
+                >
+                  <div className="py-1.5 px-2 text-left">Type</div>
+                  {activeTerms.map((t) => (
+                    <div key={t} className="py-1.5 px-1 text-center">{TERM_LABELS[t].short}</div>
+                  ))}
                 </div>
+                {(["plan", "impl"] as const).map((field, idx) => (
+                  <div
+                    key={field}
+                    className={`grid text-xs ${idx === 0 ? "border-b border-stone-100" : ""}`}
+                    style={{ gridTemplateColumns: `1fr repeat(${activeTerms.length || 1}, 1fr)` }}
+                  >
+                    <div className="py-1.5 px-2 text-stone-500 font-medium">
+                      {field === "plan" ? "Plan" : "Impl"}
+                    </div>
+                    {activeTerms.map((t) => (
+                      <input
+                        key={t}
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={discounts[t][field]}
+                        onChange={(e) =>
+                          setDiscounts({
+                            ...discounts,
+                            [t]: { ...discounts[t], [field]: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) },
+                          })
+                        }
+                        className="py-1 px-1 text-xs text-center font-semibold text-stone-800 bg-transparent focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#714B67] focus:rounded-sm"
+                        data-testid={`input-discount-${field}-${t}`}
+                      />
+                    ))}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </aside>
 
-        {/* MAIN PANEL */}
-        <main className="flex-1 overflow-y-auto relative bg-[#FAFAF7]">
-          {/* Sticky Chip Bar */}
-          <div className="sticky top-0 z-20 bg-[#FAFAF7] border-b border-stone-200 px-8 py-2">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center gap-2 text-[11px] font-medium text-stone-500">
-                <Globe className="w-3 h-3" />
-                <span>United States</span>
-                <span className="text-stone-300">•</span>
-                <Users className="w-3 h-3" />
-                <span>25 users</span>
-                <span className="text-stone-300">•</span>
-                <span>Standard</span>
-                <span className="text-stone-300">•</span>
-                <span>Basic Implementation</span>
-                <span className="text-stone-300">•</span>
-                <Server className="w-3 h-3" />
-                <span>Odoo SH Shared 3 workers</span>
-              </div>
+        {/* ── MAIN PANEL ────────────────────────────────────────────── */}
+        <main className="flex-1 overflow-y-auto bg-[#F7F5F0]">
+          {/* Sticky scenario chip */}
+          <div className="sticky top-0 z-20 bg-[#F7F5F0]/95 backdrop-blur-md border-b border-stone-200 px-8 py-2.5">
+            <div className="flex items-center justify-center gap-2 text-[11px] font-medium text-stone-600">
+              <span className="px-2 py-0.5 rounded bg-[#714B67] text-white text-[10px] font-bold tracking-wider">
+                {config.currency}
+              </span>
+              <span className="font-semibold text-stone-800">{users} users</span>
+              <span className="text-stone-300">·</span>
+              <span>{plan === "standard" ? "Standard" : "Custom"}</span>
+              <span className="text-stone-300">·</span>
+              <span>{implLabel}</span>
+              {shEnabled && (
+                <>
+                  <span className="text-stone-300">·</span>
+                  <Server className="w-3 h-3 text-[#017E84]" />
+                  <span>SH {shType === "shared" ? "Shared" : "Dedicated"} · {shWorkers}w</span>
+                </>
+              )}
+              <span className="text-stone-300">·</span>
+              <span className="font-semibold text-[#714B67]">{N} terms</span>
             </div>
           </div>
 
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="max-w-4xl mx-auto px-8 py-8"
+            transition={{ duration: 0.4 }}
+            className="max-w-[1100px] mx-auto px-8 py-8"
           >
-            {/* Header */}
-            <div className="mb-8 pb-4 border-b-2 border-stone-800 flex justify-between items-end">
-              <h1 className="text-2xl font-bold text-stone-900 tracking-tight">
-                Investment Proposal
-              </h1>
-              <div className="flex gap-6 text-sm text-stone-600 font-medium">
-                <p>
-                  Prepared for: <span className="text-stone-900">Acme Corporation</span>
+            {/* ── PROPOSAL HEADER ───────────────────────────────── */}
+            <div className="mb-7 pb-5 border-b-2 border-stone-900 flex justify-between items-end">
+              <div>
+                <p className="text-[10px] font-bold tracking-[0.3em] text-[#714B67] uppercase mb-1.5">
+                  Proposal · 2026
                 </p>
-                <p>
-                  By: <span className="text-stone-900">Odoo Advisors</span>
-                </p>
-                <p>{currentDate}</p>
+                <h1 className="text-3xl font-serif italic text-stone-900 tracking-tight leading-none">
+                  Investment Summary
+                </h1>
               </div>
-            </div>
-
-            {/* Comparison Table */}
-            <div className="relative">
-              {/* Highlight Backdrop for 3-Year */}
-              <div className="absolute top-0 bottom-0 left-[50%] w-[25%] bg-[#714B67]/[0.03] -z-10 border-x border-[#714B67]/10"></div>
-
-              {/* Table Header */}
-              <div className="flex text-[10px] font-bold tracking-[0.15em] uppercase text-stone-400 pb-2 border-b border-stone-200">
-                <div className="w-[30%]">Cost Component</div>
-                <div className="w-[15%] text-right pr-4">Monthly</div>
-                <div className="w-[15%] text-right pr-4">1-Year</div>
-                <div className="w-[25%] text-right pr-4 text-[#714B67]">
-                  3-Year
+              <div className="flex gap-6 text-[11px] text-stone-500 font-medium">
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-stone-400 mb-0.5">Prepared for</p>
+                  <p className="text-stone-900 font-semibold">Acme Corporation</p>
                 </div>
-                <div className="w-[15%] text-right pr-4">5-Year</div>
-              </div>
-
-              {/* SOFTWARE LICENSE */}
-              <div className="py-4 border-b border-stone-200 bg-stone-50/30">
-                <div className="flex mb-2">
-                  <div className="w-[30%] font-semibold text-base text-stone-800 pl-2">
-                    Software License
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $777.50<span className="text-[10px]">/mo</span>
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $9,330.00
-                  </div>
-                  <div className="w-[25%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $27,990.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $46,650.00
-                  </div>
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-stone-400 mb-0.5">By</p>
+                  <p className="text-stone-900 font-semibold">Odoo Advisors</p>
                 </div>
-
-                <div className="flex text-xs text-stone-500 mb-1">
-                  <div className="w-[30%] pl-6 flex items-center gap-1.5">
-                    <ChevronRight className="w-3 h-3 text-[#017E84]" />
-                    Year-1 Promo Savings
-                  </div>
-                  <div className="w-[15%] text-right pr-4">—</div>
-                  <div className="w-[15%] text-right pr-4 text-[#017E84]">
-                    -$1,860.00
-                  </div>
-                  <div className="w-[25%] text-right pr-4 text-[#017E84]">
-                    -$1,860.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-[#017E84]">
-                    -$1,860.00
-                  </div>
-                </div>
-
-                <div className="flex text-xs text-stone-500 mb-2">
-                  <div className="w-[30%] pl-6 flex items-center gap-1.5">
-                    <ChevronRight className="w-3 h-3 text-[#017E84]" />
-                    Multi-Year Discount
-                  </div>
-                  <div className="w-[15%] text-right pr-4">—</div>
-                  <div className="w-[15%] text-right pr-4">—</div>
-                  <div className="w-[25%] text-right pr-4 text-[#017E84]">
-                    -$1,866.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-[#017E84]">
-                    -$3,732.00
-                  </div>
-                </div>
-
-                <div className="flex font-semibold text-stone-900 border-t border-stone-200 pt-2 text-sm">
-                  <div className="w-[30%] pl-2 text-stone-600">Software Subtotal</div>
-                  <div className="w-[15%] text-right pr-4">$777.50</div>
-                  <div className="w-[15%] text-right pr-4">$7,470.00</div>
-                  <div className="w-[25%] text-right pr-4 text-[#714B67]">
-                    $24,264.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4">$41,058.00</div>
-                </div>
-              </div>
-
-              {/* IMPLEMENTATION */}
-              <div className="py-4 border-b border-stone-200">
-                <div className="flex mb-2">
-                  <div className="w-[30%] font-semibold text-base text-stone-800 pl-2">
-                    Implementation
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $7,000.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $7,000.00
-                  </div>
-                  <div className="w-[25%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $7,000.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $7,000.00
-                  </div>
-                </div>
-
-                <div className="flex text-xs text-stone-500 mb-2">
-                  <div className="w-[30%] pl-6 flex items-center gap-1.5">
-                    <ChevronRight className="w-3 h-3 text-amber-500" />
-                    Implementation Discount
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-amber-600">
-                    -$350.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-amber-600">
-                    -$350.00
-                  </div>
-                  <div className="w-[25%] text-right pr-4 text-amber-600">
-                    -$350.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-amber-600">
-                    -$350.00
-                  </div>
-                </div>
-
-                <div className="flex font-semibold text-stone-900 border-t border-stone-200 pt-2 text-sm">
-                  <div className="w-[30%] pl-2 text-stone-600">Implementation Subtotal</div>
-                  <div className="w-[15%] text-right pr-4">$6,650.00</div>
-                  <div className="w-[15%] text-right pr-4">$6,650.00</div>
-                  <div className="w-[25%] text-right pr-4 text-[#714B67]">
-                    $6,650.00
-                  </div>
-                  <div className="w-[15%] text-right pr-4">$6,650.00</div>
-                </div>
-              </div>
-
-              {/* ODOO SH HOSTING */}
-              <div className="py-4 border-b-2 border-stone-800 bg-stone-50/30">
-                <div className="flex mb-2">
-                  <div className="w-[30%] font-semibold text-base text-stone-800 pl-2">
-                    Odoo SH Hosting
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $216.00<span className="text-[10px]">/mo</span>
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $2,073.60
-                  </div>
-                  <div className="w-[25%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $6,220.80
-                  </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-500 text-sm">
-                    $10,368.00
-                  </div>
-                </div>
-
-                <div className="flex text-xs text-stone-500 mb-2">
-                  <div className="w-[30%] pl-6 flex items-center gap-1.5">
-                    <ChevronRight className="w-3 h-3 text-[#017E84]" />
-                    Multi-Year Discount
-                  </div>
-                  <div className="w-[15%] text-right pr-4">—</div>
-                  <div className="w-[15%] text-right pr-4">—</div>
-                  <div className="w-[25%] text-right pr-4 text-[#017E84]">
-                    -$414.72
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-[#017E84]">
-                    -$829.44
-                  </div>
-                </div>
-
-                <div className="flex font-semibold text-stone-900 border-t border-stone-200 pt-2 text-sm">
-                  <div className="w-[30%] pl-2 text-stone-600">Hosting Subtotal</div>
-                  <div className="w-[15%] text-right pr-4">$216.00</div>
-                  <div className="w-[15%] text-right pr-4">$2,073.60</div>
-                  <div className="w-[25%] text-right pr-4 text-[#714B67]">
-                    $5,806.08
-                  </div>
-                  <div className="w-[15%] text-right pr-4">$9,538.56</div>
-                </div>
-              </div>
-
-              {/* TOTALS */}
-              <div className="py-6">
-                <div className="flex items-end mb-4 pl-2">
-                  <div className="w-[30%] font-bold text-lg text-stone-900">
-                    Total Contract
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-base font-semibold text-stone-700">
-                    $7,993.50
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-base font-semibold text-stone-700">
-                    $16,193.60
-                  </div>
-                  <div className="w-[25%] text-right pr-4 text-2xl text-[#714B67] font-bold">
-                    $36,720.08
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-base font-semibold text-stone-700">
-                    $57,246.56
-                  </div>
-                </div>
-
-                <div className="flex items-center text-xs font-semibold border-t border-stone-200 pt-4 mb-3 pl-2">
-                  <div className="w-[30%] text-stone-500 uppercase tracking-widest text-[10px]">
-                    Per-Month Amortized
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-stone-400">
-                    —
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-stone-600">
-                    $1,349/mo
-                  </div>
-                  <div className="w-[25%] text-right pr-4 text-[#714B67] text-base">
-                    $1,020/mo
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-stone-600">
-                    $954/mo
-                  </div>
-                </div>
-
-                <div className="flex items-center text-xs font-semibold border-t border-stone-200 pt-4 pl-2">
-                  <div className="w-[30%] text-[#017E84] flex items-center gap-1.5 uppercase tracking-widest text-[10px]">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Savings vs Month-to-Month
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-stone-400">
-                    —
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-stone-400">
-                    $0
-                  </div>
-                  <div className="w-[25%] text-right pr-4 text-[#017E84] text-base">
-                    $13,066
-                  </div>
-                  <div className="w-[15%] text-right pr-4 text-[#017E84] text-base">
-                    $20,476
-                  </div>
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-stone-400 mb-0.5">Date</p>
+                  <p className="text-stone-900 font-semibold">
+                    {new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Compact Recommendation & Catalyst Finance */}
-            <div className="mt-8 bg-white border border-stone-200 shadow-sm rounded flex items-center divide-x divide-stone-200">
-              <div className="flex-1 p-4 flex items-center gap-4">
-                <div className="bg-[#714B67] text-white text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded">
-                  Recommendation
-                </div>
-                <div className="text-sm font-medium text-stone-800">
-                  Select the 3-Year term to save <span className="text-[#017E84] font-bold">$13,066</span> vs month-to-month.
-                </div>
+            {N === 0 ? (
+              <div className="py-24 text-center text-stone-400 italic">
+                Select at least one term in the sidebar to compare quotes.
               </div>
-              <div className="flex-1 p-4 flex items-center gap-3 bg-[#FAFAF7]">
-                <CreditCard className="w-5 h-5 text-[#017E84]" />
-                <div className="text-xs text-stone-600">
-                  <span className="font-semibold text-stone-900 block mb-0.5">Catalyst Financing</span>
-                  As low as <strong className="text-[#017E84]">$1,117/mo</strong> (36 mo)
-                </div>
-                <Button variant="outline" size="sm" className="ml-auto h-8 text-xs bg-white">
-                  Apply
-                </Button>
-              </div>
-            </div>
+            ) : (
+              <>
+                {/* ── COMPARISON TABLE ───────────────────────────── */}
+                <div className="bg-white rounded-lg border border-stone-200 shadow-sm overflow-hidden">
+                  {/* Table header */}
+                  <div className="flex text-[10px] font-bold tracking-[0.18em] uppercase text-stone-500 px-4 py-3 bg-stone-50 border-b border-stone-200">
+                    <Lbl>Cost Component</Lbl>
+                    {quotes.map((q) => (
+                      <HCell key={q.termKey}>
+                        <div className="text-stone-700">{TERM_LABELS[q.termKey].long}</div>
+                        <div className="text-[9px] font-medium text-stone-400 normal-case tracking-normal italic mt-0.5">
+                          {TERM_LABELS[q.termKey].sub}
+                        </div>
+                      </HCell>
+                    ))}
+                  </div>
 
-            {/* Compact Signature */}
-            <div className="mt-12 pt-8 border-t border-stone-200 flex justify-end gap-16">
-               <div className="w-64 border-b border-stone-300 pb-1 text-center font-medium text-stone-800 relative">
-                 <span className="absolute top-6 left-0 right-0 text-[10px] font-bold text-stone-400 uppercase tracking-widest text-center">Authorized By</span>
-               </div>
-               <div className="w-48 border-b border-stone-300 pb-1 text-center font-medium text-stone-800 relative">
-                 {currentDate}
-                 <span className="absolute top-6 left-0 right-0 text-[10px] font-bold text-stone-400 uppercase tracking-widest text-center">Date</span>
-               </div>
-            </div>
-            
+                  {/* SOFTWARE LICENSE — purple band */}
+                  <div className="px-4 py-4 border-l-[3px] border-[#714B67]" style={{ background: "linear-gradient(90deg, rgba(113,75,103,0.05) 0%, rgba(113,75,103,0.01) 100%)" }}>
+                    <div className="flex mb-2.5 items-baseline">
+                      <Lbl className="font-serif italic text-base text-stone-900">Software License</Lbl>
+                      {quotes.map((q) => (
+                        <HCell key={q.termKey} className="text-sm font-medium text-stone-500 tabular-nums">
+                          {q.softwareList > 0 ? fmt(q.softwareList) : dash}
+                          {q.isMonthly && q.softwareList > 0 && <span className="text-[10px] text-stone-400">/mo</span>}
+                        </HCell>
+                      ))}
+                    </div>
+                    {quotes.some((q) => q.year1Promo > 0) && (
+                      <div className="flex text-xs mb-1.5 items-center">
+                        <Lbl className="pl-4 text-stone-500">
+                          <span className="inline-flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-[#017E84]" />
+                            Year-1 Promo Savings
+                          </span>
+                        </Lbl>
+                        {quotes.map((q) => (
+                          <HCell key={q.termKey} className="text-[#017E84] font-semibold tabular-nums">
+                            {q.year1Promo > 0 ? `−${fmt(q.year1Promo)}` : dash}
+                          </HCell>
+                        ))}
+                      </div>
+                    )}
+                    {quotes.some((q) => q.multiYearSoftware > 0) && (
+                      <div className="flex text-xs mb-2.5 items-center">
+                        <Lbl className="pl-4 text-stone-500">
+                          <span className="inline-flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-[#017E84]" />
+                            Multi-Year Discount
+                          </span>
+                        </Lbl>
+                        {quotes.map((q) => (
+                          <HCell key={q.termKey} className="text-[#017E84] font-semibold tabular-nums">
+                            {q.multiYearSoftware > 0 ? `−${fmt(q.multiYearSoftware)}` : dash}
+                          </HCell>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex pt-2.5 border-t border-stone-200/70 items-center">
+                      <Lbl className="text-[11px] font-bold uppercase tracking-wider text-stone-700">Subtotal</Lbl>
+                      {quotes.map((q) => (
+                        <HCell key={q.termKey} className="text-sm font-bold text-stone-900 tabular-nums">
+                          {fmt(q.softwareSubtotal)}
+                        </HCell>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* IMPLEMENTATION — amber band */}
+                  {implPrice > 0 && (
+                    <div className="px-4 py-4 border-l-[3px] border-amber-500 border-t border-stone-100" style={{ background: "linear-gradient(90deg, rgba(245,158,11,0.05) 0%, rgba(245,158,11,0.01) 100%)" }}>
+                      <div className="flex mb-2.5 items-baseline">
+                        <Lbl className="font-serif italic text-base text-stone-900">
+                          Implementation
+                          <span className="ml-1.5 text-[10px] not-italic font-medium text-stone-400 uppercase tracking-wider">
+                            one-time
+                          </span>
+                        </Lbl>
+                        {quotes.map((q) => (
+                          <HCell key={q.termKey} className="text-sm font-medium text-stone-500 tabular-nums">
+                            {fmt(q.implList)}
+                          </HCell>
+                        ))}
+                      </div>
+                      {quotes.some((q) => q.implDiscount > 0) && (
+                        <div className="flex text-xs mb-2.5 items-center">
+                          <Lbl className="pl-4 text-stone-500">
+                            <span className="inline-flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-amber-600" />
+                              Implementation Discount
+                            </span>
+                          </Lbl>
+                          {quotes.map((q) => (
+                            <HCell key={q.termKey} className="text-amber-700 font-semibold tabular-nums">
+                              {q.implDiscount > 0 ? `−${fmt(q.implDiscount)}` : dash}
+                            </HCell>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex pt-2.5 border-t border-stone-200/70 items-center">
+                        <Lbl className="text-[11px] font-bold uppercase tracking-wider text-stone-700">Subtotal</Lbl>
+                        {quotes.map((q) => (
+                          <HCell key={q.termKey} className="text-sm font-bold text-stone-900 tabular-nums">
+                            {fmt(q.implSubtotal)}
+                          </HCell>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SH HOSTING — teal band */}
+                  {shEnabled && (
+                    <div className="px-4 py-4 border-l-[3px] border-[#017E84] border-t border-stone-100" style={{ background: "linear-gradient(90deg, rgba(1,126,132,0.05) 0%, rgba(1,126,132,0.01) 100%)" }}>
+                      <div className="flex mb-2.5 items-baseline">
+                        <Lbl className="font-serif italic text-base text-stone-900">
+                          Odoo SH Hosting
+                          <span className="ml-1.5 text-[10px] not-italic font-medium text-stone-400 uppercase tracking-wider">
+                            {shType} · {shWorkers}w
+                          </span>
+                        </Lbl>
+                        {quotes.map((q) => (
+                          <HCell key={q.termKey} className="text-sm font-medium text-stone-500 tabular-nums">
+                            {q.shList > 0 ? fmt(q.shList) : dash}
+                            {q.isMonthly && q.shList > 0 && <span className="text-[10px] text-stone-400">/mo</span>}
+                          </HCell>
+                        ))}
+                      </div>
+                      {quotes.some((q) => q.shMultiYear > 0) && (
+                        <div className="flex text-xs mb-2.5 items-center">
+                          <Lbl className="pl-4 text-stone-500">
+                            <span className="inline-flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-[#017E84]" />
+                              Multi-Year Discount
+                            </span>
+                          </Lbl>
+                          {quotes.map((q) => (
+                            <HCell key={q.termKey} className="text-[#017E84] font-semibold tabular-nums">
+                              {q.shMultiYear > 0 ? `−${fmt(q.shMultiYear)}` : dash}
+                            </HCell>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex pt-2.5 border-t border-stone-200/70 items-center">
+                        <Lbl className="text-[11px] font-bold uppercase tracking-wider text-stone-700">Subtotal</Lbl>
+                        {quotes.map((q) => (
+                          <HCell key={q.termKey} className="text-sm font-bold text-stone-900 tabular-nums">
+                            {fmt(q.shSubtotal)}
+                          </HCell>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TOTAL CONTRACT — dark hero band, uniform typography across columns */}
+                  <div className="flex items-center px-4 py-5 bg-stone-900 text-white">
+                    <Lbl>
+                      <p className="text-[10px] font-bold tracking-[0.25em] text-stone-400 uppercase mb-0.5">
+                        Total Contract
+                      </p>
+                      <p className="font-serif italic text-base text-white">All-in cost</p>
+                    </Lbl>
+                    {quotes.map((q) => (
+                      <HCell key={q.termKey} className="text-xl font-bold tabular-nums text-white">
+                        {fmt(q.totalContract)}
+                      </HCell>
+                    ))}
+                  </div>
+
+                  {/* PER-MONTH AMORTIZED */}
+                  <div className="flex items-center px-4 py-3 bg-white border-t border-stone-100">
+                    <Lbl>
+                      <p className="text-[10px] font-bold tracking-[0.2em] text-stone-500 uppercase">
+                        Per-Month Amortized
+                      </p>
+                    </Lbl>
+                    {quotes.map((q) => (
+                      <HCell key={q.termKey} className="text-sm font-semibold text-stone-700 tabular-nums">
+                        {fmt0(q.perMonth)}<span className="text-[10px] text-stone-400 font-normal">/mo</span>
+                      </HCell>
+                    ))}
+                  </div>
+
+                  {/* SAVINGS — full-bleed teal gradient strip */}
+                  <div className="flex items-center px-4 py-3.5 border-t border-stone-100" style={{ background: "linear-gradient(90deg, rgba(1,126,132,0.12) 0%, rgba(1,126,132,0.04) 100%)" }}>
+                    <Lbl>
+                      <div className="flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-[#017E84]" />
+                        <p className="text-[10px] font-bold tracking-[0.2em] text-[#017E84] uppercase">
+                          You Save vs Monthly
+                        </p>
+                      </div>
+                    </Lbl>
+                    {quotes.map((q) => (
+                      <HCell key={q.termKey} className="text-base font-bold text-[#017E84] tabular-nums">
+                        {q.savings > 0 ? fmt0(q.savings) : dash}
+                      </HCell>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── CATALYST FINANCE CARD ─────────────────────── */}
+                {quotes.some((q) => q.finLow > 0) && (
+                  <div
+                    className="mt-6 rounded-lg overflow-hidden shadow-lg border border-stone-800"
+                    style={{ background: "linear-gradient(135deg, #2D2438 0%, #1B1525 100%)" }}
+                  >
+                    <div className="px-5 py-3 flex items-center justify-between border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
+                          <CreditCard className="w-3.5 h-3.5 text-amber-300" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+                            Catalyst Finance
+                          </p>
+                          <p className="text-[10px] text-stone-400 italic">
+                            Spread your investment · approved partners
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold tracking-wider text-stone-400 uppercase">
+                        {APR_LOW * 100}–{APR_HIGH * 100}% APR
+                      </span>
+                    </div>
+
+                    <div className="flex items-center px-4 py-3 border-b border-white/5">
+                      <Lbl>
+                        <p className="text-[11px] font-semibold text-amber-300">Best Rate</p>
+                        <p className="text-[10px] text-stone-400 italic">{APR_LOW * 100}% APR · qualified</p>
+                      </Lbl>
+                      {quotes.map((q) => (
+                        <HCell key={q.termKey} className="text-sm font-bold text-white tabular-nums">
+                          {q.finLow > 0 ? `${fmt0(q.finLow)}/mo` : dash}
+                        </HCell>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center px-4 py-3">
+                      <Lbl>
+                        <p className="text-[11px] font-semibold text-stone-300">Standard Rate</p>
+                        <p className="text-[10px] text-stone-400 italic">{APR_HIGH * 100}% APR</p>
+                      </Lbl>
+                      {quotes.map((q) => (
+                        <HCell key={q.termKey} className="text-sm font-semibold text-stone-200 tabular-nums">
+                          {q.finHigh > 0 ? `${fmt0(q.finHigh)}/mo` : dash}
+                        </HCell>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── FOOTER / SIGNATURE ────────────────────────── */}
+                <div className="mt-7 pt-5 border-t border-stone-300 grid grid-cols-3 gap-6 text-[11px]">
+                  <div>
+                    <p className="text-[9px] font-bold tracking-[0.2em] text-stone-400 uppercase mb-3">
+                      Authorized by Client
+                    </p>
+                    <div className="border-b border-stone-400 h-7" />
+                    <p className="mt-1.5 text-stone-500 italic">Signature & Date</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-bold tracking-[0.2em] text-stone-400 uppercase mb-3">
+                      Authorized by Odoo Advisors
+                    </p>
+                    <div className="border-b border-stone-400 h-7" />
+                    <p className="mt-1.5 text-stone-500 italic">Partner Signature</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-bold tracking-[0.2em] text-stone-400 uppercase mb-3">
+                      Quote Validity
+                    </p>
+                    <p className="text-stone-700 font-semibold leading-relaxed">
+                      30 days from quote date.
+                      <br />
+                      <span className="text-stone-500 font-normal italic">
+                        Estimation only — final pricing subject to confirmation.
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </motion.div>
         </main>
       </div>
