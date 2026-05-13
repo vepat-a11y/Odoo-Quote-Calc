@@ -79,7 +79,13 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
+    // This Replit deployment is retired — permanently redirect all traffic
+    // to the new GitHub Pages home of the calculator.
+    const NEW_HOME = "https://vepat-a11y.github.io/Odoo-Quote-Calc/";
+    app.use((req, res) => {
+      const target = req.path === "/" ? NEW_HOME : NEW_HOME.replace(/\/$/, "") + req.path;
+      res.redirect(301, target);
+    });
   } else {
     const { setupVite } = await import("./vite");
     await setupVite(httpServer, app);
