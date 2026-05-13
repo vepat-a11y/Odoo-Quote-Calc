@@ -626,7 +626,7 @@ export function InvestmentBrandPitch() {
                 <span className="text-center">Impl</span>
               </div>
               {activeTerms.map((t) => {
-                const planApplies = TERM_MONTHS[t] / 12 > 1;
+                const planApplies = t !== "monthly" && t !== "1year";
                 return (
                   <div key={t} className="grid grid-cols-3 gap-2 mb-1.5 items-center">
                     <span className="text-xs font-semibold" style={{ fontFamily: FONT_BODY, color: BRAND.ink }}>
