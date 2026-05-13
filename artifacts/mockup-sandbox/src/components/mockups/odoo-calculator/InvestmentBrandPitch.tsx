@@ -93,10 +93,10 @@ const PARTNER_RECURRING_PCT = 0.25;
 const TERM_LABELS: Record<TermKey, { short: string; long: string; sub: string }> = {
   monthly: { short: "Mo", long: "Monthly", sub: "Pay as you go" },
   "1year": { short: "1Y", long: "Year 1", sub: "12-month" },
-  "2year": { short: "2Y", long: "Years 1-2", sub: "24-month" },
-  "3year": { short: "3Y", long: "Years 1-3", sub: "36-month" },
-  "4year": { short: "4Y", long: "Years 1-4", sub: "48-month" },
-  "5year": { short: "5Y", long: "Years 1-5", sub: "60-month" },
+  "2year": { short: "2Y", long: "Year 2", sub: "24-month" },
+  "3year": { short: "3Y", long: "Year 3", sub: "36-month" },
+  "4year": { short: "4Y", long: "Year 4", sub: "48-month" },
+  "5year": { short: "5Y", long: "Year 5", sub: "60-month" },
 };
 
 const ALL_TERMS: TermKey[] = ["monthly", "1year", "2year", "3year", "4year", "5year"];
