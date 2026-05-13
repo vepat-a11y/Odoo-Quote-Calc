@@ -385,16 +385,16 @@ export function Calculator() {
 
   // ─── Sidebar atoms (marker-pitch style) ───────────────────────────────
 
-  const SectionLabel = ({ children, icon: Icon, color = BRAND.blue }: {
+  const SectionLabel = ({ children, icon: Icon }: {
     children: React.ReactNode; icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color?: string;
   }) => (
     <div className="flex items-center gap-2 mb-3">
-      {Icon && <Icon className="w-4 h-4" style={{ color: BRAND.ink }} />}
+      {Icon && <Icon className="w-4 h-4" style={{ color: BRAND.ink, opacity: 0.6 }} />}
       <h3
-        className="text-base"
-        style={{ fontFamily: FONT_BRUSH, color: BRAND.ink, letterSpacing: "0.02em" }}
+        className="text-[11px] uppercase tracking-[0.16em] font-semibold"
+        style={{ fontFamily: FONT_BODY, color: BRAND.ink }}
       >
-        <Marker color={color} opacity={0.7} height="40%">{children}</Marker>
+        {children}
       </h3>
     </div>
   );
@@ -516,9 +516,6 @@ export function Calculator() {
               <Marker color={BRAND.blue} opacity={0.85} height="45%">Configure</Marker>
               {" "}Your Quote
             </h2>
-            <p className="mt-2 text-[11px] text-stone-400" style={{ fontFamily: FONT_HAND }}>
-              Build your scenario. Compare side by side.
-            </p>
           </div>
 
           {/* Country */}
