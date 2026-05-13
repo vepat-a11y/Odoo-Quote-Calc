@@ -250,7 +250,7 @@ export function Calculator() {
   const [users, setUsers] = useState(25);
   const [plan, setPlan] = useState<PlanKey>("standard");
   const [implementation, setImplementation] = useState("basic");
-  const [shEnabled, setShEnabled] = useState(true);
+  const [shEnabled, setShEnabled] = useState(false);
   const [shType, setShType] = useState<ShType>("shared");
   const [shWorkers, setShWorkers] = useState(3);
   const [shStorage, setShStorage] = useState(1);
