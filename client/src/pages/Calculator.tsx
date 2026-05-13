@@ -375,14 +375,13 @@ export function Calculator() {
   const SectionLabel = ({ children, icon: Icon, color = BRAND.blue }: {
     children: React.ReactNode; icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color?: string;
   }) => (
-    <div className="flex items-center gap-2 mb-2.5">
-      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: color }} />
-      {Icon && <Icon className="w-3.5 h-3.5" style={{ color: BRAND.ink, opacity: 0.55 }} />}
+    <div className="flex items-center gap-2 mb-3">
+      {Icon && <Icon className="w-4 h-4" style={{ color: BRAND.ink }} />}
       <h3
-        className="text-[10px] uppercase tracking-[0.18em] font-semibold"
-        style={{ fontFamily: FONT_BODY, color: BRAND.ink }}
+        className="text-base"
+        style={{ fontFamily: FONT_BRUSH, color: BRAND.ink, letterSpacing: "0.02em" }}
       >
-        {children}
+        <Marker color={color} opacity={0.7} height="40%">{children}</Marker>
       </h3>
     </div>
   );
@@ -500,8 +499,9 @@ export function Calculator() {
         >
           {/* Sidebar title */}
           <div className="mb-6">
-            <h2 className="text-xs uppercase tracking-[0.25em] font-semibold" style={{ fontFamily: FONT_BODY, color: BRAND.ink }}>
-              Configure Quote
+            <h2 className="text-2xl leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+              <Marker color={BRAND.blue} opacity={0.85} height="45%">Configure</Marker>
+              {" "}Your Quote
             </h2>
           </div>
 
