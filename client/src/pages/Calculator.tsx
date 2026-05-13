@@ -378,7 +378,7 @@ export function Calculator() {
   const SectionLabel = ({ children, icon: Icon }: {
     children: React.ReactNode; icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color?: string;
   }) => (
-    <div className="flex items-center gap-2 mb-3">
+    <div className="flex items-center gap-1.5 mb-2">
       {Icon && <Icon className="w-4 h-4" style={{ color: BRAND.ink, opacity: 0.6 }} />}
       <h3
         className="text-[11px] uppercase tracking-[0.16em] font-semibold"
@@ -497,12 +497,12 @@ export function Calculator() {
 
         {/* ── LEFT SIDEBAR ── */}
         <aside
-          className="v6-no-print w-[300px] overflow-y-auto flex-shrink-0 px-6 py-7 sidebar-elegant"
+          className="v6-no-print w-[260px] overflow-y-auto flex-shrink-0 px-4 py-5 sidebar-elegant"
           style={{ background: BRAND.paper, borderRight: `1px solid ${BRAND.hairline}` }}
         >
           {/* Sidebar title */}
-          <div className="mb-7 pb-5" style={{ borderBottom: `1px dashed ${BRAND.hairline}` }}>
-            <h2 className="text-2xl leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+          <div className="mb-4 pb-3" style={{ borderBottom: `1px dashed ${BRAND.hairline}` }}>
+            <h2 className="text-lg leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
               <Marker color={BRAND.blue} opacity={0.85} height="45%">Configure</Marker>
               {" "}Your Quote
             </h2>
@@ -523,27 +523,27 @@ export function Calculator() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setUsers(Math.max(1, users - 1))}
-                className="w-9 h-10 flex items-center justify-center rounded-2xl transition"
+                className="w-8 h-8 flex items-center justify-center rounded-xl transition"
                 style={{ background: BRAND.card, color: BRAND.ink }}
                 data-testid="button-users-minus"
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-3.5 h-3.5" />
               </button>
               <input
                 type="number"
                 value={users}
                 onChange={(e) => setUsers(Math.max(1, parseInt(e.target.value) || 1))}
-                className="flex-1 text-center font-semibold text-base h-10 rounded-2xl outline-none"
+                className="flex-1 text-center font-semibold text-sm h-8 rounded-xl outline-none"
                 style={{ background: BRAND.card, color: BRAND.ink, fontFamily: FONT_BODY }}
                 data-testid="input-users"
               />
               <button
                 onClick={() => setUsers(users + 1)}
-                className="w-9 h-10 flex items-center justify-center rounded-2xl transition"
+                className="w-8 h-8 flex items-center justify-center rounded-xl transition"
                 style={{ background: BRAND.card, color: BRAND.ink }}
                 data-testid="button-users-plus"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -564,7 +564,7 @@ export function Calculator() {
               <select
                 value={implementation}
                 onChange={(e) => setImplementation(e.target.value)}
-                className="w-full appearance-none rounded-2xl px-4 py-2.5 text-sm font-medium outline-none cursor-pointer pr-10"
+                className="w-full appearance-none rounded-xl px-3 py-2 text-xs font-medium outline-none cursor-pointer pr-9"
                 style={{ background: BRAND.card, color: BRAND.ink, fontFamily: FONT_BODY }}
                 data-testid="select-implementation"
               >
