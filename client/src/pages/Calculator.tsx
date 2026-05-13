@@ -497,11 +497,15 @@ export function Calculator() {
 
         {/* ── LEFT SIDEBAR ── */}
         <aside
-          className="v6-no-print w-[260px] overflow-y-auto flex-shrink-0 px-4 py-4 sidebar-elegant"
-          style={{ background: BRAND.paper, borderRight: `1px solid ${BRAND.hairline}` }}
+          className="v6-no-print w-[280px] overflow-y-auto flex-shrink-0 px-4 py-4"
+          style={{ background: "#FAF8F3", borderRight: `1px solid ${BRAND.hairline}` }}
         >
+          <div
+            className="sidebar-elegant rounded-2xl p-4"
+            style={{ background: BRAND.paper, border: `1px solid ${BRAND.hairline}`, boxShadow: "0 1px 2px rgba(0,0,0,0.02)" }}
+          >
           {/* Sidebar title */}
-          <div className="mb-3 pb-2" style={{ borderBottom: `1px dashed ${BRAND.hairline}` }}>
+          <div>
             <h2 className="text-base leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
               <Marker color={BRAND.blue} opacity={0.85} height="45%">Configure</Marker>
               {" "}Your Quote
@@ -767,6 +771,7 @@ export function Calculator() {
             <p className="mt-2 text-[10px] text-stone-400 italic" style={{ fontFamily: FONT_HAND }}>
               Show monthly financing options on the quote
             </p>
+          </div>
           </div>
         </aside>
 

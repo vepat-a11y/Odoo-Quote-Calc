@@ -50,12 +50,9 @@ input[type='number'] { -moz-appearance: textfield; }
   body { background: white !important; }
 }
 
-/* Elegant sidebar — soft hairline dividers between configuration sections */
-.sidebar-elegant > div + div:not(:last-child) {
-  border-bottom: 1px solid #EFECE5;
-  padding-bottom: 8px;
-  margin-bottom: 8px !important;
-}
+/* Elegant sidebar — single unified card, gentle spacing between sections (no dividers) */
+.sidebar-elegant > div { margin-bottom: 14px !important; }
+.sidebar-elegant > div:first-child { margin-bottom: 10px !important; }
 .sidebar-elegant > div:last-child { margin-bottom: 0 !important; }
 .sidebar-elegant button:hover { filter: brightness(0.97); }
 .sidebar-elegant input:focus,
