@@ -805,9 +805,13 @@ export function Calculator() {
                 style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}
               >
                 <div className="self-end pb-1">
-                  <p className="text-xs uppercase tracking-wider text-stone-500 font-semibold" style={{ fontFamily: FONT_BODY }}>
-                    Per month
-                  </p>
+                  <h3
+                    className="text-lg leading-none"
+                    style={{ fontFamily: FONT_BRUSH, color: BRAND.ink, letterSpacing: "0.02em" }}
+                  >
+                    <Marker color={BRAND.yellow} opacity={0.75} height="45%">Amortized</Marker>
+                    {" "}Cost
+                  </h3>
                 </div>
                 {quotes.map((q) => (
                   <div key={q.termKey} className="text-right">
