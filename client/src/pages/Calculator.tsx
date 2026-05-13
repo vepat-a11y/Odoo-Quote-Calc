@@ -250,9 +250,9 @@ const HandArrow = ({ color = BRAND.teal, className = "" }: { color?: string; cla
 export function Calculator() {
   // — State (mirrored) —
   const [country, setCountry] = useState<Country>("US");
-  const [users, setUsers] = useState(25);
+  const [users, setUsers] = useState(1);
   const [plan, setPlan] = useState<PlanKey>("standard");
-  const [implementation, setImplementation] = useState("basic");
+  const [implementation, setImplementation] = useState("none");
   const [shEnabled, setShEnabled] = useState(false);
   const [shType, setShType] = useState<ShType>("shared");
   const [shWorkers, setShWorkers] = useState(3);
@@ -262,7 +262,7 @@ export function Calculator() {
   const [showFinancing, setShowFinancing] = useState(false);
 
   const [selected, setSelected] = useState<Record<TermKey, boolean>>({
-    monthly: true, "1year": true, "2year": false, "3year": true, "4year": false, "5year": true,
+    monthly: true, "1year": false, "2year": false, "3year": false, "4year": false, "5year": false,
   });
 
   const [discounts, setDiscounts] = useState<Record<TermKey, { plan: number; impl: number }>>({
