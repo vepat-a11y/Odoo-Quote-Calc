@@ -5,9 +5,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
-export function Investment() {
+export function InvestmentEditorial() {
   const currentDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -248,23 +247,33 @@ export function Investment() {
             className="max-w-5xl mx-auto px-12 py-16"
           >
             {/* Header */}
-            <div className="mb-16 pb-8 border-b-2 border-stone-800">
-              <div className="flex justify-between items-end">
+            <div className="mb-10 pb-8 border-b border-stone-300">
+              <div className="flex justify-between items-end mb-8">
                 <div>
-                  <h1 className="text-4xl font-serif text-stone-900 tracking-tight mb-2">
+                  <div className="text-xs font-bold tracking-[0.2em] text-stone-500 uppercase mb-3">
+                    PROPOSAL · 2026
+                  </div>
+                  <h1 className="text-6xl font-serif text-stone-900 tracking-tight leading-tight">
                     Investment Proposal
                   </h1>
-                  <p className="text-stone-500 font-medium">
-                    Prepared for:{" "}
-                    <span className="text-stone-800">Acme Corporation</span>
-                  </p>
                 </div>
                 <div className="text-right text-sm text-stone-500 font-medium space-y-1">
+                  <p>
+                    Prepared for: <span className="text-stone-800">Acme Corporation</span>
+                  </p>
                   <p>
                     Prepared by: <span className="text-stone-800">Odoo Advisors</span>
                   </p>
                   <p>Date: {currentDate}</p>
                 </div>
+              </div>
+              <div className="max-w-3xl">
+                <p className="text-base font-serif italic text-stone-700 leading-relaxed">
+                  <span className="float-left text-6xl font-serif text-[#714B67] mr-3 mt-1 leading-none">
+                    T
+                  </span>
+                  his document outlines the comprehensive financial commitment required to deploy Odoo's enterprise solutions for your organization. It details the recurring software licenses, essential implementation services, and robust cloud infrastructure necessary to support 25 users.
+                </p>
               </div>
             </div>
 
@@ -285,26 +294,29 @@ export function Investment() {
               </div>
 
               {/* SOFTWARE LICENSE */}
-              <div className="py-8 border-b border-stone-200">
-                <div className="flex mb-4">
-                  <div className="w-[30%] font-serif text-lg text-stone-800">
-                    Software License
+              <div className="py-10 border-b border-stone-200">
+                <div className="flex mb-1">
+                  <div className="w-[30%]">
+                    <h3 className="font-serif text-2xl text-stone-900">Software License</h3>
+                    <div className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase mt-1">
+                      01 · Recurring software
+                    </div>
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $777.50<span className="text-xs">/mo</span>
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $9,330.00
                   </div>
-                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $27,990.00
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $46,650.00
                   </div>
                 </div>
 
-                <div className="flex text-sm text-stone-500 mb-2">
+                <div className="flex text-sm text-stone-500 mb-2 mt-4">
                   <div className="w-[30%] pl-4 flex items-center gap-2">
                     <ChevronRight className="w-3 h-3 text-[#017E84]" />
                     Year-1 Promo Savings
@@ -321,7 +333,7 @@ export function Investment() {
                   </div>
                 </div>
 
-                <div className="flex text-sm text-stone-500 mb-4">
+                <div className="flex text-sm text-stone-500 mb-6">
                   <div className="w-[30%] pl-4 flex items-center gap-2">
                     <ChevronRight className="w-3 h-3 text-[#017E84]" />
                     Multi-Year Discount
@@ -337,7 +349,10 @@ export function Investment() {
                 </div>
 
                 <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
-                  <div className="w-[30%]">Software Subtotal</div>
+                  <div className="w-[30%]">
+                    Software Subtotal
+                    <div className="font-serif italic text-xs text-stone-500 font-normal mt-1">Includes all enterprise features</div>
+                  </div>
                   <div className="w-[15%] text-right pr-4">$777.50</div>
                   <div className="w-[15%] text-right pr-4">$7,470.00</div>
                   <div className="w-[25%] text-right pr-4 text-[#714B67]">
@@ -348,26 +363,29 @@ export function Investment() {
               </div>
 
               {/* IMPLEMENTATION */}
-              <div className="py-8 border-b border-stone-200">
-                <div className="flex mb-4">
-                  <div className="w-[30%] font-serif text-lg text-stone-800">
-                    Implementation
+              <div className="py-10 border-b border-stone-200">
+                <div className="flex mb-1">
+                  <div className="w-[30%]">
+                    <h3 className="font-serif text-2xl text-stone-900">Implementation</h3>
+                    <div className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase mt-1">
+                      02 · One-time setup
+                    </div>
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $7,000.00
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $7,000.00
                   </div>
-                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $7,000.00
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $7,000.00
                   </div>
                 </div>
 
-                <div className="flex text-sm text-stone-500 mb-4">
+                <div className="flex text-sm text-stone-500 mb-6 mt-4">
                   <div className="w-[30%] pl-4 flex items-center gap-2">
                     <ChevronRight className="w-3 h-3 text-amber-500" />
                     Implementation Discount
@@ -387,7 +405,10 @@ export function Investment() {
                 </div>
 
                 <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
-                  <div className="w-[30%]">Implementation Subtotal</div>
+                  <div className="w-[30%]">
+                    Implementation Subtotal
+                    <div className="font-serif italic text-xs text-stone-500 font-normal mt-1">Billed upfront upon project start</div>
+                  </div>
                   <div className="w-[15%] text-right pr-4">$6,650.00</div>
                   <div className="w-[15%] text-right pr-4">$6,650.00</div>
                   <div className="w-[25%] text-right pr-4 text-[#714B67]">
@@ -398,26 +419,29 @@ export function Investment() {
               </div>
 
               {/* ODOO SH HOSTING */}
-              <div className="py-8 border-b-2 border-stone-800">
-                <div className="flex mb-4">
-                  <div className="w-[30%] font-serif text-lg text-stone-800">
-                    Odoo SH Hosting
+              <div className="py-10 border-b border-stone-300">
+                <div className="flex mb-1">
+                  <div className="w-[30%]">
+                    <h3 className="font-serif text-2xl text-stone-900">Odoo SH Hosting</h3>
+                    <div className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase mt-1">
+                      03 · Hosting infrastructure
+                    </div>
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $216.00<span className="text-xs">/mo</span>
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $2,073.60
                   </div>
-                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $6,220.80
                   </div>
-                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400 pt-1">
                     $10,368.00
                   </div>
                 </div>
 
-                <div className="flex text-sm text-stone-500 mb-4">
+                <div className="flex text-sm text-stone-500 mb-6 mt-4">
                   <div className="w-[30%] pl-4 flex items-center gap-2">
                     <ChevronRight className="w-3 h-3 text-[#017E84]" />
                     Multi-Year Discount
@@ -433,7 +457,10 @@ export function Investment() {
                 </div>
 
                 <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
-                  <div className="w-[30%]">Hosting Subtotal</div>
+                  <div className="w-[30%]">
+                    Hosting Subtotal
+                    <div className="font-serif italic text-xs text-stone-500 font-normal mt-1">Dedicated resources secured</div>
+                  </div>
                   <div className="w-[15%] text-right pr-4">$216.00</div>
                   <div className="w-[15%] text-right pr-4">$2,073.60</div>
                   <div className="w-[25%] text-right pr-4 text-[#714B67]">
@@ -444,9 +471,9 @@ export function Investment() {
               </div>
 
               {/* TOTALS */}
-              <div className="py-8">
+              <div className="py-10">
                 <div className="flex items-end mb-6">
-                  <div className="w-[30%] font-serif text-2xl text-stone-900">
+                  <div className="w-[30%] font-serif text-3xl text-stone-900">
                     Total Contract
                   </div>
                   <div className="w-[15%] text-right pr-4 text-xl font-medium text-stone-600">
@@ -455,7 +482,7 @@ export function Investment() {
                   <div className="w-[15%] text-right pr-4 text-xl font-medium text-stone-600">
                     $16,193.60
                   </div>
-                  <div className="w-[25%] text-right pr-4 text-3xl font-serif text-[#714B67] font-bold">
+                  <div className="w-[25%] text-right pr-4 text-4xl font-serif text-[#714B67] font-bold">
                     $36,720.08
                   </div>
                   <div className="w-[15%] text-right pr-4 text-xl font-medium text-stone-600">
@@ -503,11 +530,11 @@ export function Investment() {
             </div>
 
             {/* Recommendation Callout & Catalyst Finance */}
-            <div className="mt-16 bg-white border border-[#714B67]/20 shadow-xl rounded-xl p-10 relative overflow-hidden mb-16">
+            <div className="mt-16 bg-white border border-[#714B67]/20 shadow-xl rounded-xl p-12 relative overflow-hidden mb-16">
               <div className="absolute top-0 right-0 w-64 h-64 bg-[#714B67]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
 
-              <div className="max-w-3xl">
-                <div className="flex items-center gap-3 mb-6">
+              <div className="max-w-4xl mx-auto flex flex-col items-center">
+                <div className="flex items-center gap-3 mb-8">
                   <div className="bg-[#714B67] text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full">
                     Our Recommendation
                   </div>
@@ -516,16 +543,11 @@ export function Investment() {
                   </span>
                 </div>
 
-                <h3 className="text-3xl font-serif text-stone-900 mb-4">
-                  Authorize this Investment
+                <h3 className="text-3xl font-serif text-[#714B67] mb-12 italic text-center mx-auto max-w-2xl leading-relaxed">
+                  "By committing to the 3-Year term, you secure our best pricing structure while spreading the cost of implementation over a reasonable timeframe."
                 </h3>
-                <p className="text-stone-500 mb-10 text-lg">
-                  By committing to the 3-Year term, you secure our best pricing
-                  structure while spreading the cost of implementation over a
-                  reasonable timeframe.
-                </p>
 
-                <div className="flex items-end gap-12 border-b border-stone-200 pb-8 mb-8">
+                <div className="w-full flex items-end gap-12 border-b border-stone-200 pb-10 mb-10">
                   <div className="flex-1 space-y-2">
                     <div className="border-b border-stone-300 border-dashed pb-1 w-full h-8"></div>
                     <p className="text-xs text-stone-400 uppercase tracking-widest font-bold">
@@ -545,12 +567,12 @@ export function Investment() {
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-4 bg-[#FAFAF7] p-5 rounded-lg border border-stone-200">
+                <div className="w-full flex items-center gap-5 bg-[#FAFAF7] p-6 rounded-lg border border-stone-200">
                   <div className="bg-[#017E84]/10 p-3 rounded-full text-[#017E84]">
                     <CreditCard className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-serif text-lg text-stone-900">
+                    <h4 className="font-serif text-xl text-stone-900 mb-1">
                       Catalyst Financing Available
                     </h4>
                     <p className="text-stone-500 text-sm">

@@ -7,9 +7,10 @@ export const modules: ModuleMap = {
   "./components/mockups/calculator-layouts/HierarchyFirst.tsx": () => import("../components/mockups/calculator-layouts/HierarchyFirst.tsx"),
   "./components/mockups/calculator-layouts/QuoteHero.tsx": () => import("../components/mockups/calculator-layouts/QuoteHero.tsx"),
   "./components/mockups/calculator-layouts/SpreadsheetView.tsx": () => import("../components/mockups/calculator-layouts/SpreadsheetView.tsx"),
-  "./components/mockups/odoo-calculator/Decomposed.tsx": () => import("../components/mockups/odoo-calculator/Decomposed.tsx"),
-  "./components/mockups/odoo-calculator/HeroCards.tsx": () => import("../components/mockups/odoo-calculator/HeroCards.tsx"),
   "./components/mockups/odoo-calculator/Investment.tsx": () => import("../components/mockups/odoo-calculator/Investment.tsx"),
-  "./components/mockups/odoo-calculator/SideBySide.tsx": () => import("../components/mockups/odoo-calculator/SideBySide.tsx"),
-  "./components/mockups/odoo-calculator/Storyboard.tsx": () => import("../components/mockups/odoo-calculator/Storyboard.tsx")
+  "./components/mockups/odoo-calculator/InvestmentCompact.tsx": () => import("../components/mockups/odoo-calculator/InvestmentCompact.tsx"),
+  "./components/mockups/odoo-calculator/InvestmentDark.tsx": () => import("../components/mockups/odoo-calculator/InvestmentDark.tsx"),
+  "./components/mockups/odoo-calculator/InvestmentEditorial.tsx": () => import("../components/mockups/odoo-calculator/InvestmentEditorial.tsx"),
+  "./components/mockups/odoo-calculator/InvestmentLetterhead.tsx": () => import("../components/mockups/odoo-calculator/InvestmentLetterhead.tsx"),
+  "./components/mockups/odoo-calculator/InvestmentMonogram.tsx": () => import("../components/mockups/odoo-calculator/InvestmentMonogram.tsx")
 };

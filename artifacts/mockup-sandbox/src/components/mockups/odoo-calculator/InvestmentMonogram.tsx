@@ -5,9 +5,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
-export function Investment() {
+export function InvestmentMonogram() {
   const currentDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -245,27 +244,25 @@ export function Investment() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="max-w-5xl mx-auto px-12 py-16"
+            className="max-w-4xl mx-auto px-16 py-20"
           >
-            {/* Header */}
-            <div className="mb-16 pb-8 border-b-2 border-stone-800">
-              <div className="flex justify-between items-end">
-                <div>
-                  <h1 className="text-4xl font-serif text-stone-900 tracking-tight mb-2">
-                    Investment Proposal
-                  </h1>
-                  <p className="text-stone-500 font-medium">
-                    Prepared for:{" "}
-                    <span className="text-stone-800">Acme Corporation</span>
-                  </p>
-                </div>
-                <div className="text-right text-sm text-stone-500 font-medium space-y-1">
-                  <p>
-                    Prepared by: <span className="text-stone-800">Odoo Advisors</span>
-                  </p>
-                  <p>Date: {currentDate}</p>
-                </div>
+            {/* Header: Centered Monogram */}
+            <div className="mb-20 pb-12 flex flex-col items-center text-center">
+              <img
+                src="/__mockup/images/odoo-brand/odoo_logo.png"
+                alt="Odoo"
+                className="h-12 mb-6"
+              />
+              <div className="text-xs text-stone-500 uppercase tracking-[0.4em] mb-6">
+                Investment Proposal
               </div>
+              <div className="w-[60px] h-[1px] bg-[#714B67] mb-8"></div>
+              <h1 className="text-3xl font-serif text-stone-900 mb-4">
+                Prepared for Acme Corporation
+              </h1>
+              <p className="text-sm text-stone-500">
+                Acme Odoo Partners · {currentDate}
+              </p>
             </div>
 
             {/* Comparison Table */}
@@ -285,7 +282,13 @@ export function Investment() {
               </div>
 
               {/* SOFTWARE LICENSE */}
-              <div className="py-8 border-b border-stone-200">
+              <div className="py-12 border-b border-stone-200">
+                <div className="flex flex-col items-center mb-8">
+                  <div className="w-16 h-px bg-stone-300 mb-4"></div>
+                  <h2 className="font-serif text-xl text-stone-800 text-center">Software License</h2>
+                  <div className="w-16 h-px bg-stone-300 mt-4"></div>
+                </div>
+
                 <div className="flex mb-4">
                   <div className="w-[30%] font-serif text-lg text-stone-800">
                     Software License
@@ -336,7 +339,7 @@ export function Investment() {
                   </div>
                 </div>
 
-                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
+                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4 mt-6">
                   <div className="w-[30%]">Software Subtotal</div>
                   <div className="w-[15%] text-right pr-4">$777.50</div>
                   <div className="w-[15%] text-right pr-4">$7,470.00</div>
@@ -348,7 +351,13 @@ export function Investment() {
               </div>
 
               {/* IMPLEMENTATION */}
-              <div className="py-8 border-b border-stone-200">
+              <div className="py-12 border-b border-stone-200">
+                <div className="flex flex-col items-center mb-8">
+                  <div className="w-16 h-px bg-stone-300 mb-4"></div>
+                  <h2 className="font-serif text-xl text-stone-800 text-center">Implementation</h2>
+                  <div className="w-16 h-px bg-stone-300 mt-4"></div>
+                </div>
+
                 <div className="flex mb-4">
                   <div className="w-[30%] font-serif text-lg text-stone-800">
                     Implementation
@@ -386,7 +395,7 @@ export function Investment() {
                   </div>
                 </div>
 
-                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
+                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4 mt-6">
                   <div className="w-[30%]">Implementation Subtotal</div>
                   <div className="w-[15%] text-right pr-4">$6,650.00</div>
                   <div className="w-[15%] text-right pr-4">$6,650.00</div>
@@ -398,7 +407,13 @@ export function Investment() {
               </div>
 
               {/* ODOO SH HOSTING */}
-              <div className="py-8 border-b-2 border-stone-800">
+              <div className="py-12 border-b-2 border-stone-800">
+                <div className="flex flex-col items-center mb-8">
+                  <div className="w-16 h-px bg-stone-300 mb-4"></div>
+                  <h2 className="font-serif text-xl text-stone-800 text-center">Odoo SH Hosting</h2>
+                  <div className="w-16 h-px bg-stone-300 mt-4"></div>
+                </div>
+
                 <div className="flex mb-4">
                   <div className="w-[30%] font-serif text-lg text-stone-800">
                     Odoo SH Hosting
@@ -432,7 +447,7 @@ export function Investment() {
                   </div>
                 </div>
 
-                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
+                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4 mt-6">
                   <div className="w-[30%]">Hosting Subtotal</div>
                   <div className="w-[15%] text-right pr-4">$216.00</div>
                   <div className="w-[15%] text-right pr-4">$2,073.60</div>
@@ -444,9 +459,9 @@ export function Investment() {
               </div>
 
               {/* TOTALS */}
-              <div className="py-8">
-                <div className="flex items-end mb-6">
-                  <div className="w-[30%] font-serif text-2xl text-stone-900">
+              <div className="py-12">
+                <div className="flex items-end mb-8">
+                  <div className="w-[30%] font-serif text-2xl text-stone-900 text-center">
                     Total Contract
                   </div>
                   <div className="w-[15%] text-right pr-4 text-xl font-medium text-stone-600">
@@ -463,8 +478,8 @@ export function Investment() {
                   </div>
                 </div>
 
-                <div className="flex items-center text-sm font-medium border-t border-stone-200 pt-6 mb-4">
-                  <div className="w-[30%] text-stone-500 uppercase tracking-widest text-[10px]">
+                <div className="flex items-center text-sm font-medium border-t border-stone-200 pt-8 mb-6">
+                  <div className="w-[30%] text-stone-500 uppercase tracking-widest text-[10px] text-center">
                     Per-Month Amortized
                   </div>
                   <div className="w-[15%] text-right pr-4 text-stone-400">
@@ -482,7 +497,7 @@ export function Investment() {
                 </div>
 
                 <div className="flex items-center text-sm font-medium border-t border-stone-200 pt-6 mb-4">
-                  <div className="w-[30%] text-[#017E84] flex items-center gap-2 uppercase tracking-widest text-[10px]">
+                  <div className="w-[30%] text-[#017E84] flex items-center justify-center gap-2 uppercase tracking-widest text-[10px]">
                     <CheckCircle className="w-3.5 h-3.5" />
                     Savings vs Month-to-Month
                   </div>
@@ -503,11 +518,15 @@ export function Investment() {
             </div>
 
             {/* Recommendation Callout & Catalyst Finance */}
-            <div className="mt-16 bg-white border border-[#714B67]/20 shadow-xl rounded-xl p-10 relative overflow-hidden mb-16">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#714B67]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+            <div className="mt-20 bg-white border border-[#714B67]/10 shadow-sm rounded-xl p-12 relative overflow-hidden mb-20 text-center flex flex-col items-center">
+              <img
+                src="/__mockup/images/odoo-brand/odoo_gold_partner.png"
+                alt="Odoo Gold Partner"
+                className="h-16 mb-8 drop-shadow-md"
+              />
 
-              <div className="max-w-3xl">
-                <div className="flex items-center gap-3 mb-6">
+              <div className="max-w-2xl">
+                <div className="flex items-center justify-center gap-3 mb-6">
                   <div className="bg-[#714B67] text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full">
                     Our Recommendation
                   </div>
@@ -519,16 +538,20 @@ export function Investment() {
                 <h3 className="text-3xl font-serif text-stone-900 mb-4">
                   Authorize this Investment
                 </h3>
-                <p className="text-stone-500 mb-10 text-lg">
+                <p className="text-stone-500 mb-12 text-lg">
                   By committing to the 3-Year term, you secure our best pricing
                   structure while spreading the cost of implementation over a
                   reasonable timeframe.
                 </p>
+                
+                <Button className="bg-[#714B67] hover:bg-[#5b3c53] text-white px-10 h-12 text-base shadow-sm mb-12 rounded-none">
+                  Accept Proposal
+                </Button>
 
-                <div className="flex items-end gap-12 border-b border-stone-200 pb-8 mb-8">
+                <div className="flex items-center justify-between w-full max-w-lg mx-auto gap-12 border-t border-stone-200 pt-12 pb-4">
                   <div className="flex-1 space-y-2">
                     <div className="border-b border-stone-300 border-dashed pb-1 w-full h-8"></div>
-                    <p className="text-xs text-stone-400 uppercase tracking-widest font-bold">
+                    <p className="text-xs text-stone-400 uppercase tracking-widest font-bold text-center">
                       Authorized Signature
                     </p>
                   </div>
@@ -540,34 +563,33 @@ export function Investment() {
                       Date
                     </p>
                   </div>
-                  <Button className="bg-[#714B67] hover:bg-[#5b3c53] text-white px-8 h-12 text-base shadow-sm">
-                    Accept Proposal
-                  </Button>
-                </div>
-
-                <div className="flex items-center gap-4 bg-[#FAFAF7] p-5 rounded-lg border border-stone-200">
-                  <div className="bg-[#017E84]/10 p-3 rounded-full text-[#017E84]">
-                    <CreditCard className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif text-lg text-stone-900">
-                      Catalyst Financing Available
-                    </h4>
-                    <p className="text-stone-500 text-sm">
-                      Preserve your capital. Finance this entire 3-Year contract
-                      for as low as{" "}
-                      <strong className="text-[#017E84]">
-                        $1,117/mo over 36 months
-                      </strong>{" "}
-                      (subject to credit approval).
-                    </p>
-                  </div>
-                  <Button variant="outline" className="ml-auto bg-white border-stone-300 text-stone-700 hover:text-stone-900 hover:bg-stone-50">
-                    Apply Now
-                  </Button>
                 </div>
               </div>
             </div>
+
+            {/* Catalyst Finance */}
+            <div className="flex flex-col items-center text-center gap-4 bg-stone-100/50 p-8 border border-stone-200">
+              <div className="bg-[#017E84]/10 p-3 rounded-full text-[#017E84] mb-2">
+                <CreditCard className="w-6 h-6" />
+              </div>
+              <div className="max-w-xl">
+                <h4 className="font-serif text-lg text-stone-900 mb-2">
+                  Catalyst Financing Available
+                </h4>
+                <p className="text-stone-500 text-sm mb-6">
+                  Preserve your capital. Finance this entire 3-Year contract
+                  for as low as{" "}
+                  <strong className="text-[#017E84]">
+                    $1,117/mo over 36 months
+                  </strong>{" "}
+                  (subject to credit approval).
+                </p>
+                <Button variant="outline" className="bg-white border-stone-300 text-stone-700 hover:text-stone-900 hover:bg-stone-50 rounded-none">
+                  Apply Now
+                </Button>
+              </div>
+            </div>
+
           </motion.div>
         </main>
       </div>
