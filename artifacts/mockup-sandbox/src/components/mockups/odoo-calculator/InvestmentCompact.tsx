@@ -263,13 +263,17 @@ export function InvestmentCompact() {
   ]);
 
   const N = quotes.length;
-  const labelColPct = 26;
+  const dense = N >= 5;
+  const labelColPct = dense ? 22 : 26;
   const dataColPct = N > 0 ? (100 - labelColPct) / N : 0;
+  const totalSize = dense ? "text-base" : "text-xl";
+  const cellPadX = dense ? "pr-2" : "pr-4";
+  const sectionPadX = dense ? "px-3" : "px-4";
 
   // — Reusable cells —
   const HCell = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
     <div
-      className={`text-right pr-4 ${className}`}
+      className={`text-right ${cellPadX} ${className}`}
       style={{ width: `${dataColPct}%` }}
     >
       {children}
@@ -286,7 +290,7 @@ export function InvestmentCompact() {
   const SectionLabel = ({ children, icon: Icon }: { children: React.ReactNode; icon?: React.ComponentType<{ className?: string }> }) => (
     <div className="flex items-center gap-1.5 mb-2.5">
       {Icon && <Icon className="w-3 h-3 text-[#714B67]" />}
-      <label className="text-[10px] font-bold tracking-[0.18em] text-stone-500 uppercase">
+      <label className="text-[10px] font-semibold tracking-[0.16em] text-stone-600 uppercase">
         {children}
       </label>
     </div>
@@ -312,31 +316,22 @@ export function InvestmentCompact() {
         <div className="flex items-center gap-4">
           <img src="/__mockup/images/odoo-brand/odoo_logo.png" alt="Odoo" className="h-5" />
           <div className="w-px h-5 bg-stone-200" />
-          <span className="text-[11px] font-bold tracking-[0.22em] text-[#714B67] uppercase">
-            Odoo Proposal
+          <span className="text-[11px] font-semibold tracking-[0.22em] text-[#714B67] uppercase">
+            Your Growth Plan
           </span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setInternalView(!internalView)}
             data-testid="button-internal-sales"
-            className={`h-8 px-3 flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase rounded border transition-all ${
+            className={`h-8 px-3 flex items-center gap-1.5 text-[11px] font-semibold tracking-wider uppercase rounded border transition-all ${
               internalView
-                ? "bg-stone-900 text-amber-300 border-stone-900 shadow-sm"
-                : "bg-white text-stone-600 border-stone-300 hover:border-stone-400 hover:text-stone-900"
+                ? "bg-[#3D2A38] text-amber-200 border-[#3D2A38] shadow-sm"
+                : "bg-white text-stone-600 border-stone-300 hover:border-[#714B67]/40 hover:text-[#714B67]"
             }`}
           >
-            {internalView ? (
-              <>
-                <EyeOff className="w-3.5 h-3.5" />
-                Internal · MRR/NRR
-              </>
-            ) : (
-              <>
-                <Eye className="w-3.5 h-3.5" />
-                Internal Sales
-              </>
-            )}
+            {internalView ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            Internal
           </button>
           <Button
             size="sm"
@@ -352,19 +347,17 @@ export function InvestmentCompact() {
       {/* ── BODY ────────────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
         {/* ── LEFT SIDEBAR ───────────────────────────────────────────── */}
-        <aside className="w-[340px] bg-white border-r border-stone-200 overflow-y-auto flex-shrink-0 shadow-[2px_0_12px_rgba(0,0,0,0.03)]">
+        <aside className="w-[340px] bg-white border-r border-stone-200/70 overflow-y-auto flex-shrink-0 shadow-[2px_0_12px_rgba(0,0,0,0.02)]">
           <div className="p-5">
-            <div className="flex items-center justify-between mb-5 pb-3 border-b border-stone-100">
-              <h2 className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">
-                Configuration
-              </h2>
-              <span className="text-[9px] font-medium text-stone-400 italic">
-                live
+            <div className="flex items-baseline justify-between mb-5 pb-3 border-b border-stone-200/60">
+              <h2 className="font-serif italic text-base text-stone-800">Configure your quote</h2>
+              <span className="text-[9px] font-semibold text-[#017E84] italic uppercase tracking-wider">
+                · live
               </span>
             </div>
 
             {/* 1. Country */}
-            <div className="pb-4 mb-4 border-b border-stone-100">
+            <div className="pb-4 mb-4 border-b border-stone-200/50">
               <SectionLabel icon={Globe}>Country / Currency</SectionLabel>
               <div className="flex p-1 bg-stone-100 rounded-md">
                 <SegBtn active={country === "US"} onClick={() => setCountry("US")} testId="segment-country-us">
@@ -377,7 +370,7 @@ export function InvestmentCompact() {
             </div>
 
             {/* 2. Users */}
-            <div className="pb-4 mb-4 border-b border-stone-100">
+            <div className="pb-4 mb-4 border-b border-stone-200/50">
               <SectionLabel icon={Users}>Users</SectionLabel>
               <div className="flex items-center gap-2">
                 <button
@@ -405,7 +398,7 @@ export function InvestmentCompact() {
             </div>
 
             {/* 3. Plan */}
-            <div className="pb-4 mb-4 border-b border-stone-100">
+            <div className="pb-4 mb-4 border-b border-stone-200/50">
               <SectionLabel icon={Sparkles}>Plan</SectionLabel>
               <div className="flex p-1 bg-stone-100 rounded-md">
                 <SegBtn active={plan === "standard"} onClick={() => setPlan("standard")} testId="segment-plan-standard">
@@ -418,7 +411,7 @@ export function InvestmentCompact() {
             </div>
 
             {/* 4. Implementation */}
-            <div className="pb-4 mb-4 border-b border-stone-100">
+            <div className="pb-4 mb-4 border-b border-stone-200/50">
               <SectionLabel icon={FileText}>Implementation</SectionLabel>
               <div className="relative">
                 <select
@@ -438,7 +431,7 @@ export function InvestmentCompact() {
             </div>
 
             {/* 5. SH */}
-            <div className="pb-4 mb-4 border-b border-stone-100">
+            <div className="pb-4 mb-4 border-b border-stone-200/50">
               <div className="flex items-center justify-between mb-3">
                 <SectionLabel icon={Server}>Odoo SH Hosting</SectionLabel>
                 <Switch
@@ -449,7 +442,7 @@ export function InvestmentCompact() {
                 />
               </div>
               {shEnabled && (
-                <div className="bg-stone-50 border border-stone-100 rounded-md p-3 space-y-3">
+                <div className="bg-[#FAF7F1] border border-stone-200/60 rounded-md p-3 space-y-3">
                   <div className="flex p-0.5 bg-stone-200/60 rounded">
                     <SegBtn active={shType === "shared"} onClick={() => setShType("shared")} testId="segment-sh-shared">
                       Shared
@@ -497,7 +490,7 @@ export function InvestmentCompact() {
             </div>
 
             {/* 6. Terms */}
-            <div className="pb-4 mb-4 border-b border-stone-100">
+            <div className="pb-4 mb-4 border-b border-stone-200/50">
               <SectionLabel icon={Wallet}>Terms to Compare</SectionLabel>
               <div className="grid grid-cols-3 gap-1.5">
                 {ALL_TERMS.map((t) => {
@@ -523,9 +516,9 @@ export function InvestmentCompact() {
             {/* 7. Discounts */}
             <div>
               <SectionLabel icon={TrendingDown}>Discounts %</SectionLabel>
-              <div className="bg-stone-50 border border-stone-100 rounded-md overflow-hidden">
+              <div className="bg-[#FAF7F1] border border-stone-200/60 rounded-md overflow-hidden">
                 <div
-                  className="grid text-[10px] bg-stone-100/70 text-stone-500 font-semibold uppercase tracking-wider"
+                  className="grid text-[10px] bg-[#F0EBE0]/70 text-stone-600 font-semibold uppercase tracking-wider"
                   style={{ gridTemplateColumns: `1fr repeat(${activeTerms.length || 1}, 1fr)` }}
                 >
                   <div className="py-1.5 px-2 text-left">Type</div>
@@ -536,7 +529,7 @@ export function InvestmentCompact() {
                 {(["plan", "impl"] as const).map((field, idx) => (
                   <div
                     key={field}
-                    className={`grid text-xs ${idx === 0 ? "border-b border-stone-100" : ""}`}
+                    className={`grid text-xs ${idx === 0 ? "border-b border-stone-200/50" : ""}`}
                     style={{ gridTemplateColumns: `1fr repeat(${activeTerms.length || 1}, 1fr)` }}
                   >
                     <div className="py-1.5 px-2 text-stone-500 font-medium">
@@ -604,7 +597,7 @@ export function InvestmentCompact() {
                   Proposal · 2026
                 </p>
                 <h1 className="text-3xl font-serif italic text-stone-900 tracking-tight leading-none">
-                  Odoo Proposal
+                  Your Growth Plan
                 </h1>
               </div>
               <div className="flex gap-6 text-[11px] text-stone-500 font-medium">
@@ -634,7 +627,7 @@ export function InvestmentCompact() {
                 {/* ── COMPARISON TABLE ───────────────────────────── */}
                 <div className="bg-white rounded-lg border border-stone-200 shadow-sm overflow-hidden">
                   {/* Table header */}
-                  <div className="flex text-[10px] font-bold tracking-[0.18em] uppercase text-stone-500 px-4 py-3 bg-stone-50 border-b border-stone-200">
+                  <div className="flex text-[10px] font-semibold tracking-[0.16em] uppercase text-stone-600 px-4 py-3 bg-[#FAF7F1] border-b border-stone-200/70">
                     <Lbl>Cost Component</Lbl>
                     {quotes.map((q) => (
                       <HCell key={q.termKey}>
@@ -661,12 +654,12 @@ export function InvestmentCompact() {
                       <div className="flex text-xs mb-1.5 items-center">
                         <Lbl className="pl-4 text-stone-500">
                           <span className="inline-flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-[#017E84]" />
+                            <span className="w-1 h-1 rounded-full bg-[#714B67]" />
                             Year-1 Promo Savings
                           </span>
                         </Lbl>
                         {quotes.map((q) => (
-                          <HCell key={q.termKey} className="text-[#017E84] font-semibold tabular-nums">
+                          <HCell key={q.termKey} className="text-[#714B67] font-semibold tabular-nums">
                             {q.year1Promo > 0 ? `−${fmt(q.year1Promo)}` : dash}
                           </HCell>
                         ))}
@@ -676,12 +669,12 @@ export function InvestmentCompact() {
                       <div className="flex text-xs mb-2.5 items-center">
                         <Lbl className="pl-4 text-stone-500">
                           <span className="inline-flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-[#017E84]" />
+                            <span className="w-1 h-1 rounded-full bg-[#714B67]" />
                             Multi-Year Discount
                           </span>
                         </Lbl>
                         {quotes.map((q) => (
-                          <HCell key={q.termKey} className="text-[#017E84] font-semibold tabular-nums">
+                          <HCell key={q.termKey} className="text-[#714B67] font-semibold tabular-nums">
                             {q.multiYearSoftware > 0 ? `−${fmt(q.multiYearSoftware)}` : dash}
                           </HCell>
                         ))}
@@ -782,17 +775,20 @@ export function InvestmentCompact() {
                     </div>
                   )}
 
-                  {/* TOTAL CONTRACT — dark hero band, uniform typography across columns */}
-                  <div className="flex items-center px-4 py-5 bg-stone-900 text-white">
+                  {/* TOTAL CONTRACT — deep brand-purple band */}
+                  <div
+                    className={`flex items-center ${sectionPadX} py-5 text-white`}
+                    style={{ background: "linear-gradient(135deg, #3D2A38 0%, #2D2030 100%)" }}
+                  >
                     <Lbl>
-                      <p className="text-[10px] font-bold tracking-[0.25em] text-stone-400 uppercase mb-0.5">
+                      <p className="text-[10px] font-bold tracking-[0.25em] text-amber-200/80 uppercase mb-0.5">
                         Total Contract
                       </p>
                       <p className="font-serif italic text-base text-white">All-in cost</p>
                     </Lbl>
                     {quotes.map((q) => (
-                      <HCell key={q.termKey} className="text-xl font-bold tabular-nums text-white">
-                        {fmt(q.totalContract)}
+                      <HCell key={q.termKey} className={`${totalSize} font-bold tabular-nums text-white`}>
+                        {dense ? fmt0(q.totalContract) : fmt(q.totalContract)}
                       </HCell>
                     ))}
                   </div>
@@ -811,32 +807,27 @@ export function InvestmentCompact() {
                     ))}
                   </div>
 
-                  {/* INTERNAL SALES — MRR / NRR rows (toggle-gated) */}
+                  {/* INTERNAL — MRR / NRR rows (toggle-gated) */}
                   {internalView && (
                     <>
-                      <div className="px-4 py-2 bg-stone-900 border-t border-stone-800 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <Lock className="w-3 h-3 text-amber-300" />
-                          <span className="text-[9px] font-bold tracking-[0.25em] text-amber-300 uppercase">
-                            Internal Sales · Recurring Revenue
-                          </span>
-                        </div>
-                        <span className="text-[9px] text-stone-400 italic">
-                          partner share {Math.round(PARTNER_RECURRING_PCT * 100)}% · not visible to client
+                      <div
+                        className={`${sectionPadX} py-2 flex items-center gap-1.5`}
+                        style={{ background: "linear-gradient(135deg, #3D2A38 0%, #2D2030 100%)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+                      >
+                        <Lock className="w-3 h-3 text-amber-200" />
+                        <span className="text-[9px] font-bold tracking-[0.25em] text-amber-200 uppercase">
+                          Internal · Recurring Revenue
                         </span>
                       </div>
 
-                      <div className="flex items-center px-4 py-3 bg-stone-50 border-t border-stone-100">
+                      <div className={`flex items-center ${sectionPadX} py-3 bg-[#FAF7F1] border-t border-stone-200/60`}>
                         <Lbl>
                           <div className="flex items-center gap-1.5">
                             <Repeat className="w-3 h-3 text-[#714B67]" />
-                            <p className="text-[10px] font-bold tracking-[0.2em] text-[#714B67] uppercase">
+                            <p className="text-[11px] font-bold tracking-[0.2em] text-[#714B67] uppercase">
                               MRR
                             </p>
                           </div>
-                          <p className="text-[9px] text-stone-400 italic mt-0.5 ml-4">
-                            software + hosting / month
-                          </p>
                         </Lbl>
                         {quotes.map((q) => {
                           const mrr = (q.softwareSubtotal + q.shSubtotal) / q.months;
@@ -848,24 +839,21 @@ export function InvestmentCompact() {
                         })}
                       </div>
 
-                      <div className="flex items-center px-4 py-3 bg-stone-50 border-t border-stone-100">
+                      <div className={`flex items-center ${sectionPadX} py-3 bg-[#FAF7F1] border-t border-stone-200/60`}>
                         <Lbl>
                           <div className="flex items-center gap-1.5">
                             <Wallet className="w-3 h-3 text-[#017E84]" />
-                            <p className="text-[10px] font-bold tracking-[0.2em] text-[#017E84] uppercase">
+                            <p className="text-[11px] font-bold tracking-[0.2em] text-[#017E84] uppercase">
                               NRR
                             </p>
                           </div>
-                          <p className="text-[9px] text-stone-400 italic mt-0.5 ml-4">
-                            net recurring · partner payout
-                          </p>
                         </Lbl>
                         {quotes.map((q) => {
                           const mrr = (q.softwareSubtotal + q.shSubtotal) / q.months;
                           const nrr = mrr * PARTNER_RECURRING_PCT;
                           return (
                             <HCell key={q.termKey} className="text-sm font-bold text-[#017E84] tabular-nums">
-                              {fmt0(nrr)}<span className="text-[10px] text-stone-400 font-normal">/mo</span>
+                              {fmt0(nrr)}
                             </HCell>
                           );
                         })}
@@ -891,50 +879,50 @@ export function InvestmentCompact() {
                   </div>
                 </div>
 
-                {/* ── CATALYST FINANCE CARD ─────────────────────── */}
+                {/* ── CATALYST FINANCE — calm cream card with purple accents ─── */}
                 {quotes.some((q) => q.finLow > 0) && (
                   <div
-                    className="mt-6 rounded-lg overflow-hidden shadow-lg border border-stone-800"
-                    style={{ background: "linear-gradient(135deg, #2D2438 0%, #1B1525 100%)" }}
+                    className="mt-6 rounded-lg overflow-hidden border border-stone-200 shadow-sm"
+                    style={{ background: "linear-gradient(135deg, #FAF7F1 0%, #F4EFE6 100%)" }}
                   >
-                    <div className="px-5 py-3 flex items-center justify-between border-b border-white/10">
+                    <div className={`${sectionPadX} py-3 flex items-center justify-between border-b border-stone-200/70`}>
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
-                          <CreditCard className="w-3.5 h-3.5 text-amber-300" />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(113,75,103,0.1)" }}>
+                          <CreditCard className="w-3.5 h-3.5 text-[#714B67]" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+                          <p className="text-[10px] font-bold tracking-[0.25em] text-[#714B67] uppercase">
                             Catalyst Finance
                           </p>
-                          <p className="text-[10px] text-stone-400 italic">
+                          <p className="text-[10px] text-stone-500 italic">
                             Spread your investment · approved partners
                           </p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold tracking-wider text-stone-400 uppercase">
+                      <span className="text-[10px] font-semibold tracking-wider text-stone-500 uppercase px-2 py-0.5 rounded-full bg-white border border-stone-200">
                         {APR_LOW * 100}–{APR_HIGH * 100}% APR
                       </span>
                     </div>
 
-                    <div className="flex items-center px-4 py-3 border-b border-white/5">
+                    <div className={`flex items-center ${sectionPadX} py-3 border-b border-stone-200/50`}>
                       <Lbl>
-                        <p className="text-[11px] font-semibold text-amber-300">Best Rate</p>
-                        <p className="text-[10px] text-stone-400 italic">{APR_LOW * 100}% APR · qualified</p>
+                        <p className="text-[11px] font-semibold text-[#714B67]">Best Rate</p>
+                        <p className="text-[10px] text-stone-500 italic">{APR_LOW * 100}% APR · qualified</p>
                       </Lbl>
                       {quotes.map((q) => (
-                        <HCell key={q.termKey} className="text-sm font-bold text-white tabular-nums">
+                        <HCell key={q.termKey} className="text-sm font-bold text-stone-900 tabular-nums">
                           {q.finLow > 0 ? `${fmt0(q.finLow)}/mo` : dash}
                         </HCell>
                       ))}
                     </div>
 
-                    <div className="flex items-center px-4 py-3">
+                    <div className={`flex items-center ${sectionPadX} py-3`}>
                       <Lbl>
-                        <p className="text-[11px] font-semibold text-stone-300">Standard Rate</p>
-                        <p className="text-[10px] text-stone-400 italic">{APR_HIGH * 100}% APR</p>
+                        <p className="text-[11px] font-semibold text-stone-600">Standard Rate</p>
+                        <p className="text-[10px] text-stone-500 italic">{APR_HIGH * 100}% APR</p>
                       </Lbl>
                       {quotes.map((q) => (
-                        <HCell key={q.termKey} className="text-sm font-semibold text-stone-200 tabular-nums">
+                        <HCell key={q.termKey} className="text-sm font-semibold text-stone-700 tabular-nums">
                           {q.finHigh > 0 ? `${fmt0(q.finHigh)}/mo` : dash}
                         </HCell>
                       ))}
