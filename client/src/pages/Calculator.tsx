@@ -497,12 +497,12 @@ export function Calculator() {
 
         {/* ── LEFT SIDEBAR ── */}
         <aside
-          className="v6-no-print w-[260px] overflow-y-auto flex-shrink-0 px-4 py-5 sidebar-elegant"
+          className="v6-no-print w-[260px] overflow-y-auto flex-shrink-0 px-4 py-4 sidebar-elegant"
           style={{ background: BRAND.paper, borderRight: `1px solid ${BRAND.hairline}` }}
         >
           {/* Sidebar title */}
-          <div className="mb-4 pb-3" style={{ borderBottom: `1px dashed ${BRAND.hairline}` }}>
-            <h2 className="text-lg leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+          <div className="mb-3 pb-2" style={{ borderBottom: `1px dashed ${BRAND.hairline}` }}>
+            <h2 className="text-base leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
               <Marker color={BRAND.blue} opacity={0.85} height="45%">Configure</Marker>
               {" "}Your Quote
             </h2>
@@ -578,7 +578,7 @@ export function Calculator() {
 
           {/* SH Hosting */}
           <div className="mb-5">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <SectionLabel icon={Server} color={BRAND.teal}>Odoo SH</SectionLabel>
               <button
                 onClick={() => setShEnabled(!shEnabled)}
@@ -593,8 +593,8 @@ export function Calculator() {
               </button>
             </div>
             {shEnabled && (
-              <div className="rounded-2xl p-3 space-y-3" style={{ background: BRAND.cardAlt }}>
-                <div className="flex gap-2">
+              <div className="rounded-xl p-2.5 space-y-2" style={{ background: BRAND.cardAlt }}>
+                <div className="flex gap-1.5">
                   <PillButton active={shType === "shared"} onClick={() => setShType("shared")} color={BRAND.teal} testId="pill-sh-shared">Shared</PillButton>
                   <PillButton active={shType === "dedicated"} onClick={() => setShType("dedicated")} color={BRAND.teal} testId="pill-sh-dedicated">Dedicated</PillButton>
                 </div>
@@ -603,7 +603,7 @@ export function Calculator() {
                   { label: "Storage GB", key: "storage", v: shStorage, set: setShStorage, min: 0 },
                   { label: "Staging", key: "staging", v: shStaging, set: setShStaging, min: 0 },
                 ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between text-sm">
+                  <div key={row.label} className="flex items-center justify-between text-xs">
                     <span className="text-stone-600" style={{ fontFamily: FONT_BODY }}>{row.label}</span>
                     <div className="flex items-center gap-1">
                       <button
@@ -638,7 +638,7 @@ export function Calculator() {
                   <button
                     key={t}
                     onClick={() => setSelected({ ...selected, [t]: !active })}
-                    className="py-2 text-xs font-semibold rounded-2xl transition"
+                    className="py-1.5 text-xs font-semibold rounded-xl transition"
                     style={{
                       background: active ? `${BRAND.purple}1F` : BRAND.card,
                       color: active ? BRAND.purple : BRAND.ink,
@@ -652,9 +652,6 @@ export function Calculator() {
                 );
               })}
             </div>
-            <p className="mt-2 text-[10px] text-stone-400 italic" style={{ fontFamily: FONT_HAND }}>
-              Multi-year terms include cost savings & price lock
-            </p>
           </div>
 
           {/* Discounts editor — horizontal: rows=Plan/Impl, cols=terms */}

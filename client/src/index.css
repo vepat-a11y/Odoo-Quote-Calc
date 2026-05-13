@@ -53,8 +53,8 @@ input[type='number'] { -moz-appearance: textfield; }
 /* Elegant sidebar — soft hairline dividers between configuration sections */
 .sidebar-elegant > div + div:not(:last-child) {
   border-bottom: 1px solid #EFECE5;
-  padding-bottom: 12px;
-  margin-bottom: 12px !important;
+  padding-bottom: 8px;
+  margin-bottom: 8px !important;
 }
 .sidebar-elegant > div:last-child { margin-bottom: 0 !important; }
 .sidebar-elegant button:hover { filter: brightness(0.97); }
