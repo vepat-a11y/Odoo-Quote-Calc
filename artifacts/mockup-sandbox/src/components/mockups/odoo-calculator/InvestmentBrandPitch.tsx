@@ -1099,14 +1099,14 @@ export function InvestmentBrandPitch() {
                   className="text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1 rounded-full bg-white border border-stone-200"
                   style={{ color: BRAND.purple }}
                 >
-                  {APR_LOW * 100}–{APR_HIGH * 100}% APR
+                  {Math.round(APR_LOW * 100)}–{Math.round(APR_HIGH * 100)}% APR
                 </span>
               </div>
 
               <div className="grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
                 <div className="text-xs">
                   <p className="font-semibold" style={{ color: BRAND.purple }}>Best Rate</p>
-                  <p className="text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>{APR_LOW * 100}% APR</p>
+                  <p className="text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>{Math.round(APR_LOW * 100)}% APR</p>
                 </div>
                 {quotes.map((q) => (
                   <div key={q.termKey} className="text-right tabular-nums font-bold text-sm" style={{ color: BRAND.ink }}>
@@ -1117,7 +1117,7 @@ export function InvestmentBrandPitch() {
               <div className="mt-2 pt-2 border-t border-stone-200/60 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
                 <div className="text-xs">
                   <p className="font-semibold text-stone-600">Standard Rate</p>
-                  <p className="text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>{APR_HIGH * 100}% APR</p>
+                  <p className="text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>{Math.round(APR_HIGH * 100)}% APR</p>
                 </div>
                 {quotes.map((q) => (
                   <div key={q.termKey} className="text-right tabular-nums font-semibold text-sm text-stone-700">
