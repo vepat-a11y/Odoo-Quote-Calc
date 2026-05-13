@@ -1,7 +1,11 @@
 import React from "react";
+import { Download, CheckCircle, ChevronDown, Users, Server, Globe, CreditCard, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, ChevronRight, FileText, Info } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 export function Investment() {
   const currentDate = new Date().toLocaleDateString("en-US", {
@@ -11,236 +15,564 @@ export function Investment() {
   });
 
   return (
-    <div className="min-h-screen w-full bg-[#FAFAF7] font-sans text-[#333333] selection:bg-[#714B67] selection:text-white pb-24">
-      {/* Top rule */}
-      <div className="h-1.5 w-full bg-[#714B67]" />
-
-      <div className="mx-auto max-w-5xl px-8 pt-16 pb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF7] text-stone-900 selection:bg-[#714B67] selection:text-white pb-0">
+      {/* TOP BAR */}
+      <header className="flex-shrink-0 h-16 bg-white border-b border-stone-200 px-6 flex items-center justify-between z-20 sticky top-0 shadow-sm">
+        <div className="flex items-center gap-4">
+          <img
+            src="/__mockup/images/odoo-brand/odoo_logo.png"
+            alt="Odoo"
+            className="h-6"
+          />
+          <div className="w-px h-6 bg-stone-200"></div>
+          <span className="font-medium text-stone-600 tracking-wide text-sm uppercase">
+            Investment Proposal
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          className="text-[#714B67] border-[#714B67] hover:bg-[#714B67] hover:text-white transition-colors"
         >
-          {/* Header */}
-          <header className="flex justify-between items-start mb-20 border-b border-[#E5E5E5] pb-12">
-            <div>
-              <img
-                src="/__mockup/images/odoo-brand/odoo_logo.png"
-                alt="Odoo Logo"
-                className="h-[32px] mb-8"
-              />
-              <h1 className="text-3xl font-medium tracking-tight text-[#1A1A1A]">
-                Investment Proposal
-              </h1>
-              <p className="text-[#8F8F8F] mt-2 font-mono text-sm tracking-wide uppercase">
-                Odoo Enterprise Deployment
-              </p>
-            </div>
-            <div className="text-right text-sm">
-              <div className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-2 text-left">
-                <span className="text-[#8F8F8F] uppercase text-xs font-semibold tracking-wider">Date</span>
-                <span className="font-medium text-[#1A1A1A] tabular-nums">{currentDate}</span>
-                
-                <span className="text-[#8F8F8F] uppercase text-xs font-semibold tracking-wider">Prepared For</span>
-                <span className="font-medium text-[#1A1A1A]">Acme Corporation</span>
-                
-                <span className="text-[#8F8F8F] uppercase text-xs font-semibold tracking-wider">Prepared By</span>
-                <span className="font-medium text-[#1A1A1A]">Odoo Advisors</span>
-                
-                <span className="text-[#8F8F8F] uppercase text-xs font-semibold tracking-wider">Configuration</span>
-                <span className="font-medium text-[#1A1A1A]">Standard Plan · 25 Users</span>
-              </div>
-            </div>
-          </header>
+          <Download className="w-4 h-4 mr-2" />
+          Export PDF
+        </Button>
+      </header>
 
-          <main className="space-y-16">
-            {/* Table Header */}
-            <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 pb-4 border-b-2 border-[#1A1A1A] text-sm uppercase tracking-wider font-semibold text-[#8F8F8F]">
-              <div>Cost Components</div>
-              <div className="text-right">Monthly</div>
-              <div className="text-right">1-Year</div>
-              <div className="text-right relative">
-                <div className="absolute -top-7 -right-2 bg-[#714B67] text-white text-[10px] px-2 py-0.5 rounded-sm tracking-widest uppercase font-bold whitespace-nowrap">
-                  Best Value
+      {/* BODY */}
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
+        {/* LEFT SIDEBAR */}
+        <aside className="w-[340px] bg-white border-r border-stone-200 overflow-y-auto flex-shrink-0 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+          <div className="p-6">
+            <h2 className="text-xs font-bold tracking-[0.2em] text-stone-400 uppercase mb-6">
+              Configuration Sheet
+            </h2>
+
+            <div className="flex flex-col gap-0">
+              {/* 1. Country / Currency */}
+              <div className="py-4 border-b border-stone-100">
+                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
+                  Country / Currency
+                </label>
+                <div className="flex p-1 bg-stone-100 rounded-md">
+                  <button className="flex-1 py-1.5 text-xs font-semibold bg-white rounded shadow-sm text-stone-800">
+                    USD
+                  </button>
+                  <button className="flex-1 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800">
+                    CAD
+                  </button>
                 </div>
-                <span className="text-[#714B67]">3-Year</span>
               </div>
-              <div className="text-right">5-Year</div>
+
+              {/* 2. Users */}
+              <div className="py-4 border-b border-stone-100">
+                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
+                  Users
+                </label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    defaultValue={25}
+                    className="pl-9 bg-stone-50 border-stone-200 focus-visible:ring-[#714B67]"
+                  />
+                  <Users className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              {/* 3. Plan */}
+              <div className="py-4 border-b border-stone-100">
+                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
+                  Plan
+                </label>
+                <div className="flex p-1 bg-stone-100 rounded-md">
+                  <button className="flex-1 py-1.5 text-xs font-semibold bg-white rounded shadow-sm text-stone-800">
+                    Standard
+                  </button>
+                  <button className="flex-1 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800">
+                    Custom
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. Implementation */}
+              <div className="py-4 border-b border-stone-100">
+                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
+                  Implementation
+                </label>
+                <div className="relative bg-stone-50 border border-stone-200 rounded-md px-3 py-2 flex items-center justify-between cursor-pointer">
+                  <span className="text-sm font-medium text-stone-800">
+                    Basic (50h) — $7,000
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-stone-400" />
+                </div>
+              </div>
+
+              {/* 5. Odoo SH Hosting */}
+              <div className="py-4 border-b border-stone-100">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase">
+                    Odoo SH Hosting
+                  </label>
+                  <Switch
+                    checked={true}
+                    className="data-[state=checked]:bg-[#714B67]"
+                  />
+                </div>
+                <div className="bg-stone-50 border border-stone-100 rounded-md p-4 space-y-4">
+                  <div className="flex p-1 bg-stone-200/50 rounded-md">
+                    <button className="flex-1 py-1 text-xs font-semibold bg-white rounded shadow-sm text-stone-800">
+                      Shared
+                    </button>
+                    <button className="flex-1 py-1 text-xs font-medium text-stone-500 hover:text-stone-800">
+                      Dedicated
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-stone-500">Workers</span>
+                      <span className="text-sm font-medium">3</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-stone-500">Storage GB</span>
+                      <span className="text-sm font-medium">1</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-stone-500">
+                        Staging branches
+                      </span>
+                      <span className="text-sm font-medium">0</span>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t border-stone-200 text-center">
+                    <span className="text-[10px] font-medium text-stone-500">
+                      $172.80/mo annual · $216/mo monthly
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 6. Terms to Compare */}
+              <div className="py-4 border-b border-stone-100">
+                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
+                  Terms to Compare
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["Mo", "1Y", "2Y", "3Y", "4Y", "5Y"].map((term) => {
+                    const isActive = ["Mo", "1Y", "3Y", "5Y"].includes(term);
+                    return (
+                      <button
+                        key={term}
+                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                          isActive
+                            ? "bg-stone-800 text-white border-stone-800 font-medium shadow-sm"
+                            : "bg-white text-stone-400 border-stone-200 hover:border-stone-300"
+                        }`}
+                      >
+                        {term}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 7. Discounts */}
+              <div className="py-4">
+                <label className="block text-[10px] font-bold tracking-widest text-stone-400 uppercase mb-3">
+                  Discounts Applied
+                </label>
+                <div className="bg-stone-50 border border-stone-100 rounded-md overflow-hidden text-xs">
+                  <table className="w-full text-center">
+                    <thead>
+                      <tr className="bg-stone-100/50 text-stone-500 border-b border-stone-100">
+                        <th className="font-normal py-1.5 px-2 text-left">
+                          Type
+                        </th>
+                        <th className="font-normal py-1.5 px-2">Mo</th>
+                        <th className="font-normal py-1.5 px-2">1Y</th>
+                        <th className="font-normal py-1.5 px-2">3Y</th>
+                        <th className="font-normal py-1.5 px-2">5Y</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-stone-700 font-medium">
+                      <tr className="border-b border-stone-100">
+                        <td className="py-2 px-2 text-left font-normal text-stone-500">
+                          Plan %
+                        </td>
+                        <td className="py-2 px-2 text-stone-300">—</td>
+                        <td className="py-2 px-2 text-stone-300">—</td>
+                        <td className="py-2 px-2">10</td>
+                        <td className="py-2 px-2">10</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-2 text-left font-normal text-stone-500">
+                          Impl %
+                        </td>
+                        <td className="py-2 px-2">5</td>
+                        <td className="py-2 px-2">5</td>
+                        <td className="py-2 px-2">5</td>
+                        <td className="py-2 px-2">5</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
+          </div>
+        </aside>
 
-            {/* Software License */}
-            <div className="space-y-3 border-b border-[#E5E5E5] pb-8">
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4">
-                <div className="font-medium text-lg text-[#1A1A1A]">Software License</div>
-                <div className="col-start-2 col-end-6"></div>
-              </div>
-              
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 text-sm tabular-nums">
-                <div className="text-[#666666] pl-4">List Price</div>
-                <div className="text-right text-[#666666]">$777.50</div>
-                <div className="text-right text-[#666666]">$7,470.00</div>
-                <div className="text-right text-[#666666]">$27,990.00</div>
-                <div className="text-right text-[#666666]">$46,650.00</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 text-sm tabular-nums">
-                <div className="text-[#666666] pl-4">Year-1 Promo Savings</div>
-                <div className="text-right text-[#666666]">—</div>
-                <div className="text-right text-teal-700">–$1,860.00</div>
-                <div className="text-right text-teal-700">–$1,860.00</div>
-                <div className="text-right text-teal-700">–$1,860.00</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 text-sm tabular-nums">
-                <div className="text-[#666666] pl-4">Multi-Year Discount</div>
-                <div className="text-right text-[#666666]">—</div>
-                <div className="text-right text-[#666666]">—</div>
-                <div className="text-right text-teal-700">–$1,866.00</div>
-                <div className="text-right text-teal-700">–$3,732.00</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 pt-3 font-medium tabular-nums border-t border-dashed border-[#CCCCCC]">
-                <div className="text-[#1A1A1A] pl-4">License Subtotal</div>
-                <div className="text-right text-[#1A1A1A]">$777.50</div>
-                <div className="text-right text-[#1A1A1A]">$5,610.00</div>
-                <div className="text-right text-[#1A1A1A]">$24,264.00</div>
-                <div className="text-right text-[#1A1A1A]">$41,058.00</div>
+        {/* MAIN PANEL */}
+        <main className="flex-1 overflow-y-auto relative bg-[#FAFAF7]">
+          {/* Sticky Chip Bar */}
+          <div className="sticky top-0 z-20 bg-[#FAFAF7]/80 backdrop-blur-md border-b border-stone-200 px-12 py-4">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-2 text-xs font-medium text-stone-500 bg-white px-4 py-1.5 rounded-full border border-stone-200 shadow-sm">
+                <Globe className="w-3.5 h-3.5" />
+                <span>United States</span>
+                <span className="text-stone-300">•</span>
+                <Users className="w-3.5 h-3.5" />
+                <span>25 users</span>
+                <span className="text-stone-300">•</span>
+                <span>Standard</span>
+                <span className="text-stone-300">•</span>
+                <span>Basic Implementation</span>
+                <span className="text-stone-300">•</span>
+                <Server className="w-3.5 h-3.5" />
+                <span>Odoo SH Shared 3 workers</span>
               </div>
             </div>
+          </div>
 
-            {/* Implementation */}
-            <div className="space-y-3 border-b border-[#E5E5E5] pb-8">
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4">
-                <div className="font-medium text-lg text-[#1A1A1A]">Implementation <span className="text-sm font-normal text-[#8F8F8F] ml-2">(One-time, Basic 50h)</span></div>
-                <div className="col-start-2 col-end-6"></div>
-              </div>
-              
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 text-sm tabular-nums">
-                <div className="text-[#666666] pl-4">List Price</div>
-                <div className="text-right text-[#666666]">$7,000.00</div>
-                <div className="text-right text-[#666666]">$7,000.00</div>
-                <div className="text-right text-[#666666]">$7,000.00</div>
-                <div className="text-right text-[#666666]">$7,000.00</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 text-sm tabular-nums">
-                <div className="text-[#666666] pl-4">Partner Discount</div>
-                <div className="text-right text-teal-700">–$350.00</div>
-                <div className="text-right text-teal-700">–$350.00</div>
-                <div className="text-right text-teal-700">–$350.00</div>
-                <div className="text-right text-teal-700">–$350.00</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 pt-3 font-medium tabular-nums border-t border-dashed border-[#CCCCCC]">
-                <div className="text-[#1A1A1A] pl-4">Implementation Subtotal</div>
-                <div className="text-right text-[#1A1A1A]">$6,650.00</div>
-                <div className="text-right text-[#1A1A1A]">$6,650.00</div>
-                <div className="text-right text-[#1A1A1A]">$6,650.00</div>
-                <div className="text-right text-[#1A1A1A]">$6,650.00</div>
-              </div>
-            </div>
-
-            {/* Hosting */}
-            <div className="space-y-3 pb-4">
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4">
-                <div className="font-medium text-lg text-[#1A1A1A]">Odoo SH Hosting <span className="text-sm font-normal text-[#8F8F8F] ml-2">(Shared · 3 Workers)</span></div>
-                <div className="col-start-2 col-end-6"></div>
-              </div>
-              
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 text-sm tabular-nums">
-                <div className="text-[#666666] pl-4">List Price</div>
-                <div className="text-right text-[#666666]">$216.00</div>
-                <div className="text-right text-[#666666]">$2,073.60</div>
-                <div className="text-right text-[#666666]">$6,220.80</div>
-                <div className="text-right text-[#666666]">$10,368.00</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 text-sm tabular-nums">
-                <div className="text-[#666666] pl-4">Multi-Year Discount</div>
-                <div className="text-right text-[#666666]">—</div>
-                <div className="text-right text-[#666666]">—</div>
-                <div className="text-right text-teal-700">–$414.72</div>
-                <div className="text-right text-teal-700">–$829.44</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 pt-3 font-medium tabular-nums border-t border-dashed border-[#CCCCCC]">
-                <div className="text-[#1A1A1A] pl-4">Hosting Subtotal</div>
-                <div className="text-right text-[#1A1A1A]">$216.00</div>
-                <div className="text-right text-[#1A1A1A]">$2,073.60</div>
-                <div className="text-right text-[#1A1A1A]">$5,806.08</div>
-                <div className="text-right text-[#1A1A1A]">$9,538.56</div>
-              </div>
-            </div>
-
-            {/* Total Section */}
-            <div className="mt-8 pt-8 border-t-2 border-[#1A1A1A]">
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 items-center">
-                <div className="font-semibold text-xl text-[#1A1A1A]">Total Investment</div>
-                <div className="text-right font-medium text-lg tabular-nums text-[#666666]">$7,993.50</div>
-                <div className="text-right font-medium text-lg tabular-nums text-[#666666]">$16,193.60</div>
-                <div className="text-right font-semibold text-2xl tabular-nums text-[#714B67]">$36,720.08</div>
-                <div className="text-right font-medium text-lg tabular-nums text-[#666666]">$57,246.56</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 items-center mt-6">
-                <div className="text-sm font-medium text-[#8F8F8F] uppercase tracking-wider">Monthly Amortized Equivalent</div>
-                <div className="text-right text-sm tabular-nums text-[#8F8F8F]">$7,994/mo</div>
-                <div className="text-right text-sm tabular-nums text-[#8F8F8F]">$1,349/mo</div>
-                <div className="text-right font-medium text-base tabular-nums text-[#714B67]">$1,020/mo</div>
-                <div className="text-right text-sm tabular-nums text-[#8F8F8F]">$954/mo</div>
-              </div>
-
-              <div className="grid grid-cols-[1fr_140px_140px_140px_140px] gap-4 items-center mt-6 py-4 bg-[#F2F8F5] rounded-md -mx-4 px-4 border border-[#D1E7DD]">
-                <div className="text-sm font-bold text-teal-800 uppercase tracking-wider">Savings vs Monthly Run-Rate</div>
-                <div className="text-right text-sm tabular-nums text-teal-800 font-medium">—</div>
-                <div className="text-right text-sm tabular-nums text-teal-800 font-medium">$0</div>
-                <div className="text-right text-base tabular-nums text-teal-800 font-bold">$13,066</div>
-                <div className="text-right text-sm tabular-nums text-teal-800 font-medium">$20,476</div>
-              </div>
-            </div>
-
-            {/* Recommendation & Financing */}
-            <div className="grid grid-cols-2 gap-12 pt-16 border-t border-[#E5E5E5] mt-16">
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A1A1A] mb-4">Recommendation</h3>
-                <div className="p-6 bg-white border border-[#E5E5E5] rounded-sm shadow-sm relative">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-[#714B67]" />
-                  <p className="text-[#333333] leading-relaxed text-sm">
-                    We recommend the <strong className="text-[#714B67]">3-Year Term</strong>. It provides the optimal balance of commitment and cost efficiency, locking in your licensing and hosting rates while securing <strong className="text-teal-700">$13,066 in hard savings</strong> over the contract life.
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="max-w-5xl mx-auto px-12 py-16"
+          >
+            {/* Header */}
+            <div className="mb-16 pb-8 border-b-2 border-stone-800">
+              <div className="flex justify-between items-end">
+                <div>
+                  <h1 className="text-4xl font-serif text-stone-900 tracking-tight mb-2">
+                    Investment Proposal
+                  </h1>
+                  <p className="text-stone-500 font-medium">
+                    Prepared for:{" "}
+                    <span className="text-stone-800">Acme Corporation</span>
                   </p>
                 </div>
+                <div className="text-right text-sm text-stone-500 font-medium space-y-1">
+                  <p>
+                    Prepared by: <span className="text-stone-800">Odoo Advisors</span>
+                  </p>
+                  <p>Date: {currentDate}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Comparison Table */}
+            <div className="relative">
+              {/* Highlight Backdrop for 3-Year */}
+              <div className="absolute top-0 bottom-0 left-[50%] w-[25%] bg-stone-100/50 rounded-xl -z-10 border border-stone-200/60 shadow-sm"></div>
+
+              {/* Table Header */}
+              <div className="flex text-xs font-bold tracking-[0.15em] uppercase text-stone-400 pb-4 border-b border-stone-200">
+                <div className="w-[30%]">Cost Component</div>
+                <div className="w-[15%] text-right pr-4">Monthly</div>
+                <div className="w-[15%] text-right pr-4">1-Year</div>
+                <div className="w-[25%] text-right pr-4 text-[#714B67] flex items-center justify-end gap-2 relative">
+                  <Badge className="absolute -top-6 -right-2 bg-[#714B67] hover:bg-[#714B67] text-white text-[9px] px-1.5 py-0">
+                    BEST VALUE
+                  </Badge>
+                  3-Year
+                </div>
+                <div className="w-[15%] text-right pr-4">5-Year</div>
               </div>
 
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[#1A1A1A] mb-4">Financing Options</h3>
-                <div className="p-6 bg-[#F4F8FA] border border-[#E0EDF2] rounded-sm shadow-sm">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-[#017E84]">Catalyst Finance</span>
-                    <span className="text-xs text-[#666666] font-mono">6% – 13% APR</span>
+              {/* SOFTWARE LICENSE */}
+              <div className="py-8 border-b border-stone-200">
+                <div className="flex mb-4">
+                  <div className="w-[30%] font-serif text-lg text-stone-800">
+                    Software License
                   </div>
-                  <p className="text-sm text-[#4A5A60] mb-4">Preserve working capital by financing the 3-Year contract.</p>
-                  
-                  <div className="flex items-end gap-3 border-t border-[#E0EDF2] pt-4">
-                    <span className="text-[#333333] text-sm uppercase tracking-wide font-medium">As low as</span>
-                    <span className="text-2xl font-semibold tabular-nums text-[#017E84]">$1,117</span>
-                    <span className="text-[#666666] text-sm pb-1">/mo</span>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $777.50<span className="text-xs">/mo</span>
+                  </div>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $9,330.00
+                  </div>
+                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400">
+                    $27,990.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $46,650.00
+                  </div>
+                </div>
+
+                <div className="flex text-sm text-stone-500 mb-2">
+                  <div className="w-[30%] pl-4 flex items-center gap-2">
+                    <ChevronRight className="w-3 h-3 text-[#017E84]" />
+                    Year-1 Promo Savings
+                  </div>
+                  <div className="w-[15%] text-right pr-4">—</div>
+                  <div className="w-[15%] text-right pr-4 text-[#017E84]">
+                    -$1,860.00
+                  </div>
+                  <div className="w-[25%] text-right pr-4 text-[#017E84]">
+                    -$1,860.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-[#017E84]">
+                    -$1,860.00
+                  </div>
+                </div>
+
+                <div className="flex text-sm text-stone-500 mb-4">
+                  <div className="w-[30%] pl-4 flex items-center gap-2">
+                    <ChevronRight className="w-3 h-3 text-[#017E84]" />
+                    Multi-Year Discount
+                  </div>
+                  <div className="w-[15%] text-right pr-4">—</div>
+                  <div className="w-[15%] text-right pr-4">—</div>
+                  <div className="w-[25%] text-right pr-4 text-[#017E84]">
+                    -$1,866.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-[#017E84]">
+                    -$3,732.00
+                  </div>
+                </div>
+
+                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
+                  <div className="w-[30%]">Software Subtotal</div>
+                  <div className="w-[15%] text-right pr-4">$777.50</div>
+                  <div className="w-[15%] text-right pr-4">$7,470.00</div>
+                  <div className="w-[25%] text-right pr-4 text-[#714B67]">
+                    $24,264.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4">$41,058.00</div>
+                </div>
+              </div>
+
+              {/* IMPLEMENTATION */}
+              <div className="py-8 border-b border-stone-200">
+                <div className="flex mb-4">
+                  <div className="w-[30%] font-serif text-lg text-stone-800">
+                    Implementation
+                  </div>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $7,000.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $7,000.00
+                  </div>
+                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400">
+                    $7,000.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $7,000.00
+                  </div>
+                </div>
+
+                <div className="flex text-sm text-stone-500 mb-4">
+                  <div className="w-[30%] pl-4 flex items-center gap-2">
+                    <ChevronRight className="w-3 h-3 text-amber-500" />
+                    Implementation Discount
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-amber-600">
+                    -$350.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-amber-600">
+                    -$350.00
+                  </div>
+                  <div className="w-[25%] text-right pr-4 text-amber-600">
+                    -$350.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-amber-600">
+                    -$350.00
+                  </div>
+                </div>
+
+                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
+                  <div className="w-[30%]">Implementation Subtotal</div>
+                  <div className="w-[15%] text-right pr-4">$6,650.00</div>
+                  <div className="w-[15%] text-right pr-4">$6,650.00</div>
+                  <div className="w-[25%] text-right pr-4 text-[#714B67]">
+                    $6,650.00
+                  </div>
+                  <div className="w-[15%] text-right pr-4">$6,650.00</div>
+                </div>
+              </div>
+
+              {/* ODOO SH HOSTING */}
+              <div className="py-8 border-b-2 border-stone-800">
+                <div className="flex mb-4">
+                  <div className="w-[30%] font-serif text-lg text-stone-800">
+                    Odoo SH Hosting
+                  </div>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $216.00<span className="text-xs">/mo</span>
+                  </div>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $2,073.60
+                  </div>
+                  <div className="w-[25%] text-right pr-4 font-medium text-stone-400">
+                    $6,220.80
+                  </div>
+                  <div className="w-[15%] text-right pr-4 font-medium text-stone-400">
+                    $10,368.00
+                  </div>
+                </div>
+
+                <div className="flex text-sm text-stone-500 mb-4">
+                  <div className="w-[30%] pl-4 flex items-center gap-2">
+                    <ChevronRight className="w-3 h-3 text-[#017E84]" />
+                    Multi-Year Discount
+                  </div>
+                  <div className="w-[15%] text-right pr-4">—</div>
+                  <div className="w-[15%] text-right pr-4">—</div>
+                  <div className="w-[25%] text-right pr-4 text-[#017E84]">
+                    -$414.72
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-[#017E84]">
+                    -$829.44
+                  </div>
+                </div>
+
+                <div className="flex font-semibold text-stone-900 border-t border-stone-200/50 pt-4">
+                  <div className="w-[30%]">Hosting Subtotal</div>
+                  <div className="w-[15%] text-right pr-4">$216.00</div>
+                  <div className="w-[15%] text-right pr-4">$2,073.60</div>
+                  <div className="w-[25%] text-right pr-4 text-[#714B67]">
+                    $5,806.08
+                  </div>
+                  <div className="w-[15%] text-right pr-4">$9,538.56</div>
+                </div>
+              </div>
+
+              {/* TOTALS */}
+              <div className="py-8">
+                <div className="flex items-end mb-6">
+                  <div className="w-[30%] font-serif text-2xl text-stone-900">
+                    Total Contract
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-xl font-medium text-stone-600">
+                    $7,993.50
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-xl font-medium text-stone-600">
+                    $16,193.60
+                  </div>
+                  <div className="w-[25%] text-right pr-4 text-3xl font-serif text-[#714B67] font-bold">
+                    $36,720.08
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-xl font-medium text-stone-600">
+                    $57,246.56
+                  </div>
+                </div>
+
+                <div className="flex items-center text-sm font-medium border-t border-stone-200 pt-6 mb-4">
+                  <div className="w-[30%] text-stone-500 uppercase tracking-widest text-[10px]">
+                    Per-Month Amortized
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-stone-400">
+                    —
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-stone-600">
+                    $1,349/mo
+                  </div>
+                  <div className="w-[25%] text-right pr-4 text-[#714B67] font-bold text-lg">
+                    $1,020/mo
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-stone-600">
+                    $954/mo
+                  </div>
+                </div>
+
+                <div className="flex items-center text-sm font-medium border-t border-stone-200 pt-6 mb-4">
+                  <div className="w-[30%] text-[#017E84] flex items-center gap-2 uppercase tracking-widest text-[10px]">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Savings vs Month-to-Month
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-stone-400">
+                    —
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-stone-400">
+                    $0
+                  </div>
+                  <div className="w-[25%] text-right pr-4 text-[#017E84] font-bold text-lg bg-[#017E84]/10 py-1 rounded-sm">
+                    $13,066
+                  </div>
+                  <div className="w-[15%] text-right pr-4 text-[#017E84] font-bold text-lg">
+                    $20,476
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Sign-off */}
-            <div className="pt-24 pb-12 flex justify-between items-end">
-              <div className="w-80">
-                <div className="border-b border-[#1A1A1A] mb-3 h-12" />
-                <div className="text-sm text-[#8F8F8F] font-medium uppercase tracking-wider">Authorized Signature</div>
+            {/* Recommendation Callout & Catalyst Finance */}
+            <div className="mt-16 bg-white border border-[#714B67]/20 shadow-xl rounded-xl p-10 relative overflow-hidden mb-16">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#714B67]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+
+              <div className="max-w-3xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-[#714B67] text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full">
+                    Our Recommendation
+                  </div>
+                  <span className="text-[#017E84] font-medium text-sm">
+                    Saves $13,066 vs month-to-month
+                  </span>
+                </div>
+
+                <h3 className="text-3xl font-serif text-stone-900 mb-4">
+                  Authorize this Investment
+                </h3>
+                <p className="text-stone-500 mb-10 text-lg">
+                  By committing to the 3-Year term, you secure our best pricing
+                  structure while spreading the cost of implementation over a
+                  reasonable timeframe.
+                </p>
+
+                <div className="flex items-end gap-12 border-b border-stone-200 pb-8 mb-8">
+                  <div className="flex-1 space-y-2">
+                    <div className="border-b border-stone-300 border-dashed pb-1 w-full h-8"></div>
+                    <p className="text-xs text-stone-400 uppercase tracking-widest font-bold">
+                      Authorized Signature
+                    </p>
+                  </div>
+                  <div className="w-48 space-y-2">
+                    <div className="border-b border-stone-300 border-dashed pb-1 w-full h-8 text-stone-800 font-medium px-2 text-center">
+                      {currentDate}
+                    </div>
+                    <p className="text-xs text-stone-400 uppercase tracking-widest font-bold text-center">
+                      Date
+                    </p>
+                  </div>
+                  <Button className="bg-[#714B67] hover:bg-[#5b3c53] text-white px-8 h-12 text-base shadow-sm">
+                    Accept Proposal
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-4 bg-[#FAFAF7] p-5 rounded-lg border border-stone-200">
+                  <div className="bg-[#017E84]/10 p-3 rounded-full text-[#017E84]">
+                    <CreditCard className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-lg text-stone-900">
+                      Catalyst Financing Available
+                    </h4>
+                    <p className="text-stone-500 text-sm">
+                      Preserve your capital. Finance this entire 3-Year contract
+                      for as low as{" "}
+                      <strong className="text-[#017E84]">
+                        $1,117/mo over 36 months
+                      </strong>{" "}
+                      (subject to credit approval).
+                    </p>
+                  </div>
+                  <Button variant="outline" className="ml-auto bg-white border-stone-300 text-stone-700 hover:text-stone-900 hover:bg-stone-50">
+                    Apply Now
+                  </Button>
+                </div>
               </div>
-              <Button className="bg-[#714B67] hover:bg-[#5A3C52] text-white px-8 py-6 text-base rounded-sm tracking-wide">
-                Authorize Investment
-              </Button>
             </div>
-          </main>
-        </motion.div>
+          </motion.div>
+        </main>
       </div>
     </div>
   );
