@@ -532,30 +532,36 @@ export function Calculator() {
           {/* Users */}
           <div className="mb-5">
             <SectionLabel icon={Users} color={BRAND.coral}>Users</SectionLabel>
-            <div className="flex items-center gap-2">
+            <div
+              className="flex items-center rounded-full overflow-hidden"
+              style={{ border: "1px solid rgba(60,50,40,0.12)", height: 36 }}
+            >
               <button
                 onClick={() => setUsers(Math.max(1, users - 1))}
-                className="w-9 h-9 flex items-center justify-center rounded-full"
-                style={{ background: "transparent", color: "#6B6258", border: "1px solid rgba(60,50,40,0.10)" }}
+                className="w-10 h-full flex items-center justify-center"
+                style={{ color: "#6B6258", borderRight: "1px solid rgba(60,50,40,0.10)" }}
+                aria-label="Decrease users"
                 data-testid="button-users-minus"
               >
-                <Minus className="w-3.5 h-3.5" strokeWidth={1.75} />
+                <Minus className="w-3.5 h-3.5" strokeWidth={2} />
               </button>
               <input
                 type="number"
+                min={1}
                 value={users}
                 onChange={(e) => setUsers(Math.max(1, parseInt(e.target.value) || 1))}
-                className="flex-1 text-center font-semibold text-base h-9 outline-none bg-transparent"
-                style={{ color: BRAND.ink, fontFamily: FONT_BODY, borderBottom: "1px solid rgba(60,50,40,0.12)" }}
+                className="flex-1 min-w-0 text-center font-semibold text-sm h-full outline-none bg-transparent tabular-nums"
+                style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
                 data-testid="input-users"
               />
               <button
                 onClick={() => setUsers(users + 1)}
-                className="w-9 h-9 flex items-center justify-center rounded-full"
-                style={{ background: "transparent", color: "#6B6258", border: "1px solid rgba(60,50,40,0.10)" }}
+                className="w-10 h-full flex items-center justify-center"
+                style={{ color: "#6B6258", borderLeft: "1px solid rgba(60,50,40,0.10)" }}
+                aria-label="Increase users"
                 data-testid="button-users-plus"
               >
-                <Plus className="w-3.5 h-3.5" strokeWidth={1.75} />
+                <Plus className="w-3.5 h-3.5" strokeWidth={2} />
               </button>
             </div>
           </div>
