@@ -211,12 +211,22 @@ export default function Calculator() {
       const year1Cost = users * monthlyPlanYear1 * 1;
       softwareCostBeforeDiscount = year1Cost;
       totalSoftwareCost = year1Cost;
+    } else if (years === 1) {
+      const year1Cost = users * yearlyPlanYear1 * 12;
+      softwareCostBeforeDiscount = year1Cost;
+      totalSoftwareCost = year1Cost;
     } else {
+      // Year 1 stays at promo rate (no plan discount).
+      // Years 2..N at year2plus rate, with plan discount applied only to those years.
+      const year1Cost = users * yearlyPlanYear1 * 12;
+      const yearsAfterFirst = years - 1;
+      const remainingFullCost = users * yearlyPlanYear2Plus * 12 * yearsAfterFirst;
+      const remainingDiscounted = remainingFullCost * (1 - planDiscount / 100);
+      // "Before discount" baseline for savings = full term at year2+ rate minus year-1 promo benefit
       const fullTermAtYear2Rate = users * yearlyPlanYear2Plus * 12 * years;
-      const planDiscountAmount = fullTermAtYear2Rate * (planDiscount / 100);
       const year1Benefit = users * (yearlyPlanYear2Plus - yearlyPlanYear1) * 12;
       softwareCostBeforeDiscount = fullTermAtYear2Rate - year1Benefit;
-      totalSoftwareCost = fullTermAtYear2Rate - planDiscountAmount - year1Benefit;
+      totalSoftwareCost = year1Cost + remainingDiscounted;
     }
 
     const implData = currentImplementations[implementation as keyof typeof currentImplementations];
@@ -736,19 +746,26 @@ export default function Calculator() {
                       {[{ label: 'Plan %', key: 'plan' as const }, { label: 'Impl %', key: 'impl' as const }].map(({ label, key }, ri) => (
                         <tr key={key} style={{ background: ri % 2 === 0 ? 'white' : '#FDFDFC' }}>
                           <td style={{ fontSize: 11, fontWeight: 600, color: '#78716C', padding: '5px 10px', borderBottom: ri === 0 ? '1px solid #EDEAE3' : 'none' }}>{label}</td>
-                          {activeTerms.map(t => (
-                            <td key={t} style={{ padding: '3px 4px', borderLeft: '1px solid #E5E2DB', borderBottom: ri === 0 ? '1px solid #EDEAE3' : 'none' }}>
-                              <input
-                                type="number" min="0" max="100"
-                                value={termDiscounts[t]?.[key] || ''}
-                                onChange={e => setTermDiscounts(prev => ({ ...prev, [t]: { ...prev[t], [key]: parseFloat(e.target.value) || 0 } }))}
-                                data-testid={`input-${key}-discount-${t}`}
-                                style={{ width: '100%', textAlign: 'center', fontSize: 12, fontWeight: 700, border: '1px solid transparent', borderRadius: 4, padding: '4px 2px', outline: 'none', color: '#1A1915', background: 'transparent', transition: 'all 0.12s' }}
-                                onFocus={e => { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.background = 'white'; }}
-                                onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }}
-                              />
-                            </td>
-                          ))}
+                          {activeTerms.map(t => {
+                            const planDisabled = key === 'plan' && (t === 'monthly' || t === '1year');
+                            return (
+                              <td key={t} style={{ padding: '3px 4px', borderLeft: '1px solid #E5E2DB', borderBottom: ri === 0 ? '1px solid #EDEAE3' : 'none' }}>
+                                {planDisabled ? (
+                                  <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#D5D2CB', padding: '4px 2px' }}>—</div>
+                                ) : (
+                                  <input
+                                    type="number" min="0" max="100"
+                                    value={termDiscounts[t]?.[key] || ''}
+                                    onChange={e => setTermDiscounts(prev => ({ ...prev, [t]: { ...prev[t], [key]: parseFloat(e.target.value) || 0 } }))}
+                                    data-testid={`input-${key}-discount-${t}`}
+                                    style={{ width: '100%', textAlign: 'center', fontSize: 12, fontWeight: 700, border: '1px solid transparent', borderRadius: 4, padding: '4px 2px', outline: 'none', color: '#1A1915', background: 'transparent', transition: 'all 0.12s' }}
+                                    onFocus={e => { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.background = 'white'; }}
+                                    onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }}
+                                  />
+                                )}
+                              </td>
+                            );
+                          })}
                         </tr>
                       ))}
                     </tbody>
