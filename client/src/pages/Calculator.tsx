@@ -255,6 +255,7 @@ export function Calculator() {
   const [shStorage, setShStorage] = useState(1);
   const [shStaging, setShStaging] = useState(0);
   const [internalView, setInternalView] = useState(false);
+  const [showFinancing, setShowFinancing] = useState(false);
 
   const [selected, setSelected] = useState<Record<TermKey, boolean>>({
     monthly: true, "1year": true, "2year": false, "3year": true, "4year": false, "5year": true,
@@ -505,9 +506,6 @@ export function Calculator() {
               <Marker color={BRAND.blue} opacity={0.85} height="45%">Configure</Marker>
               {" "}Your Quote
             </h2>
-            <p className="mt-1 text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
-              Adjust anything · numbers update live
-            </p>
           </div>
 
           {/* Country */}
@@ -749,6 +747,28 @@ export function Calculator() {
                 Plan % applies years 2+ · Impl % is one-time
               </p>
             </div>
+          </div>
+
+          {/* Financing toggle */}
+          <div className="mb-5">
+            <div className="flex items-center justify-between">
+              <SectionLabel icon={CreditCard} color={BRAND.coral}>Catalyst Finance</SectionLabel>
+              <button
+                onClick={() => setShowFinancing(!showFinancing)}
+                className="relative w-10 h-5 rounded-full transition-all"
+                style={{ background: showFinancing ? BRAND.coral : "#D5D5D5" }}
+                data-testid="switch-financing"
+                aria-label="Toggle Catalyst Finance section"
+              >
+                <span
+                  className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all"
+                  style={{ left: showFinancing ? "22px" : "2px" }}
+                />
+              </button>
+            </div>
+            <p className="mt-2 text-[10px] text-stone-400 italic" style={{ fontFamily: FONT_HAND }}>
+              Show monthly financing options on the quote
+            </p>
           </div>
         </aside>
 
@@ -1077,7 +1097,7 @@ export function Calculator() {
           )}
 
           {/* ── CATALYST FINANCE — pitch deck style ── */}
-          {quotes.some((q) => q.finLow > 0) && (
+          {showFinancing && quotes.some((q) => q.finLow > 0) && (
             <div className="mb-8 rounded-3xl p-6" style={{ background: BRAND.cardAlt }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
