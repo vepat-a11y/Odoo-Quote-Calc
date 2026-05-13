@@ -135,7 +135,7 @@ const BRAND = {
   cardAlt: "#F5F5F5",
 };
 
-const FONT_BRUSH = `'Caveat Brush', 'Permanent Marker', cursive`;
+const FONT_BRUSH = `'Permanent Marker', 'Caveat Brush', cursive`;
 const FONT_HAND = `'Patrick Hand', 'Architects Daughter', cursive`;
 const FONT_BODY = `'Inter', 'DM Sans', sans-serif`;
 
@@ -259,7 +259,7 @@ export function InvestmentBrandPitch() {
     monthly: true, "1year": true, "2year": false, "3year": true, "4year": false, "5year": true,
   });
 
-  const [discounts] = useState<Record<TermKey, { plan: number; impl: number }>>({
+  const [discounts, setDiscounts] = useState<Record<TermKey, { plan: number; impl: number }>>({
     monthly: { plan: 0, impl: 5 },
     "1year": { plan: 0, impl: 5 },
     "2year": { plan: 5, impl: 5 },
@@ -615,6 +615,73 @@ export function InvestmentBrandPitch() {
               Multi-year terms include cost savings & price lock
             </p>
           </div>
+
+          {/* Discounts editor */}
+          <div className="mb-5">
+            <SectionLabel icon={TrendingDown} color={BRAND.coral}>Discounts %</SectionLabel>
+            <div className="rounded-2xl p-3" style={{ background: BRAND.cardAlt }}>
+              <div className="grid grid-cols-3 gap-2 mb-2 text-[10px] font-bold tracking-wider uppercase text-stone-500">
+                <span>Term</span>
+                <span className="text-center">Plan</span>
+                <span className="text-center">Impl</span>
+              </div>
+              {activeTerms.map((t) => {
+                const planApplies = TERM_MONTHS[t] / 12 > 1;
+                return (
+                  <div key={t} className="grid grid-cols-3 gap-2 mb-1.5 items-center">
+                    <span className="text-xs font-semibold" style={{ fontFamily: FONT_BODY, color: BRAND.ink }}>
+                      {TERM_LABELS[t].short}
+                    </span>
+                    {planApplies ? (
+                      <input
+                        type="number"
+                        min={0}
+                        max={50}
+                        value={discounts[t].plan}
+                        onChange={(e) =>
+                          setDiscounts({
+                            ...discounts,
+                            [t]: { ...discounts[t], plan: Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) },
+                          })
+                        }
+                        className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-white border border-stone-200 tabular-nums"
+                        style={{ color: BRAND.purple, fontFamily: FONT_BODY }}
+                        aria-label={`${TERM_LABELS[t].short} plan discount percent`}
+                        data-testid={`input-disc-plan-${t}`}
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-7 text-center text-xs rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400"
+                        title="Plan discount applies to multi-year terms only"
+                        aria-label={`${TERM_LABELS[t].short} plan discount not applicable`}
+                      >
+                        —
+                      </div>
+                    )}
+                    <input
+                      type="number"
+                      min={0}
+                      max={50}
+                      value={discounts[t].impl}
+                      onChange={(e) =>
+                        setDiscounts({
+                          ...discounts,
+                          [t]: { ...discounts[t], impl: Math.max(0, Math.min(50, parseInt(e.target.value) || 0)) },
+                        })
+                      }
+                      className="w-full h-7 text-center text-xs font-semibold rounded-lg outline-none bg-white border border-stone-200 tabular-nums"
+                      style={{ color: "#D97706", fontFamily: FONT_BODY }}
+                      aria-label={`${TERM_LABELS[t].short} implementation discount percent`}
+                      data-testid={`input-disc-impl-${t}`}
+                    />
+                  </div>
+                );
+              })}
+              <p className="mt-2 text-[10px] text-stone-400 italic" style={{ fontFamily: FONT_HAND }}>
+                Plan % applies years 2+ · Impl % is one-time
+              </p>
+            </div>
+          </div>
         </aside>
 
         {/* ── MAIN PANEL ── */}
@@ -771,22 +838,35 @@ export function InvestmentBrandPitch() {
                 </div>
               )}
 
-              {/* Total Contract — hero row, deck slide 4 styling */}
+              {/* Total Contract — cream + purple hero (no black) */}
               <div
-                className="rounded-3xl p-6 relative overflow-hidden"
-                style={{ background: BRAND.ink, color: "#FFFFFF" }}
+                className="rounded-3xl p-6 relative overflow-hidden border-2"
+                style={{
+                  background: "linear-gradient(135deg, #FAF7F1 0%, #F4EFE6 100%)",
+                  borderColor: BRAND.purple,
+                  boxShadow: `0 4px 0 ${BRAND.purple}`,
+                }}
               >
+                <div className="absolute top-3 right-4">
+                  <Sparkle color={BRAND.coral} />
+                </div>
                 <div className="flex items-baseline justify-between mb-4">
-                  <h3 className="text-2xl" style={{ fontFamily: FONT_BRUSH }}>
-                    <Marker color={BRAND.yellow} opacity={0.95} height="45%">Total</Marker>{" "}
-                    <span className="text-white">Contract Value</span>
+                  <h3 className="text-2xl flex items-center gap-2" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+                    <Zap className="w-5 h-5" style={{ color: BRAND.teal }} />
+                    <Marker color={BRAND.yellow} opacity={0.9} height="45%">Total</Marker>{" "}
+                    <span style={{ color: BRAND.purple }}>Contract Value</span>
                   </h3>
-                  <Zap className="w-5 h-5" style={{ color: BRAND.teal }} />
                 </div>
                 <div className="grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
-                  <span className="text-xs uppercase tracking-wider text-stone-400 font-semibold self-end">All-in cost</span>
+                  <span className="text-xs uppercase tracking-wider font-semibold self-end" style={{ color: BRAND.purple }}>
+                    All-in cost
+                  </span>
                   {quotes.map((q) => (
-                    <div key={q.termKey} className="text-right tabular-nums text-lg font-bold text-white">
+                    <div
+                      key={q.termKey}
+                      className="text-right tabular-nums text-xl font-bold"
+                      style={{ color: BRAND.purple, fontFamily: FONT_BODY }}
+                    >
                       {fmt0(q.totalContract)}
                     </div>
                   ))}
@@ -819,30 +899,37 @@ export function InvestmentBrandPitch() {
             </div>
           </div>
 
-          {/* ── INTERNAL · MRR / NRR — standalone partner card ── */}
+          {/* ── INTERNAL · MRR / NRR — partner-only cream card ── */}
           {internalView && (
-            <div className="mb-8 rounded-3xl p-6 relative" style={{ background: BRAND.ink, color: "#FFFFFF" }}>
+            <div
+              className="mb-8 rounded-3xl p-6 relative border-2"
+              style={{
+                background: "linear-gradient(135deg, #FAF7F1 0%, #F4EFE6 100%)",
+                borderColor: BRAND.purple,
+                borderStyle: "dashed",
+              }}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ background: "rgba(255,193,7,0.15)" }}
+                    style={{ background: `${BRAND.purple}1A` }}
                   >
-                    <Lock className="w-4 h-4" style={{ color: BRAND.yellow }} />
+                    <Lock className="w-4 h-4" style={{ color: BRAND.purple }} />
                   </div>
                   <div>
-                    <h3 className="text-xl leading-none" style={{ fontFamily: FONT_BRUSH }}>
-                      <Marker color={BRAND.yellow} opacity={0.95} height="45%">Partner</Marker>{" "}
-                      <span className="text-white">Recurring Revenue</span>
+                    <h3 className="text-xl leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+                      <Marker color={BRAND.yellow} opacity={0.85} height="45%">Partner</Marker>{" "}
+                      <span style={{ color: BRAND.purple }}>Recurring Revenue</span>
                     </h3>
-                    <p className="text-[11px] text-stone-400 mt-1" style={{ fontFamily: FONT_HAND }}>
+                    <p className="text-[11px] text-stone-500 mt-1" style={{ fontFamily: FONT_HAND }}>
                       Internal only · Partner share {Math.round(PARTNER_RECURRING_PCT * 100)}%
                     </p>
                   </div>
                 </div>
                 <span
-                  className="text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1 rounded-full"
-                  style={{ background: "rgba(255,255,255,0.08)", color: BRAND.yellow }}
+                  className="text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1 rounded-full text-white"
+                  style={{ background: BRAND.purple }}
                 >
                   Internal
                 </span>
@@ -850,25 +937,22 @@ export function InvestmentBrandPitch() {
 
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: "MRR", subtitle: "software + hosting / mo", icon: Repeat, getValue: (q: TermQuote) => (q.softwareSubtotal + q.shSubtotal) / q.months },
-                  { label: "NRR", subtitle: "net partner payout / mo", icon: Wallet, getValue: (q: TermQuote) => ((q.softwareSubtotal + q.shSubtotal) / q.months) * PARTNER_RECURRING_PCT },
+                  { label: "MRR", icon: Repeat, getValue: (q: TermQuote) => (q.softwareSubtotal + q.shSubtotal) / q.months },
+                  { label: "NRR", icon: Wallet, getValue: (q: TermQuote) => ((q.softwareSubtotal + q.shSubtotal) / q.months) * PARTNER_RECURRING_PCT },
                 ].map((row) => (
-                  <div key={row.label} className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.05)" }}>
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <row.icon className="w-3.5 h-3.5" style={{ color: BRAND.yellow }} />
-                      <span className="text-xs font-bold tracking-[0.2em] uppercase" style={{ color: BRAND.yellow }}>
+                  <div key={row.label} className="rounded-2xl p-4 bg-white/60 border border-stone-200">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <row.icon className="w-3.5 h-3.5" style={{ color: BRAND.purple }} />
+                      <span className="text-xs font-bold tracking-[0.2em] uppercase" style={{ color: BRAND.purple }}>
                         {row.label}
                       </span>
                     </div>
-                    <p className="text-[10px] text-stone-400 italic mb-2" style={{ fontFamily: FONT_HAND }}>
-                      {row.subtitle}
-                    </p>
                     <div className="space-y-1">
                       {quotes.map((q) => (
                         <div key={q.termKey} className="flex justify-between items-baseline text-sm">
-                          <span className="text-stone-400 text-[11px]">{TERM_LABELS[q.termKey].short}</span>
-                          <span className="font-semibold text-white tabular-nums">
-                            {fmt0(row.getValue(q))}<span className="text-[10px] text-stone-500 font-normal">/mo</span>
+                          <span className="text-stone-500 text-[11px]">{TERM_LABELS[q.termKey].short}</span>
+                          <span className="font-semibold tabular-nums" style={{ color: BRAND.ink }}>
+                            {fmt0(row.getValue(q))}
                           </span>
                         </div>
                       ))}

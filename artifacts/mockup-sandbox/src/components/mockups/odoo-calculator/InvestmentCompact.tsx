@@ -640,7 +640,7 @@ export function InvestmentCompact() {
                   </div>
 
                   {/* SOFTWARE LICENSE — purple band */}
-                  <div className="px-4 py-4 border-l-[5px] border-[#714B67]" style={{ background: "linear-gradient(90deg, rgba(113,75,103,0.05) 0%, rgba(113,75,103,0.01) 100%)" }}>
+                  <div className="px-4 py-4" style={{ background: "linear-gradient(90deg, rgba(113,75,103,0.05) 0%, rgba(113,75,103,0.01) 100%)", boxShadow: "inset 6px 0 0 #714B67" }}>
                     <div className="flex mb-2.5 items-baseline">
                       <Lbl className="font-serif italic text-base text-stone-900">Software License</Lbl>
                       {quotes.map((q) => (
@@ -692,7 +692,7 @@ export function InvestmentCompact() {
 
                   {/* IMPLEMENTATION — amber band */}
                   {implPrice > 0 && (
-                    <div className="px-4 py-4 border-l-[5px] border-amber-500 border-t border-stone-200/40" style={{ background: "linear-gradient(90deg, rgba(245,158,11,0.05) 0%, rgba(245,158,11,0.01) 100%)" }}>
+                    <div className="px-4 py-4 border-t border-stone-200/40" style={{ background: "linear-gradient(90deg, rgba(245,158,11,0.05) 0%, rgba(245,158,11,0.01) 100%)", boxShadow: "inset 6px 0 0 #F59E0B" }}>
                       <div className="flex mb-2.5 items-baseline">
                         <Lbl className="font-serif italic text-base text-stone-900">
                           Implementation
@@ -734,7 +734,7 @@ export function InvestmentCompact() {
 
                   {/* SH HOSTING — teal band */}
                   {shEnabled && (
-                    <div className="px-4 py-4 border-l-[5px] border-[#017E84] border-t border-stone-200/40" style={{ background: "linear-gradient(90deg, rgba(1,126,132,0.05) 0%, rgba(1,126,132,0.01) 100%)" }}>
+                    <div className="px-4 py-4 border-t border-stone-200/40" style={{ background: "linear-gradient(90deg, rgba(1,126,132,0.05) 0%, rgba(1,126,132,0.01) 100%)", boxShadow: "inset 6px 0 0 #017E84" }}>
                       <div className="flex mb-2.5 items-baseline">
                         <Lbl className="font-serif italic text-base text-stone-900">
                           Odoo SH Hosting
@@ -825,44 +825,46 @@ export function InvestmentCompact() {
                   </div>
                 </div>
 
-                {/* ── INTERNAL · RECURRING REVENUE — standalone partner-only card ── */}
+                {/* ── INTERNAL · RECURRING REVENUE — partner-only cream card ── */}
                 {internalView && (
                   <div
-                    className="mt-6 rounded-lg overflow-hidden shadow-md border"
-                    style={{ background: "linear-gradient(135deg, #2D2030 0%, #1F1623 100%)", borderColor: "rgba(255,255,255,0.08)" }}
+                    className="mt-6 rounded-lg overflow-hidden border border-stone-200 shadow-sm"
+                    style={{ background: "linear-gradient(135deg, #FAF7F1 0%, #F4EFE6 100%)" }}
                   >
-                    <div className={`${sectionPadX} py-3 flex items-center justify-between border-b border-white/10`}>
+                    <div className={`${sectionPadX} py-3 flex items-center justify-between border-b border-stone-200/70`}>
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(252,211,77,0.15)" }}>
-                          <Lock className="w-3.5 h-3.5 text-amber-300" />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(113,75,103,0.1)" }}>
+                          <Lock className="w-3.5 h-3.5 text-[#714B67]" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+                          <p className="text-[10px] font-bold tracking-[0.25em] text-[#714B67] uppercase">
                             Internal · Recurring Revenue
                           </p>
-                          <p className="text-[10px] text-stone-400 italic">
+                          <p className="text-[10px] text-stone-500 italic">
                             Partner share {Math.round(PARTNER_RECURRING_PCT * 100)}% · not visible to client
                           </p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full text-amber-200" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                      <span
+                        className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full text-white"
+                        style={{ background: "#714B67" }}
+                      >
                         Internal Only
                       </span>
                     </div>
 
-                    <div className={`flex items-center ${sectionPadX} py-3 border-b border-white/5`}>
+                    <div className={`flex items-center ${sectionPadX} py-3 border-b border-stone-200/60`}>
                       <Lbl>
                         <div className="flex items-center gap-1.5">
-                          <Repeat className="w-3 h-3 text-amber-300" />
-                          <p className="text-[11px] font-bold tracking-[0.2em] text-amber-300 uppercase">MRR</p>
+                          <Repeat className="w-3 h-3 text-[#714B67]" />
+                          <p className="text-[11px] font-bold tracking-[0.2em] text-[#714B67] uppercase">MRR</p>
                         </div>
-                        <p className="text-[10px] text-stone-400 italic mt-0.5 ml-4">software + hosting / month</p>
                       </Lbl>
                       {quotes.map((q) => {
                         const mrr = (q.softwareSubtotal + q.shSubtotal) / q.months;
                         return (
-                          <HCell key={q.termKey} className="text-sm font-bold text-white tabular-nums">
-                            {fmt0(mrr)}<span className="text-[10px] text-stone-500 font-normal">/mo</span>
+                          <HCell key={q.termKey} className="text-sm font-bold text-stone-900 tabular-nums">
+                            {fmt0(mrr)}
                           </HCell>
                         );
                       })}
@@ -871,17 +873,16 @@ export function InvestmentCompact() {
                     <div className={`flex items-center ${sectionPadX} py-3`}>
                       <Lbl>
                         <div className="flex items-center gap-1.5">
-                          <Wallet className="w-3 h-3 text-amber-300" />
-                          <p className="text-[11px] font-bold tracking-[0.2em] text-amber-300 uppercase">NRR</p>
+                          <Wallet className="w-3 h-3 text-[#714B67]" />
+                          <p className="text-[11px] font-bold tracking-[0.2em] text-[#714B67] uppercase">NRR</p>
                         </div>
-                        <p className="text-[10px] text-stone-400 italic mt-0.5 ml-4">net recurring · partner payout</p>
                       </Lbl>
                       {quotes.map((q) => {
                         const mrr = (q.softwareSubtotal + q.shSubtotal) / q.months;
                         const nrr = mrr * PARTNER_RECURRING_PCT;
                         return (
-                          <HCell key={q.termKey} className="text-sm font-bold text-white tabular-nums">
-                            {fmt0(nrr)}<span className="text-[10px] text-stone-500 font-normal">/mo</span>
+                          <HCell key={q.termKey} className="text-sm font-bold text-stone-900 tabular-nums">
+                            {fmt0(nrr)}
                           </HCell>
                         );
                       })}
