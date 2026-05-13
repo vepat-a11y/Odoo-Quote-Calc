@@ -837,7 +837,7 @@ export function Calculator() {
                 className="rounded-3xl p-5"
                 style={{
                   background: BRAND.cardAlt,
-                  boxShadow: `inset 6px 0 0 ${BRAND.purple}`,
+                  boxShadow: `inset 6px 0 0 ${BRAND.blue}`,
                 }}
               >
                 <div className="flex items-baseline justify-between mb-3">
@@ -858,11 +858,11 @@ export function Calculator() {
                 </div>
                 {quotes.some((q) => q.year1Promo > 0 || q.multiYearSoftware > 0) && (
                   <div className="mt-2 pt-2 border-t border-stone-200/70 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
-                    <span className="text-sm font-semibold" style={{ color: BRAND.purple, fontFamily: FONT_HAND }}>
+                    <span className="text-sm font-semibold" style={{ color: BRAND.blue, fontFamily: FONT_HAND }}>
                       Multi-year savings
                     </span>
                     {quotes.map((q) => (
-                      <div key={q.termKey} className="text-right tabular-nums text-sm font-semibold" style={{ color: BRAND.purple }}>
+                      <div key={q.termKey} className="text-right tabular-nums text-sm font-semibold" style={{ color: BRAND.blue }}>
                         {q.year1Promo + q.multiYearSoftware > 0 ? `−${fmt0(q.year1Promo + q.multiYearSoftware)}` : dash}
                       </div>
                     ))}
