@@ -780,33 +780,28 @@ export function Calculator() {
               className="rounded-3xl p-6 mb-4 relative"
               style={{ background: BRAND.cardAlt }}
             >
-              <div className="flex items-end justify-around gap-3 flex-wrap">
-                {quotes.map((q) => {
-                  const isBest = bestQuote && q.termKey === bestQuote.termKey && !q.isMonthly;
-                  return (
-                    <div key={q.termKey} className="flex-1 min-w-[120px] text-center relative">
-                      <p className="text-base mb-1" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-                        {TERM_LABELS[q.termKey].long}
-                      </p>
-                      <p className="text-[10px] uppercase tracking-wider text-stone-400 mb-2" style={{ fontFamily: FONT_BODY }}>
-                        {TERM_LABELS[q.termKey].sub}
-                      </p>
-                      <div className="relative inline-block px-3 py-1">
-                        <p
-                          className="text-2xl font-bold tabular-nums relative"
-                          style={{
-                            color: isBest ? BRAND.purple : BRAND.ink,
-                            fontFamily: FONT_BODY,
-                            zIndex: 1,
-                          }}
-                        >
-                          {q.isMonthly ? `${fmt0(q.softwareList)}` : fmt0(q.perMonth)}
-                          <span className="text-xs font-normal text-stone-500">/mo</span>
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div
+                className="grid items-end gap-2"
+                style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}
+              >
+                <div />
+                {quotes.map((q) => (
+                  <div key={q.termKey} className="text-right">
+                    <p className="text-base mb-1" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+                      {TERM_LABELS[q.termKey].long}
+                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-stone-400 mb-2" style={{ fontFamily: FONT_BODY }}>
+                      {TERM_LABELS[q.termKey].sub}
+                    </p>
+                    <p
+                      className="text-2xl font-bold tabular-nums"
+                      style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
+                    >
+                      {q.isMonthly ? fmt0(q.softwareList) : fmt0(q.perMonth)}
+                      <span className="text-xs font-normal text-stone-500">/mo</span>
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
 
