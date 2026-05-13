@@ -784,17 +784,13 @@ export function Calculator() {
             >
               Your <Marker color={BRAND.blue} opacity={0.7} height="55%">Odoo Pricing</Marker>
             </h1>
-            <p className="mt-3 text-xs text-stone-500" style={{ fontFamily: FONT_BODY }}>
+            <p className="mt-3 text-xs font-bold text-stone-700" style={{ fontFamily: FONT_BODY }}>
               {users} users · {plan === "standard" ? "Standard" : "Custom"} plan · {config.label}
             </p>
           </div>
 
           {/* ── COST COMPARISON — pitch-deck style ── */}
           <div className="mb-8">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-stone-400 font-semibold mb-3" style={{ fontFamily: FONT_BODY }}>
-              Cost Breakdown
-            </p>
-
             {/* Term pricing row — like deck slide 5: Year 1 ... Year N */}
             <div
               className="rounded-3xl p-6 mb-4 relative"
