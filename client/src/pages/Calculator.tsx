@@ -1023,11 +1023,10 @@ export function Calculator() {
                   </div>
                   <div>
                     <h3 className="text-xl leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-                      <Marker color={BRAND.yellow} opacity={0.85} height="45%">Payout</Marker>{" "}
-                      <span style={{ color: BRAND.purple }}>Recurring Revenue</span>
+                      <Marker color={BRAND.yellow} opacity={0.85} height="45%">Payout</Marker>
                     </h3>
                     <p className="text-[11px] text-stone-500 mt-1" style={{ fontFamily: FONT_HAND }}>
-                      Internal only · Payout share {Math.round(PARTNER_RECURRING_PCT * 100)}%
+                      Internal only
                     </p>
                   </div>
                 </div>
