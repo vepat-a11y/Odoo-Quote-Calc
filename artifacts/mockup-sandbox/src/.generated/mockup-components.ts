@@ -7,5 +7,6 @@ export const modules: ModuleMap = {
   "./components/mockups/calculator-layouts/HierarchyFirst.tsx": () => import("../components/mockups/calculator-layouts/HierarchyFirst.tsx"),
   "./components/mockups/calculator-layouts/QuoteHero.tsx": () => import("../components/mockups/calculator-layouts/QuoteHero.tsx"),
   "./components/mockups/calculator-layouts/SpreadsheetView.tsx": () => import("../components/mockups/calculator-layouts/SpreadsheetView.tsx"),
+  "./components/mockups/odoo-calculator/InvestmentBrandPitch.tsx": () => import("../components/mockups/odoo-calculator/InvestmentBrandPitch.tsx"),
   "./components/mockups/odoo-calculator/InvestmentCompact.tsx": () => import("../components/mockups/odoo-calculator/InvestmentCompact.tsx")
 };
