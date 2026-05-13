@@ -773,33 +773,22 @@ export function Calculator() {
 
           {/* Title block (deck-style) */}
           <div className="mb-8 relative">
-            <div className="flex items-baseline gap-3">
-              <h1
-                className="text-5xl leading-none"
-                style={{ fontFamily: FONT_BRUSH, color: BRAND.ink, letterSpacing: "-0.01em" }}
-              >
-                Your <Marker color={BRAND.blue} opacity={0.7} height="55%">Odoo Pricing</Marker>
-              </h1>
-              <Sparkle className="ml-2" />
-            </div>
-            <p
-              className="mt-2 text-lg text-stone-700"
-              style={{ fontFamily: FONT_HAND }}
+            <h1
+              className="text-5xl leading-none"
+              style={{ fontFamily: FONT_BRUSH, color: BRAND.ink, letterSpacing: "-0.01em" }}
             >
-              Subscription &amp; Implementation
+              Your <Marker color={BRAND.blue} opacity={0.7} height="55%">Odoo Pricing</Marker>
+            </h1>
+            <p className="mt-3 text-xs text-stone-500" style={{ fontFamily: FONT_BODY }}>
+              {users} users · {plan === "standard" ? "Standard" : "Custom"} plan · {config.label}
             </p>
-            <div className="mt-3 flex items-center gap-4 text-xs text-stone-500" style={{ fontFamily: FONT_BODY }}>
-              <span>{users} users · {plan === "standard" ? "Standard" : "Custom"} plan</span>
-              <span className="text-stone-300">·</span>
-              <span>{config.label}</span>
-            </div>
           </div>
 
           {/* ── COST COMPARISON — pitch-deck style ── */}
           <div className="mb-8">
-            <h2 className="text-3xl mb-4" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-              <Marker color={BRAND.yellow} opacity={0.85} height="45%">Cost</Marker> Breakdown
-            </h2>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-stone-400 font-semibold mb-3" style={{ fontFamily: FONT_BODY }}>
+              Cost Breakdown
+            </p>
 
             {/* Term pricing row — like deck slide 5: Year 1 ... Year N */}
             <div
@@ -810,7 +799,14 @@ export function Calculator() {
                 className="grid items-end gap-2"
                 style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}
               >
-                <div />
+                <div className="self-end pb-1">
+                  <p className="text-xs uppercase tracking-wider text-stone-500 font-semibold" style={{ fontFamily: FONT_BODY }}>
+                    Per month
+                  </p>
+                  <p className="text-[10px] text-stone-400 italic" style={{ fontFamily: FONT_HAND }}>
+                    amortized
+                  </p>
+                </div>
                 {quotes.map((q) => (
                   <div key={q.termKey} className="text-right">
                     <p className="text-base mb-1" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
@@ -842,9 +838,10 @@ export function Calculator() {
                   boxShadow: `inset 6px 0 0 ${BRAND.purple}`,
                 }}
               >
-                <div className="flex items-baseline justify-between mb-3">
-                  <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-                    <Marker color={BRAND.blue} opacity={0.7} height="40%">Software</Marker> License
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs uppercase tracking-[0.2em] font-bold flex items-center gap-2" style={{ color: BRAND.ink, fontFamily: FONT_BODY }}>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: BRAND.purple }} />
+                    Software License
                   </h3>
                   <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
                     {users} users × {plan} plan
@@ -881,9 +878,10 @@ export function Calculator() {
                     boxShadow: `inset 6px 0 0 #F59E0B`,
                   }}
                 >
-                  <div className="flex items-baseline justify-between mb-3">
-                    <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-                      <Marker color={BRAND.yellow} opacity={0.85} height="40%">Implementation</Marker>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold flex items-center gap-2" style={{ color: BRAND.ink, fontFamily: FONT_BODY }}>
+                      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#F59E0B" }} />
+                      Implementation
                     </h3>
                     <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
                       one-time · {IMPLEMENTATIONS[country][implementation].label}
@@ -921,9 +919,10 @@ export function Calculator() {
                     boxShadow: `inset 6px 0 0 ${BRAND.teal}`,
                   }}
                 >
-                  <div className="flex items-baseline justify-between mb-3">
-                    <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-                      <Marker color={BRAND.teal} opacity={0.7} height="40%">Odoo SH</Marker> Hosting
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold flex items-center gap-2" style={{ color: BRAND.ink, fontFamily: FONT_BODY }}>
+                      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: BRAND.teal }} />
+                      Odoo SH Hosting
                     </h3>
                     <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
                       {shType} · {shWorkers}w
