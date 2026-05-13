@@ -414,7 +414,7 @@ export function Calculator() {
       {/* Print stylesheet — Export PDF / browser print (v6-scoped) */}
       <style>{`
         @media print {
-          @page { size: A4 landscape; margin: 14mm; }
+          @page { size: A4 portrait; margin: 12mm; }
           .v6-no-print { display: none !important; }
           .v6-body {
             display: block !important;
@@ -432,7 +432,17 @@ export function Calculator() {
             padding: 0 !important;
             background: #FFFFFF !important;
             width: 100% !important;
+            font-size: 11px !important;
           }
+          .v6-main h1 { font-size: 28px !important; }
+          .v6-main h2 { font-size: 20px !important; }
+          .v6-main h3 { font-size: 15px !important; }
+          .v6-main .text-2xl { font-size: 16px !important; }
+          .v6-main .text-xl  { font-size: 14px !important; }
+          .v6-main .rounded-3xl { padding: 12px 14px !important; border-radius: 14px !important; }
+          .v6-main .mb-8 { margin-bottom: 14px !important; }
+          .v6-main .mb-6 { margin-bottom: 10px !important; }
+          .v6-main .mb-4 { margin-bottom: 8px !important; }
           .v6-card { break-inside: avoid; page-break-inside: avoid; }
           .v6-print-only { display: block !important; }
         }
