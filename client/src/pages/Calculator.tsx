@@ -1014,10 +1014,10 @@ export function Calculator() {
             </div>
           </div>
 
-          {/* ── INTERNAL · MRR / NRR — partner-only cream card ── */}
+          {/* ── INTERNAL · MRR / NRR — partner-only cream card (never printed) ── */}
           {internalView && (
             <div
-              className="mb-8 rounded-3xl p-6 relative border-2"
+              className="v6-no-print mb-8 rounded-3xl p-6 relative border-2"
               style={{
                 background: "linear-gradient(135deg, #FAF7F1 0%, #F4EFE6 100%)",
                 borderColor: BRAND.purple,
