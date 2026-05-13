@@ -89,6 +89,9 @@ const SH: Record<Country, Record<ShType, { yearly: { worker: number; storage: nu
 const APR_LOW = 0.06;
 const APR_HIGH = 0.13;
 const PARTNER_RECURRING_PCT = 0.25;
+const CAD_TO_USD = 0.74;
+const fmtUSD0 = (n: number) =>
+  `$${new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n)}`;
 
 const TERM_LABELS: Record<TermKey, { short: string; long: string; sub: string }> = {
   monthly: { short: "Mo", long: "Monthly", sub: "Pay as you go" },
@@ -1028,7 +1031,7 @@ export function Calculator() {
                       <Marker color={BRAND.yellow} opacity={0.85} height="45%">Payout</Marker>
                     </h3>
                     <p className="text-[11px] text-stone-500 mt-1" style={{ fontFamily: FONT_HAND }}>
-                      Internal only
+                      Internal only · USD{country === "CA" ? " (avg historical conversion from CAD)" : ""}
                     </p>
                   </div>
                 </div>
@@ -1056,10 +1059,15 @@ export function Calculator() {
                     </span>
                   ))}
                 </div>
-                {[
-                  { label: "MRR", icon: Repeat, getValue: (q: TermQuote) => (q.softwareSubtotal + q.shSubtotal) / q.months },
-                  { label: "NRR", icon: Wallet, getValue: (q: TermQuote) => ((q.softwareSubtotal + q.shSubtotal) / q.months) * PARTNER_RECURRING_PCT },
-                ].map((row, idx, arr) => (
+                {(() => {
+                  const fx = country === "CA" ? CAD_TO_USD : 1;
+                  const hasImpl = quotes.some((q) => q.implSubtotal > 0);
+                  const rows = [
+                    { label: "MRR", icon: Repeat, getValue: (q: TermQuote) => ((q.softwareSubtotal + q.shSubtotal) / q.months) * fx },
+                    ...(hasImpl ? [{ label: "NRR", icon: Wallet, getValue: (q: TermQuote) => q.implSubtotal * fx }] : []),
+                  ];
+                  return rows;
+                })().map((row, idx, arr) => (
                   <div
                     key={row.label}
                     className={`grid items-center px-4 py-3 ${idx < arr.length - 1 ? "border-b border-stone-200/60" : ""}`}
@@ -1077,7 +1085,7 @@ export function Calculator() {
                         className="text-right text-sm font-semibold tabular-nums"
                         style={{ color: BRAND.ink }}
                       >
-                        {fmt0(row.getValue(q))}
+                        {fmtUSD0(row.getValue(q))}
                       </span>
                     ))}
                   </div>
