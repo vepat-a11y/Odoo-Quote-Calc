@@ -803,9 +803,6 @@ export function Calculator() {
                   <p className="text-xs uppercase tracking-wider text-stone-500 font-semibold" style={{ fontFamily: FONT_BODY }}>
                     Per month
                   </p>
-                  <p className="text-[10px] text-stone-400 italic" style={{ fontFamily: FONT_HAND }}>
-                    amortized
-                  </p>
                 </div>
                 {quotes.map((q) => (
                   <div key={q.termKey} className="text-right">
@@ -838,10 +835,9 @@ export function Calculator() {
                   boxShadow: `inset 6px 0 0 ${BRAND.purple}`,
                 }}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs uppercase tracking-[0.2em] font-bold flex items-center gap-2" style={{ color: BRAND.ink, fontFamily: FONT_BODY }}>
-                    <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: BRAND.purple }} />
-                    Software License
+                <div className="flex items-baseline justify-between mb-3">
+                  <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+                    <Marker color={BRAND.blue} opacity={0.7} height="40%">Software</Marker> License
                   </h3>
                   <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
                     {users} users × {plan} plan
@@ -878,10 +874,9 @@ export function Calculator() {
                     boxShadow: `inset 6px 0 0 #F59E0B`,
                   }}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold flex items-center gap-2" style={{ color: BRAND.ink, fontFamily: FONT_BODY }}>
-                      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#F59E0B" }} />
-                      Implementation
+                  <div className="flex items-baseline justify-between mb-3">
+                    <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+                      <Marker color={BRAND.yellow} opacity={0.85} height="40%">Implementation</Marker>
                     </h3>
                     <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
                       one-time · {IMPLEMENTATIONS[country][implementation].label}
@@ -919,10 +914,9 @@ export function Calculator() {
                     boxShadow: `inset 6px 0 0 ${BRAND.teal}`,
                   }}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs uppercase tracking-[0.2em] font-bold flex items-center gap-2" style={{ color: BRAND.ink, fontFamily: FONT_BODY }}>
-                      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: BRAND.teal }} />
-                      Odoo SH Hosting
+                  <div className="flex items-baseline justify-between mb-3">
+                    <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+                      <Marker color={BRAND.teal} opacity={0.7} height="40%">Odoo SH</Marker> Hosting
                     </h3>
                     <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
                       {shType} · {shWorkers}w
