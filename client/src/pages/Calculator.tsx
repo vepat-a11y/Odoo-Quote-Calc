@@ -919,7 +919,7 @@ export function Calculator() {
                       <Marker color={BRAND.teal} opacity={0.7} height="40%">Odoo SH</Marker> Hosting
                     </h3>
                     <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
-                      {shType} · {shWorkers}w
+                      {shType} · {shWorkers}w · {shStorage}GB{shStaging > 0 ? ` · ${shStaging} staging` : ""}
                     </span>
                   </div>
                   <div className="grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
