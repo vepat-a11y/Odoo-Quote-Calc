@@ -231,8 +231,24 @@ export default function Calculator() {
     const implCostBeforeDiscount = (implData?.price || 0) * implMultiplier;
     const implementationCost = implCostBeforeDiscount * (1 - implDiscount / 100);
 
-    const shMonthlyCost = calculateShMonthlyCost(!isMonthly);
-    const shTotalCost = shMonthlyCost * months;
+    // SH hosting: applies Plan % discount on years 2..N for multi-year contracts,
+    // mirroring software treatment. Year 1 and single-year/monthly terms stay at list price.
+    const shMonthlyRateAtTerm = calculateShMonthlyCost(!isMonthly); // yearly rate for any non-monthly term
+    let shTotalCost = 0;
+    let shCostBeforeDiscount = 0;
+    if (isMonthly) {
+      shTotalCost = shMonthlyRateAtTerm * 1;
+      shCostBeforeDiscount = shTotalCost;
+    } else if (years === 1) {
+      shTotalCost = shMonthlyRateAtTerm * 12;
+      shCostBeforeDiscount = shTotalCost;
+    } else {
+      const shYear1 = shMonthlyRateAtTerm * 12;
+      const shRemainingFull = shMonthlyRateAtTerm * 12 * (years - 1);
+      const shRemainingDiscounted = shRemainingFull * (1 - planDiscount / 100);
+      shTotalCost = shYear1 + shRemainingDiscounted;
+      shCostBeforeDiscount = shYear1 + shRemainingFull;
+    }
 
     const totalCost = totalSoftwareCost + implementationCost + shTotalCost;
     const amortizedMonthly = totalCost / months;
@@ -244,7 +260,11 @@ export default function Calculator() {
       const fullMonthlyTotal = years === 1
         ? users * monthlyPlanYear1 * 12
         : users * monthlyPlanYear2Plus * months;
-      totalSavings = (fullMonthlyTotal - totalSoftwareCost) + implCostBeforeDiscount * (implDiscount / 100);
+      // SH "before" baseline for savings comparison = what they'd pay at SH monthly (non-annual) rate for full term
+      const shFullMonthlyTotal = shEnabled ? calculateShMonthlyCost(false) * months : 0;
+      totalSavings = (fullMonthlyTotal - totalSoftwareCost)
+        + (shFullMonthlyTotal - shTotalCost)
+        + implCostBeforeDiscount * (implDiscount / 100);
     }
 
     let financingLow = 0, financingHigh = 0;
