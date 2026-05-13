@@ -1,29 +1,12 @@
-# Deploy the Odoo Quote Calculator (Free Forever)
+# Deploy the Odoo Quote Calculator to GitHub Pages
 
-This calculator is now a **pure static site** — no server, no database, no monthly bills.
+This calculator is a **pure static site** — no server, no database, no monthly bills. GitHub Pages hosts it free forever.
 
-## What you get
+## One-time setup (~5 minutes)
 
-- Free hosting forever
-- Public URL accessible from anywhere on the internet
-- HTTPS included, no setup needed
-- Auto-deploys when you update prices and push to GitHub
-- Works offline once loaded
+### Step 1: Push this project to GitHub
 
-## One-time setup (~10 minutes)
-
-### Step 1: Build the static site
-
-```bash
-npx vite build
-```
-
-This produces a `dist/public/` folder. That folder *is* your entire site — plain HTML, JS, CSS.
-
-### Step 2: Push the project to GitHub
-
-1. Go to https://github.com/new and create a new empty repository (private is fine)
-2. From your computer, clone or download this project, then:
+If you haven't already:
 
 ```bash
 git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO.git
@@ -31,23 +14,30 @@ git branch -M main
 git push -u origin main
 ```
 
-### Step 3: Connect to Cloudflare Pages
+### Step 2: Turn on GitHub Pages
 
-1. Sign up free at https://dash.cloudflare.com/sign-up (no credit card needed)
-2. Go to **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
-3. Pick your GitHub repo
-4. Use these build settings:
-   - **Framework preset:** None
-   - **Build command:** `npx vite build`
-   - **Build output directory:** `dist/public`
-   - **Root directory:** (leave blank)
-5. Click **Save and Deploy**
+1. Go to your repo on github.com
+2. Click **Settings** → **Pages** (left sidebar)
+3. Under **Build and deployment**, set **Source** to **GitHub Actions**
+4. Done — no other settings needed
 
-In ~2 minutes you'll have a live URL like `odoo-calculator.pages.dev`.
+### Step 3: Trigger the first deploy
 
-### Step 4 (optional): Custom domain
+The workflow at `.github/workflows/deploy.yml` runs automatically on every push to `main`. To kick off the first one:
 
-If you want `quotes.yourcompany.com`, buy a domain (~$10/yr at Cloudflare or Namecheap), then in Cloudflare Pages → your project → **Custom domains** → add it. Cloudflare handles HTTPS automatically.
+```bash
+git add .
+git commit -m "Enable GitHub Pages deploy"
+git push
+```
+
+Watch progress under the **Actions** tab on GitHub. After ~2 minutes your site is live at:
+
+```
+https://YOUR-USERNAME.github.io/YOUR-REPO/
+```
+
+The exact URL appears at **Settings → Pages** once the first deploy finishes.
 
 ---
 
@@ -55,7 +45,7 @@ If you want `quotes.yourcompany.com`, buy a domain (~$10/yr at Cloudflare or Nam
 
 When Odoo or Catalyst updates pricing:
 
-1. Edit `client/src/pages/Calculator.tsx` — the `PRICING`, `IMPLEMENTATIONS`, `ODOO_SH_PRICING`, and `CATALYST_APR_*` constants are all at the top of the file.
+1. Edit `client/src/pages/Calculator.tsx` — the `PRICING`, `IMPLEMENTATIONS`, `ODOO_SH_PRICING`, and `CATALYST_APR_*` constants are all near the top.
 2. Commit and push:
 
 ```bash
@@ -64,30 +54,28 @@ git commit -m "Update prices"
 git push
 ```
 
-Cloudflare auto-rebuilds and deploys in ~30 seconds. Done.
+GitHub Actions auto-rebuilds and redeploys in ~1 minute.
 
 ---
 
-## Local development (no internet needed)
+## Local development
 
 ```bash
 npm install
 npx vite
 ```
 
-Opens at `http://localhost:5173`. Hot reload on save.
+Opens at `http://localhost:5173` with hot reload. The `base` path stays `/` locally because the GitHub Action only sets `VITE_BASE_PATH` during the deploy build.
 
 ---
 
-## Alternatives to Cloudflare Pages
+## Optional: Custom domain
 
-All free tiers, all work the same way:
+If you want `quotes.yourcompany.com` instead of `github.io`:
 
-| Service | Notes |
-|---|---|
-| **Cloudflare Pages** | Recommended — unlimited bandwidth, fastest |
-| **Netlify** | 100 GB/mo bandwidth on free tier |
-| **Vercel** | 100 GB/mo bandwidth, slightly faster builds |
-| **GitHub Pages** | Built into GitHub, simplest if your repo is public |
+1. Buy a domain (~$10/yr at Cloudflare or Namecheap)
+2. In your repo: **Settings → Pages → Custom domain** → enter your domain
+3. At your domain registrar, add a CNAME record pointing to `YOUR-USERNAME.github.io`
+4. GitHub auto-provisions HTTPS
 
-For any of them, the build command (`npx vite build`) and output folder (`dist/public`) are the same.
+When using a custom domain at the root (e.g. `quotes.yourcompany.com`), edit `.github/workflows/deploy.yml` and remove the `VITE_BASE_PATH` env var (or set it to `/`), since the site will live at the domain root rather than under `/repo-name/`.
