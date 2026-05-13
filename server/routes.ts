@@ -27,7 +27,7 @@ export async function registerRoutes(
   });
 
   app.get(api.quotes.get.path, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     if (isNaN(id)) {
       return res.status(400).json({ message: "Invalid ID" });
     }
