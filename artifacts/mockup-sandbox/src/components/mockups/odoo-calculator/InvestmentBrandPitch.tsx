@@ -780,16 +780,19 @@ export function InvestmentBrandPitch() {
                   );
                 })}
               </div>
-              <div className="absolute bottom-3 right-4">
-                <Sparkle color={BRAND.coral} />
-              </div>
             </div>
 
             {/* Detailed breakdown — grey cards per cost component */}
             <div className="space-y-3">
 
               {/* Software License row */}
-              <div className="rounded-3xl p-5" style={{ background: BRAND.cardAlt }}>
+              <div
+                className="rounded-3xl p-5"
+                style={{
+                  background: BRAND.cardAlt,
+                  boxShadow: `inset 6px 0 0 ${BRAND.purple}`,
+                }}
+              >
                 <div className="flex items-baseline justify-between mb-3">
                   <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
                     <Marker color={BRAND.blue} opacity={0.7} height="40%">Software</Marker> License
@@ -822,7 +825,13 @@ export function InvestmentBrandPitch() {
 
               {/* Implementation row */}
               {implPrice > 0 && (
-                <div className="rounded-3xl p-5" style={{ background: BRAND.cardAlt }}>
+                <div
+                  className="rounded-3xl p-5"
+                  style={{
+                    background: BRAND.cardAlt,
+                    boxShadow: `inset 6px 0 0 #F59E0B`,
+                  }}
+                >
                   <div className="flex items-baseline justify-between mb-3">
                     <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
                       <Marker color={BRAND.yellow} opacity={0.85} height="40%">Implementation</Marker>
@@ -839,12 +848,30 @@ export function InvestmentBrandPitch() {
                       </div>
                     ))}
                   </div>
+                  {quotes.some((q) => q.implDiscount > 0) && (
+                    <div className="mt-2 pt-2 border-t border-stone-200/70 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
+                      <span className="text-xs text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>
+                        Implementation discount
+                      </span>
+                      {quotes.map((q) => (
+                        <div key={q.termKey} className="text-right tabular-nums text-sm font-semibold" style={{ color: "#D97706" }}>
+                          {q.implDiscount > 0 ? `−${fmt0(q.implDiscount)}` : dash}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* SH row */}
               {shEnabled && (
-                <div className="rounded-3xl p-5" style={{ background: BRAND.cardAlt }}>
+                <div
+                  className="rounded-3xl p-5"
+                  style={{
+                    background: BRAND.cardAlt,
+                    boxShadow: `inset 6px 0 0 ${BRAND.teal}`,
+                  }}
+                >
                   <div className="flex items-baseline justify-between mb-3">
                     <h3 className="text-xl" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
                       <Marker color={BRAND.teal} opacity={0.7} height="40%">Odoo SH</Marker> Hosting
@@ -861,6 +888,18 @@ export function InvestmentBrandPitch() {
                       </div>
                     ))}
                   </div>
+                  {quotes.some((q) => q.shMultiYear > 0) && (
+                    <div className="mt-2 pt-2 border-t border-stone-200/70 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
+                      <span className="text-xs text-stone-500 italic" style={{ fontFamily: FONT_HAND }}>
+                        Multi-year savings
+                      </span>
+                      {quotes.map((q) => (
+                        <div key={q.termKey} className="text-right tabular-nums text-sm font-semibold" style={{ color: BRAND.teal }}>
+                          {q.shMultiYear > 0 ? `−${fmt0(q.shMultiYear)}` : dash}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -873,9 +912,6 @@ export function InvestmentBrandPitch() {
                   boxShadow: `0 4px 0 ${BRAND.purple}`,
                 }}
               >
-                <div className="absolute top-3 right-4">
-                  <Sparkle color={BRAND.coral} />
-                </div>
                 <div className="flex items-baseline justify-between mb-4">
                   <h3 className="text-2xl flex items-center gap-2" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
                     <Zap className="w-5 h-5" style={{ color: BRAND.teal }} />
