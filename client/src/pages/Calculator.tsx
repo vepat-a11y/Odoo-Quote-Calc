@@ -104,16 +104,6 @@ const TERM_LABELS: Record<TermKey, { short: string; long: string; sub: string }>
 
 const ALL_TERMS: TermKey[] = ["monthly", "1year", "2year", "3year", "4year", "5year"];
 
-// Each term gets its own brand accent so columns read distinctly even when prices are similar.
-const TERM_COLORS: Record<TermKey, string> = {
-  monthly: "#FF8A80",
-  "1year": "#29B6F6",
-  "2year": "#1ABCAA",
-  "3year": "#714B67",
-  "4year": "#FFC107",
-  "5year": "#2E5BBA",
-};
-
 interface TermQuote {
   termKey: TermKey;
   isMonthly: boolean;
@@ -819,35 +809,23 @@ export function Calculator() {
                     {" "}Cost
                   </h3>
                 </div>
-                {quotes.map((q) => {
-                  const monthlyQuote = quotes.find((x) => x.isMonthly);
-                  const monthlyAmortized = monthlyQuote ? monthlyQuote.softwareList : 0;
-                  const myPerMo = q.isMonthly ? q.softwareList : q.perMonth;
-                  const saveVsMo = !q.isMonthly && monthlyQuote ? monthlyAmortized - myPerMo : 0;
-                  const accent = TERM_COLORS[q.termKey];
-                  return (
-                    <div key={q.termKey} className="text-right relative pt-2" style={{ borderTop: `2px solid ${accent}` }}>
-                      <p className="text-base mb-1" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-                        <Marker color={accent} opacity={0.55} height="42%">{TERM_LABELS[q.termKey].long}</Marker>
-                      </p>
-                      <p className="text-[10px] uppercase tracking-wider text-stone-400 mb-2" style={{ fontFamily: FONT_BODY }}>
-                        {TERM_LABELS[q.termKey].sub}
-                      </p>
-                      <p
-                        className="text-2xl font-bold tabular-nums"
-                        style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
-                      >
-                        {fmt0(myPerMo)}
-                        <span className="text-xs font-normal text-stone-500">/mo</span>
-                      </p>
-                      {saveVsMo > 0 && (
-                        <p className="mt-1 text-[10px] font-semibold tabular-nums" style={{ color: accent, fontFamily: FONT_HAND }}>
-                          save {fmt0(saveVsMo)}/mo vs Monthly
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
+                {quotes.map((q) => (
+                  <div key={q.termKey} className="text-right">
+                    <p className="text-base mb-1" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
+                      {TERM_LABELS[q.termKey].long}
+                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-stone-400 mb-2" style={{ fontFamily: FONT_BODY }}>
+                      {TERM_LABELS[q.termKey].sub}
+                    </p>
+                    <p
+                      className="text-2xl font-bold tabular-nums"
+                      style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
+                    >
+                      {q.isMonthly ? fmt0(q.softwareList) : fmt0(q.perMonth)}
+                      <span className="text-xs font-normal text-stone-500">/mo</span>
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
 
