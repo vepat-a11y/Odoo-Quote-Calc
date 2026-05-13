@@ -393,10 +393,10 @@ export function Calculator() {
       data-testid={testId}
       className="flex-1 py-2 px-3 text-sm font-medium rounded-2xl transition-all"
       style={{
-        background: active ? color : BRAND.card,
-        color: active ? "#FFFFFF" : BRAND.ink,
+        background: active ? `${color}1F` : BRAND.card,
+        color: active ? color : BRAND.ink,
         fontFamily: FONT_BODY,
-        boxShadow: active ? `0 2px 0 ${color}` : "none",
+        border: active ? `1px solid ${color}66` : "1px solid transparent",
       }}
     >
       {children}
@@ -457,7 +457,7 @@ export function Calculator() {
       >
         <div className="flex items-center gap-3">
           <img
-            src="/odoo_logo.png"
+            src={`${import.meta.env.BASE_URL}odoo_logo.png`}
             alt="Odoo"
             className="h-5"
           />
@@ -493,7 +493,7 @@ export function Calculator() {
 
         {/* ── LEFT SIDEBAR ── */}
         <aside
-          className="v6-no-print w-[340px] overflow-y-auto flex-shrink-0 px-5 py-6"
+          className="v6-no-print w-[280px] overflow-y-auto flex-shrink-0 px-5 py-6"
           style={{ background: BRAND.paper, borderRight: "1px solid #ECECEC" }}
         >
           {/* Sidebar title */}
