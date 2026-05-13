@@ -461,10 +461,6 @@ export function Calculator() {
             alt="Odoo"
             className="h-5"
           />
-          <div className="w-px h-5 bg-stone-200" />
-          <span className="text-[11px] uppercase tracking-[0.25em] text-stone-400 font-semibold">
-            Pricing Pitch
-          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
