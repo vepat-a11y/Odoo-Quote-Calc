@@ -89,7 +89,7 @@ const SH: Record<Country, Record<ShType, { yearly: { worker: number; storage: nu
 const APR_LOW = 0.06;
 const APR_HIGH = 0.13;
 const PARTNER_RECURRING_PCT = 0.25;
-const CAD_TO_USD = 0.74;
+const CAD_TO_USD = 40.12 / 54.80;
 const fmtUSD0 = (n: number) =>
   `$${new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n)}`;
 
@@ -1031,7 +1031,7 @@ export function Calculator() {
                       <Marker color={BRAND.yellow} opacity={0.85} height="45%">Payout</Marker>
                     </h3>
                     <p className="text-[11px] text-stone-500 mt-1" style={{ fontFamily: FONT_HAND }}>
-                      Internal only · USD{country === "CA" ? " (avg historical conversion from CAD)" : ""}
+                      <strong className="font-bold text-stone-700">Internal only · USD</strong>
                     </p>
                   </div>
                 </div>
