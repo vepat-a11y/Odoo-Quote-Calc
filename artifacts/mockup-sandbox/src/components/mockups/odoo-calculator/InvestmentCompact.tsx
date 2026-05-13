@@ -13,7 +13,10 @@ import {
   Minus,
   Plus,
   FileText,
-  ShieldCheck,
+  Lock,
+  Eye,
+  EyeOff,
+  Repeat,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -139,6 +142,9 @@ export function InvestmentCompact() {
   const [selected, setSelected] = useState<Record<TermKey, boolean>>({
     monthly: true, "1year": true, "2year": false, "3year": true, "4year": false, "5year": true,
   });
+  const [internalView, setInternalView] = useState(false);
+  const PARTNER_RECURRING_PCT = 0.25; // Partner recurring commission share
+
   const [discounts, setDiscounts] = useState<Record<TermKey, { plan: number; impl: number }>>({
     monthly: { plan: 0, impl: 5 },
     "1year": { plan: 0, impl: 5 },
@@ -306,22 +312,32 @@ export function InvestmentCompact() {
         <div className="flex items-center gap-4">
           <img src="/__mockup/images/odoo-brand/odoo_logo.png" alt="Odoo" className="h-5" />
           <div className="w-px h-5 bg-stone-200" />
-          <div className="flex items-baseline gap-2">
-            <span className="text-[11px] font-bold tracking-[0.22em] text-[#714B67] uppercase">
-              Investment Proposal
-            </span>
-            <span className="text-[10px] text-stone-400 font-medium tracking-wider">
-              · ODO-2026-0142
-            </span>
-          </div>
+          <span className="text-[11px] font-bold tracking-[0.22em] text-[#714B67] uppercase">
+            Odoo Proposal
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200">
-            <ShieldCheck className="w-3 h-3 text-[#017E84]" />
-            <span className="text-[10px] font-semibold text-stone-700 tracking-wide uppercase">
-              Gold Partner Quote
-            </span>
-          </div>
+          <button
+            onClick={() => setInternalView(!internalView)}
+            data-testid="button-internal-sales"
+            className={`h-8 px-3 flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase rounded border transition-all ${
+              internalView
+                ? "bg-stone-900 text-amber-300 border-stone-900 shadow-sm"
+                : "bg-white text-stone-600 border-stone-300 hover:border-stone-400 hover:text-stone-900"
+            }`}
+          >
+            {internalView ? (
+              <>
+                <EyeOff className="w-3.5 h-3.5" />
+                Internal · MRR/NRR
+              </>
+            ) : (
+              <>
+                <Eye className="w-3.5 h-3.5" />
+                Internal Sales
+              </>
+            )}
+          </button>
           <Button
             size="sm"
             className="h-8 text-xs bg-[#714B67] hover:bg-[#5a3b53] text-white shadow-sm"
@@ -588,7 +604,7 @@ export function InvestmentCompact() {
                   Proposal · 2026
                 </p>
                 <h1 className="text-3xl font-serif italic text-stone-900 tracking-tight leading-none">
-                  Investment Summary
+                  Odoo Proposal
                 </h1>
               </div>
               <div className="flex gap-6 text-[11px] text-stone-500 font-medium">
@@ -795,6 +811,68 @@ export function InvestmentCompact() {
                     ))}
                   </div>
 
+                  {/* INTERNAL SALES — MRR / NRR rows (toggle-gated) */}
+                  {internalView && (
+                    <>
+                      <div className="px-4 py-2 bg-stone-900 border-t border-stone-800 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Lock className="w-3 h-3 text-amber-300" />
+                          <span className="text-[9px] font-bold tracking-[0.25em] text-amber-300 uppercase">
+                            Internal Sales · Recurring Revenue
+                          </span>
+                        </div>
+                        <span className="text-[9px] text-stone-400 italic">
+                          partner share {Math.round(PARTNER_RECURRING_PCT * 100)}% · not visible to client
+                        </span>
+                      </div>
+
+                      <div className="flex items-center px-4 py-3 bg-stone-50 border-t border-stone-100">
+                        <Lbl>
+                          <div className="flex items-center gap-1.5">
+                            <Repeat className="w-3 h-3 text-[#714B67]" />
+                            <p className="text-[10px] font-bold tracking-[0.2em] text-[#714B67] uppercase">
+                              MRR
+                            </p>
+                          </div>
+                          <p className="text-[9px] text-stone-400 italic mt-0.5 ml-4">
+                            software + hosting / month
+                          </p>
+                        </Lbl>
+                        {quotes.map((q) => {
+                          const mrr = (q.softwareSubtotal + q.shSubtotal) / q.months;
+                          return (
+                            <HCell key={q.termKey} className="text-sm font-bold text-[#714B67] tabular-nums">
+                              {fmt0(mrr)}<span className="text-[10px] text-stone-400 font-normal">/mo</span>
+                            </HCell>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex items-center px-4 py-3 bg-stone-50 border-t border-stone-100">
+                        <Lbl>
+                          <div className="flex items-center gap-1.5">
+                            <Wallet className="w-3 h-3 text-[#017E84]" />
+                            <p className="text-[10px] font-bold tracking-[0.2em] text-[#017E84] uppercase">
+                              NRR
+                            </p>
+                          </div>
+                          <p className="text-[9px] text-stone-400 italic mt-0.5 ml-4">
+                            net recurring · partner payout
+                          </p>
+                        </Lbl>
+                        {quotes.map((q) => {
+                          const mrr = (q.softwareSubtotal + q.shSubtotal) / q.months;
+                          const nrr = mrr * PARTNER_RECURRING_PCT;
+                          return (
+                            <HCell key={q.termKey} className="text-sm font-bold text-[#017E84] tabular-nums">
+                              {fmt0(nrr)}<span className="text-[10px] text-stone-400 font-normal">/mo</span>
+                            </HCell>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+
                   {/* SAVINGS — full-bleed teal gradient strip */}
                   <div className="flex items-center px-4 py-3.5 border-t border-stone-100" style={{ background: "linear-gradient(90deg, rgba(1,126,132,0.12) 0%, rgba(1,126,132,0.04) 100%)" }}>
                     <Lbl>
@@ -864,35 +942,10 @@ export function InvestmentCompact() {
                   </div>
                 )}
 
-                {/* ── FOOTER / SIGNATURE ────────────────────────── */}
-                <div className="mt-7 pt-5 border-t border-stone-300 grid grid-cols-3 gap-6 text-[11px]">
-                  <div>
-                    <p className="text-[9px] font-bold tracking-[0.2em] text-stone-400 uppercase mb-3">
-                      Authorized by Client
-                    </p>
-                    <div className="border-b border-stone-400 h-7" />
-                    <p className="mt-1.5 text-stone-500 italic">Signature & Date</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold tracking-[0.2em] text-stone-400 uppercase mb-3">
-                      Authorized by Odoo Advisors
-                    </p>
-                    <div className="border-b border-stone-400 h-7" />
-                    <p className="mt-1.5 text-stone-500 italic">Partner Signature</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold tracking-[0.2em] text-stone-400 uppercase mb-3">
-                      Quote Validity
-                    </p>
-                    <p className="text-stone-700 font-semibold leading-relaxed">
-                      30 days from quote date.
-                      <br />
-                      <span className="text-stone-500 font-normal italic">
-                        Estimation only — final pricing subject to confirmation.
-                      </span>
-                    </p>
-                  </div>
-                </div>
+                {/* ── COMPACT FOOTNOTE ──────────────────────────── */}
+                <p className="mt-6 text-[10px] text-stone-400 italic text-center tracking-wide">
+                  Estimation only — final pricing subject to confirmation. Quote valid for 30 days.
+                </p>
               </>
             )}
           </motion.div>
