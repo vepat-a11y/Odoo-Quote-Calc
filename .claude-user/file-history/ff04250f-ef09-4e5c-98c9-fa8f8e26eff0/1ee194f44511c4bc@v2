@@ -1,0 +1,1346 @@
+import { useState } from 'react';
+import {
+  Save,
+  FileText,
+  TrendingUp,
+  DollarSign,
+  Users,
+  Server,
+  Package,
+  Calendar,
+  Percent,
+  Globe,
+  ChevronDown,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button, Select } from '@/components/ui-custom';
+import { useCreateQuote } from '@/hooks/use-quotes';
+import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
+
+// === CONSTANTS & TYPES ===
+
+type Country = 'US' | 'CA';
+
+const COUNTRY_CONFIG = {
+  US: { label: 'United States', currency: 'USD', symbol: '$', flag: '🇺🇸' },
+  CA: { label: 'Canada', currency: 'CAD', symbol: '$', flag: '🇨🇦' }
+};
+
+const PRICING = {
+  US: {
+    standard: {
+      monthly: { year1: 31.10, year2plus: 38.90 },
+      yearly: { year1: 24.90, year2plus: 31.10 }
+    },
+    custom: {
+      monthly: { year1: 61.10, year2plus: 76.20 },
+      yearly: { year1: 49.00, year2plus: 61.00 }
+    }
+  },
+  CA: {
+    standard: {
+      monthly: { year1: 43.70, year2plus: 54.70 },
+      yearly: { year1: 35.00, year2plus: 43.70 }
+    },
+    custom: {
+      monthly: { year1: 68.70, year2plus: 85.70 },
+      yearly: { year1: 55.00, year2plus: 68.70 }
+    }
+  }
+};
+
+const IMPLEMENTATIONS = {
+  US: {
+    none: { label: 'None (Self-Service)', hours: 0, price: 0 },
+    express: { label: 'Express (4h)', hours: 4, price: 580 },
+    starter: { label: 'Starter (25h)', hours: 25, price: 3600 },
+    basic: { label: 'Basic (50h)', hours: 50, price: 7000 },
+    standard: { label: 'Standard (100h)', hours: 100, price: 12500 },
+    custom: { label: 'Custom (200h)', hours: 200, price: 25000 }
+  },
+  CA: {
+    none: { label: 'None (Self-Service)', hours: 0, price: 0 },
+    starter: { label: 'Starter (4h)', hours: 4, price: 850 },
+    basic: { label: 'Basic (25h)', hours: 25, price: 5250 },
+    standard: { label: 'Standard (50h)', hours: 50, price: 10300 },
+    custom: { label: 'Custom (100h)', hours: 100, price: 18250 },
+    pro: { label: 'Pro (200h)', hours: 200, price: 36500 }
+  }
+};
+
+// Odoo SH Pricing (per country)
+const ODOO_SH_PRICING = {
+  US: {
+    shared: {
+      yearly: { worker: 57.60, storage: 0.20, staging: 14.40, base: 0 },
+      monthly: { worker: 72.00, storage: 0.25, staging: 18.00, base: 0 },
+      limits: { workerMin: 1, workerMax: 8, storageMin: 1, storageMax: 512, stagingMin: 0, stagingMax: 20 }
+    },
+    dedicated: {
+      yearly: { worker: 57.60, storage: 0.20, staging: 14.40, base: 480.00 },
+      monthly: { worker: 72.00, storage: 0.25, staging: 18.00, base: 600.00 },
+      limits: { workerMin: 4, workerMax: 256, storageMin: 1, storageMax: 4096, stagingMin: 0, stagingMax: 20 }
+    }
+  },
+  CA: {
+    shared: {
+      yearly: { worker: 108.00 * 0.80, storage: 0.32, staging: 21.60, base: 0 },
+      monthly: { worker: 108.00, storage: 0.40, staging: 27.00, base: 0 },
+      limits: { workerMin: 1, workerMax: 8, storageMin: 1, storageMax: 512, stagingMin: 0, stagingMax: 20 }
+    },
+    dedicated: {
+      yearly: { worker: 108.00 * 0.80, storage: 0.32, staging: 21.60, base: 653.00 },
+      monthly: { worker: 108.00, storage: 0.40, staging: 27.00, base: 816.00 },
+      limits: { workerMin: 4, workerMax: 256, storageMin: 1, storageMax: 4096, stagingMin: 0, stagingMax: 20 }
+    }
+  }
+};
+
+// Catalyst Finance APR range (Burlington, ON Canada)
+const CATALYST_APR_LOW = 0.06;   // 6% best rate
+const CATALYST_APR_HIGH = 0.13;  // 13% standard rate
+
+// Standard amortization (PMT) formula
+// Monthly Payment = P × r(1+r)^n / ((1+r)^n − 1)
+function pmtCalc(principal: number, annualRate: number, months: number): number {
+  if (principal <= 0 || months <= 0) return 0;
+  const r = annualRate / 12;
+  return (principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1);
+}
+
+// Calculate monthly financing payment using APR-based amortization
+function calculateFinancingPayment(
+  totalAmount: number,
+  termKey: string
+): { low: number; high: number } {
+  if (totalAmount <= 0) return { low: 0, high: 0 };
+
+  const years = parseInt(termKey.replace('year', ''));
+  if (!years || years <= 0) return { low: 0, high: 0 };
+  const months = years * 12;
+
+  return {
+    low:  pmtCalc(totalAmount, CATALYST_APR_LOW,  months),
+    high: pmtCalc(totalAmount, CATALYST_APR_HIGH, months),
+  };
+}
+
+type TermKey = 'monthly' | '1year' | '2year' | '3year' | '4year' | '5year';
+type ShHostingType = 'shared' | 'dedicated';
+
+interface TermDiscounts {
+  [key: string]: { plan: number; impl: number };
+}
+
+interface SelectedTerms {
+  [key: string]: boolean;
+}
+
+// Section wrapper for sidebar
+function SidebarSection({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`px-5 py-4 border-b border-[#F0EDE7] ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+// Section label with icon
+function SectionLabel({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#714B67' }} />
+      <span className="text-sm font-semibold" style={{ color: '#1C1917' }}>{label}</span>
+    </div>
+  );
+}
+
+export default function Calculator() {
+  const { toast } = useToast();
+  const createQuote = useCreateQuote();
+
+  // State
+  const [showPayoutView, setShowPayoutView] = useState(false);
+  const [country, setCountry] = useState<Country>('US');
+  const [users, setUsers] = useState(10);
+  const [plan, setPlan] = useState<'standard' | 'custom'>('standard');
+  const [implementation, setImplementation] = useState<string>('none');
+  const [implMultiplier, setImplMultiplier] = useState<number>(1);
+
+  // Odoo SH State
+  const [shEnabled, setShEnabled] = useState(false);
+  const [shHostingType, setShHostingType] = useState<ShHostingType>('shared');
+  const [shWorkers, setShWorkers] = useState(1);
+  const [shStorage, setShStorage] = useState(1);
+  const [shStaging, setShStaging] = useState(0);
+
+  const [termDiscounts, setTermDiscounts] = useState<TermDiscounts>({
+    monthly: { plan: 0, impl: 0 },
+    '1year': { plan: 0, impl: 0 },
+    '2year': { plan: 0, impl: 0 },
+    '3year': { plan: 0, impl: 0 },
+    '4year': { plan: 0, impl: 0 },
+    '5year': { plan: 0, impl: 0 }
+  });
+
+  const [selectedTerms, setSelectedTerms] = useState<SelectedTerms>({
+    monthly: true,
+    '1year': false,
+    '2year': false,
+    '3year': false,
+    '4year': false,
+    '5year': false
+  });
+
+  // Get current pricing based on country
+  const currentPricing = PRICING[country];
+  const currentImplementations = IMPLEMENTATIONS[country];
+  const countryConfig = COUNTRY_CONFIG[country];
+
+  // Format currency based on country (2 decimal places for precision)
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: countryConfig.currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  // Reset implementation and SH when country changes
+  const handleCountryChange = (newCountry: Country) => {
+    setCountry(newCountry);
+    setImplementation('none');
+  };
+
+  // Get SH limits based on hosting type and country
+  const shLimits = ODOO_SH_PRICING[country][shHostingType].limits;
+
+  // Calculate SH monthly cost (aligns with term type: monthly quote = monthly SH, annual quotes = annual SH)
+  const calculateShMonthlyCost = (isAnnual: boolean) => {
+    if (!shEnabled) return 0;
+    const pricing = isAnnual ? ODOO_SH_PRICING[country][shHostingType].yearly : ODOO_SH_PRICING[country][shHostingType].monthly;
+    const workerCost = shWorkers * pricing.worker;
+    const storageCost = shStorage * pricing.storage;
+    const stagingCost = shStaging * pricing.staging;
+    const baseCost = pricing.base;
+    return baseCost + workerCost + storageCost + stagingCost;
+  };
+
+  // Calculation Logic
+  const calculateTermQuote = (termKey: TermKey, planDiscount: number, implDiscount: number) => {
+    const isMonthly = termKey === 'monthly';
+    const years = isMonthly ? 1 : parseInt(termKey.replace('year', ''));
+    const months = isMonthly ? 1 : years * 12;
+
+    // Get pricing rates
+    const monthlyPlanYear1 = currentPricing[plan].monthly.year1;
+    const monthlyPlanYear2Plus = currentPricing[plan].monthly.year2plus;
+    const yearlyPlanYear1 = currentPricing[plan].yearly.year1;
+    const yearlyPlanYear2Plus = currentPricing[plan].yearly.year2plus;
+
+    // Calculate software cost based on term type
+    let totalSoftwareCost = 0;
+    let softwareCostBeforeDiscount = 0;
+
+    if (isMonthly) {
+      const year1Cost = users * monthlyPlanYear1 * 1;
+      softwareCostBeforeDiscount = year1Cost;
+      totalSoftwareCost = year1Cost;
+    } else {
+      const fullTermAtYear2Rate = users * yearlyPlanYear2Plus * 12 * years;
+      const planDiscountAmount = fullTermAtYear2Rate * (planDiscount / 100);
+      const year1Benefit = users * (yearlyPlanYear2Plus - yearlyPlanYear1) * 12;
+      softwareCostBeforeDiscount = fullTermAtYear2Rate - year1Benefit;
+      totalSoftwareCost = fullTermAtYear2Rate - planDiscountAmount - year1Benefit;
+    }
+
+    // Implementation cost
+    const implData = currentImplementations[implementation as keyof typeof currentImplementations];
+    const implCostBeforeDiscount = (implData?.price || 0) * implMultiplier;
+    const implementationCost = implCostBeforeDiscount * (1 - implDiscount / 100);
+
+    // Odoo SH cost (no discounts, aligns with term type)
+    const shMonthlyCost = calculateShMonthlyCost(!isMonthly);
+    const shTotalCost = shMonthlyCost * months;
+
+    const totalCost = totalSoftwareCost + implementationCost + shTotalCost;
+    const amortizedMonthly = totalCost / months;
+
+    let totalSavings = 0;
+
+    if (isMonthly) {
+      const planDiscountSavings = softwareCostBeforeDiscount * (planDiscount / 100);
+      const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
+      totalSavings = planDiscountSavings + implDiscountSavings;
+    } else {
+      let fullMonthlyTotal: number;
+      if (years === 1) {
+        fullMonthlyTotal = users * monthlyPlanYear1 * 12;
+      } else {
+        fullMonthlyTotal = users * monthlyPlanYear2Plus * months;
+      }
+      const implDiscountSavings = implCostBeforeDiscount * (implDiscount / 100);
+      totalSavings = (fullMonthlyTotal - totalSoftwareCost) + implDiscountSavings;
+    }
+
+    let financingLow = 0;
+    let financingHigh = 0;
+
+    if (!isMonthly) {
+      const financing = calculateFinancingPayment(totalCost, termKey);
+      financingLow  = financing.low;
+      financingHigh = financing.high;
+    }
+
+    return {
+      termLabel: isMonthly ? 'Monthly' : `${years} Year${years > 1 ? 's' : ''}`,
+      termKey,
+      years,
+      totalSoftwareCost,
+      implementationCost,
+      shTotalCost,
+      totalCost,
+      amortizedMonthly,
+      totalSavings,
+      financingLow,
+      financingHigh,
+    };
+  };
+
+  const handleSaveQuote = () => {
+    createQuote.mutate({
+      users,
+      plan,
+      implementation,
+      termDiscounts,
+      selectedTerms
+    }, {
+      onSuccess: () => {
+        toast({
+          title: "Quote Saved",
+          description: "Your configuration has been saved successfully.",
+        });
+      },
+      onError: (err) => {
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive"
+        });
+      }
+    });
+  };
+
+  const activeTerms = Object.keys(selectedTerms).filter(k => selectedTerms[k as TermKey]) as TermKey[];
+
+  // Compute all quote data once for active terms
+  const allQuoteData = activeTerms.map(term => ({
+    term,
+    data: calculateTermQuote(term, termDiscounts[term].plan, termDiscounts[term].impl)
+  }));
+
+  // ── PDF Export ──
+  const handleExportPDF = () => {
+    const doc = new jsPDF('portrait');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 18;
+
+    const quoteData = allQuoteData.map(({ data }) => data);
+
+    const numTerms = quoteData.length;
+    if (numTerms === 0) {
+      toast({
+        title: "No Terms Selected",
+        description: "Please select at least one term to export.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // ── Header bar ──
+    doc.setFillColor(113, 75, 103);
+    doc.rect(0, 0, pageWidth, 38, 'F');
+
+    // Odoo wordmark (bold white)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(255, 255, 255);
+    doc.text('odoo', margin, 22);
+
+    // Subtitle next to wordmark
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(220, 200, 215);
+    doc.text('Enterprise Quote', margin + 32, 22);
+
+    // Right: date
+    doc.setFontSize(8);
+    doc.setTextColor(220, 200, 215);
+    const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    doc.text(dateStr, pageWidth - margin, 17, { align: 'right' });
+
+    // Right: title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text('QUOTE COMPARISON', pageWidth - margin, 28, { align: 'right' });
+
+    let y = 52;
+
+    // ── Configuration summary card ──
+    doc.setFillColor(248, 246, 244);
+    doc.roundedRect(margin, y - 7, pageWidth - margin * 2, 24, 3, 3, 'F');
+    doc.setDrawColor(232, 227, 220);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(margin, y - 7, pageWidth - margin * 2, 24, 3, 3, 'S');
+
+    const implLabel = currentImplementations[implementation as keyof typeof currentImplementations]?.label || 'None';
+    const configItems = [
+      { label: 'USERS', value: String(users) },
+      { label: 'PLAN', value: plan === 'standard' ? 'Standard' : 'Custom' },
+      { label: 'CURRENCY', value: countryConfig.currency },
+      { label: 'IMPLEMENTATION', value: implLabel },
+      ...(shEnabled ? [{ label: 'SH HOSTING', value: shHostingType === 'dedicated' ? 'Dedicated' : 'Shared' }] : []),
+    ];
+
+    const usableWidth = pageWidth - margin * 2 - 12;
+    const itemW = usableWidth / configItems.length;
+    configItems.forEach((item, i) => {
+      const x = margin + 6 + i * itemW;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(160, 156, 150);
+      doc.text(item.label, x, y);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(28, 25, 23);
+      doc.text(item.value, x, y + 9);
+    });
+
+    y += 28;
+
+    // ── Table setup ──
+    const tableWidth = pageWidth - margin * 2;
+    const labelColWidth = 54;
+    const termColWidth = (tableWidth - labelColWidth) / numTerms;
+    const rowH = 11;
+
+    const hasAnySH = quoteData.some(d => d.shTotalCost > 0);
+    const hasAnySavings = quoteData.some(d => d.totalSavings > 0);
+    const hasAnyFinancing = quoteData.some(d => d.financingLow > 0);
+    const hasAnyImpl = quoteData.some(d => d.implementationCost > 0);
+
+    // Draw column separator helper
+    const drawColSeps = (rowY: number, rowHeight: number) => {
+      doc.setDrawColor(240, 237, 231);
+      doc.setLineWidth(0.25);
+      doc.line(margin + labelColWidth, rowY, margin + labelColWidth, rowY + rowHeight);
+      for (let i = 1; i < numTerms; i++) {
+        doc.line(margin + labelColWidth + i * termColWidth, rowY, margin + labelColWidth + i * termColWidth, rowY + rowHeight);
+      }
+    };
+
+    // ── Table header ──
+    doc.setFillColor(113, 75, 103);
+    doc.roundedRect(margin, y, tableWidth, rowH + 6, 2, 2, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text('LINE ITEM', margin + 5, y + 9);
+
+    quoteData.forEach((data, i) => {
+      const colX = margin + labelColWidth + i * termColWidth + termColWidth / 2;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(255, 255, 255);
+      doc.text(data.termLabel.toUpperCase(), colX, y + 7, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(220, 200, 215);
+      const sub = data.termKey === 'monthly' ? 'pay as you go' : `${data.years}yr commitment`;
+      doc.text(sub, colX, y + 13, { align: 'center' });
+    });
+
+    y += rowH + 6;
+
+    // ── Data rows ──
+    interface PdfRow { label: string; key: string; }
+    const dataRows: PdfRow[] = [
+      { label: 'Software License', key: 'totalSoftwareCost' },
+      ...(hasAnyImpl ? [{ label: 'Implementation', key: 'implementationCost' }] : []),
+      ...(hasAnySH ? [{ label: 'Odoo SH Hosting', key: 'shTotalCost' }] : []),
+    ];
+
+    dataRows.forEach((row, rowIdx) => {
+      const bg = rowIdx % 2 === 0 ? [255, 255, 255] : [252, 251, 249];
+      doc.setFillColor(bg[0], bg[1], bg[2]);
+      doc.rect(margin, y, tableWidth, rowH, 'F');
+      doc.setDrawColor(240, 237, 231);
+      doc.setLineWidth(0.25);
+      doc.rect(margin, y, tableWidth, rowH);
+      drawColSeps(y, rowH);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(87, 83, 78);
+      doc.text(row.label, margin + 5, y + 7.5);
+
+      quoteData.forEach((data, i) => {
+        const colX = margin + labelColWidth + i * termColWidth + termColWidth / 2;
+        const val = data[row.key as keyof typeof data] as number;
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(28, 25, 23);
+        doc.text(val > 0 ? formatCurrency(val) : '—', colX, y + 7.5, { align: 'center' });
+      });
+
+      y += rowH;
+    });
+
+    // ── Total Contract row ──
+    doc.setFillColor(113, 75, 103);
+    doc.rect(margin, y, tableWidth, rowH + 4, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Total Contract', margin + 5, y + 9);
+
+    quoteData.forEach((data, i) => {
+      const colX = margin + labelColWidth + i * termColWidth + termColWidth / 2;
+      doc.setFontSize(11);
+      doc.text(formatCurrency(data.totalCost), colX, y + 9, { align: 'center' });
+    });
+
+    y += rowH + 4;
+
+    // ── Savings row ──
+    if (hasAnySavings) {
+      doc.setFillColor(240, 253, 244);
+      doc.rect(margin, y, tableWidth, rowH, 'F');
+      doc.setDrawColor(220, 252, 231);
+      doc.setLineWidth(0.25);
+      doc.rect(margin, y, tableWidth, rowH);
+      drawColSeps(y, rowH);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(22, 163, 74);
+      doc.text('You Save', margin + 5, y + 7.5);
+
+      quoteData.forEach((data, i) => {
+        const colX = margin + labelColWidth + i * termColWidth + termColWidth / 2;
+        if (data.totalSavings > 0) {
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(22, 163, 74);
+          doc.text(formatCurrency(data.totalSavings), colX, y + 7.5, { align: 'center' });
+        } else {
+          doc.setTextColor(187, 247, 208);
+          doc.text('—', colX, y + 7.5, { align: 'center' });
+        }
+      });
+
+      y += rowH;
+    }
+
+    // ── Monthly Amortized row ──
+    doc.setFillColor(248, 246, 244);
+    doc.rect(margin, y, tableWidth, rowH, 'F');
+    doc.setDrawColor(232, 227, 220);
+    doc.setLineWidth(0.25);
+    doc.rect(margin, y, tableWidth, rowH);
+    drawColSeps(y, rowH);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(113, 75, 103);
+    doc.text('Monthly Amortized', margin + 5, y + 7.5);
+
+    doc.setFont('helvetica', 'bold');
+    quoteData.forEach((data, i) => {
+      const colX = margin + labelColWidth + i * termColWidth + termColWidth / 2;
+      doc.setTextColor(113, 75, 103);
+      doc.text(formatCurrency(data.amortizedMonthly) + '/mo', colX, y + 7.5, { align: 'center' });
+    });
+
+    y += rowH + 10;
+
+    // ── Financing section ──
+    if (hasAnyFinancing) {
+      doc.setFillColor(30, 58, 95);
+      doc.roundedRect(margin, y, tableWidth, 10, 2, 2, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      doc.text('CATALYST FINANCE', margin + 5, y + 7);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(147, 197, 253);
+      doc.text(`${CATALYST_APR_LOW * 100}–${CATALYST_APR_HIGH * 100}% APR · Monthly Financing Estimates`, pageWidth - margin - 4, y + 7, { align: 'right' });
+
+      y += 10;
+
+      [
+        { label: `Best Rate (${CATALYST_APR_LOW * 100}% APR)`, key: 'financingLow', bold: true },
+        { label: `Standard (${CATALYST_APR_HIGH * 100}% APR)`, key: 'financingHigh', bold: false },
+      ].forEach((row) => {
+        doc.setFillColor(239, 246, 255);
+        doc.rect(margin, y, tableWidth, rowH, 'F');
+        doc.setDrawColor(219, 234, 254);
+        doc.setLineWidth(0.25);
+        doc.rect(margin, y, tableWidth, rowH);
+        drawColSeps(y, rowH);
+
+        doc.setFont('helvetica', row.bold ? 'bold' : 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(30, 64, 175);
+        doc.text(row.label, margin + 5, y + 7.5);
+
+        quoteData.forEach((data, i) => {
+          const colX = margin + labelColWidth + i * termColWidth + termColWidth / 2;
+          const val = data[row.key as keyof typeof data] as number;
+          if (val > 0) {
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(30, 64, 175);
+            doc.text(`${formatCurrency(val)}/mo`, colX, y + 7.5, { align: 'center' });
+          } else {
+            doc.setTextColor(191, 219, 254);
+            doc.text('—', colX, y + 7.5, { align: 'center' });
+          }
+        });
+
+        y += rowH;
+      });
+    }
+
+    // ── Footer ──
+    doc.setFillColor(113, 75, 103);
+    doc.rect(0, pageHeight - 12, pageWidth, 12, 'F');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(220, 200, 215);
+    doc.text('This quote is for estimation purposes only. Final pricing may vary.', margin, pageHeight - 4.5);
+    doc.text('Odoo Enterprise Quote Builder', pageWidth - margin, pageHeight - 4.5, { align: 'right' });
+
+    doc.save(`odoo-quote-${new Date().toISOString().split('T')[0]}.pdf`);
+
+    toast({
+      title: "PDF Exported",
+      description: "Your quote has been saved as a PDF.",
+    });
+  };
+
+  const implData = currentImplementations[implementation as keyof typeof currentImplementations];
+  const configSummary = `${users} users · ${plan === 'standard' ? 'Standard' : 'Custom'} · ${countryConfig.currency}${implementation !== 'none' && implData ? ` · ${implData.label}` : ''}${shEnabled ? ' · Odoo SH' : ''}`;
+
+  // Term display labels
+  const termDisplayLabel = (term: string) => {
+    if (term === 'monthly') return 'Monthly';
+    const n = term.replace('year', '');
+    return `${n} Year${parseInt(n) > 1 ? 's' : ''}`;
+  };
+
+  return (
+    <div className="h-screen flex flex-col" style={{ background: '#F5F4F0' }}>
+
+      {/* ── Top Navigation ── */}
+      <header
+        className="flex-shrink-0 bg-white flex items-center justify-between px-6 z-50"
+        style={{ height: '64px', borderBottom: '1px solid #E8E3DC', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+      >
+        <div className="flex items-center gap-4">
+          <img
+            src="https://odoocdn.com/openerp_website/static/src/img/assets/png/odoo_logo.png"
+            alt="Odoo"
+            className="h-8"
+          />
+          <div style={{ width: '1px', height: '22px', background: '#E8E3DC' }} />
+          <div>
+            <div className="text-sm font-bold leading-tight" style={{ color: '#714B67' }}>Quote Builder</div>
+            <div className="text-xs leading-tight" style={{ color: '#A09C96' }}>Enterprise Pricing Calculator</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={handleExportPDF}
+            className="hidden md:flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-150 hover:bg-[#F5F4F0] active:scale-95"
+            style={{ border: '1.5px solid #E8E3DC', color: '#57534E' }}
+            data-testid="button-export-pdf"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            Export PDF
+          </button>
+          <Button
+            onClick={handleSaveQuote}
+            isLoading={createQuote.isPending}
+            className="text-xs font-semibold px-4 py-2 rounded-lg"
+            data-testid="button-save-quote"
+          >
+            <Save className="w-3.5 h-3.5 mr-1.5" />
+            Save Quote
+          </Button>
+        </div>
+      </header>
+
+      {/* ── Two-Panel Layout ── */}
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* ── LEFT: Sidebar ── */}
+        <aside
+          className="w-[380px] flex-shrink-0 bg-white overflow-y-auto"
+          style={{ borderRight: '1px solid #E8E3DC' }}
+        >
+          {/* Sidebar header label */}
+          <div className="px-5 py-3.5 border-b border-[#F0EDE7]">
+            <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: '#B0ADA4' }}>
+              Configuration
+            </span>
+          </div>
+
+          {/* ── Currency ── */}
+          <SidebarSection>
+            <div className="flex items-center justify-between">
+              <SectionLabel icon={Globe} label="Currency" />
+              <div className="flex rounded-lg overflow-hidden" style={{ border: '1.5px solid #E8E3DC' }}>
+                {(['US', 'CA'] as const).map(c => (
+                  <button
+                    key={c}
+                    onClick={() => handleCountryChange(c)}
+                    className="px-4 py-1.5 text-xs font-bold transition-all duration-150"
+                    style={{
+                      background: country === c ? '#714B67' : 'white',
+                      color: country === c ? 'white' : '#78716C',
+                    }}
+                    data-testid={`button-currency-${c.toLowerCase()}`}
+                  >
+                    {COUNTRY_CONFIG[c].currency}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </SidebarSection>
+
+          {/* ── Users ── */}
+          <SidebarSection>
+            <SectionLabel icon={Users} label="Number of Users" />
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setUsers(Math.max(1, users - 1))}
+                className="w-10 h-10 flex items-center justify-center rounded-lg text-lg font-bold transition-all duration-150 hover:bg-[#F5F4F0] active:scale-95"
+                style={{ border: '1.5px solid #E8E3DC', color: '#57534E' }}
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min="1"
+                value={users}
+                onChange={(e) => setUsers(parseInt(e.target.value) || 1)}
+                className="flex-1 text-center text-xl font-black rounded-lg px-3 py-2.5 outline-none border-2 transition-colors"
+                style={{ borderColor: '#E8E3DC', color: '#1C1917', fontVariantNumeric: 'tabular-nums' }}
+                onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                onBlur={e => (e.currentTarget.style.borderColor = '#E8E3DC')}
+                data-testid="input-users"
+              />
+              <button
+                onClick={() => setUsers(users + 1)}
+                className="w-10 h-10 flex items-center justify-center rounded-lg text-lg font-bold transition-all duration-150 hover:bg-[#F5F4F0] active:scale-95"
+                style={{ border: '1.5px solid #E8E3DC', color: '#57534E' }}
+              >
+                +
+              </button>
+            </div>
+          </SidebarSection>
+
+          {/* ── Plan ── */}
+          <SidebarSection>
+            <SectionLabel icon={Package} label="Plan" />
+            <div className="grid grid-cols-2 gap-2.5">
+              {([
+                { key: 'standard' as const, label: 'Standard', sub: `${formatCurrency(currentPricing.standard.yearly.year1)}/user/yr`, color: '#714B67' },
+                { key: 'custom' as const, label: 'Custom', sub: `${formatCurrency(currentPricing.custom.yearly.year1)}/user/yr`, color: '#017E84' },
+              ]).map(({ key, label, sub, color }) => (
+                <button
+                  key={key}
+                  onClick={() => setPlan(key)}
+                  data-testid={`button-plan-${key}`}
+                  className="px-4 py-3 rounded-xl text-left transition-all duration-150"
+                  style={{
+                    border: plan === key ? `2px solid ${color}` : '1.5px solid #E8E3DC',
+                    background: plan === key ? `${color}09` : 'white',
+                  }}
+                >
+                  <div className="text-sm font-bold" style={{ color: plan === key ? color : '#57534E' }}>{label}</div>
+                  <div className="text-[11px] mt-0.5 font-medium" style={{ color: plan === key ? color : '#A09C96', opacity: plan === key ? 0.85 : 1 }}>{sub}</div>
+                </button>
+              ))}
+            </div>
+          </SidebarSection>
+
+          {/* ── Implementation ── */}
+          <SidebarSection>
+            <SectionLabel icon={Server} label="Implementation" />
+            <Select
+              options={Object.entries(currentImplementations).map(([key, val]) => ({ value: key, label: val.label }))}
+              value={implementation}
+              onChange={(e) => setImplementation(e.target.value)}
+              data-testid="select-implementation"
+            />
+            {implementation !== 'none' && (
+              <div
+                className="mt-3 p-3 rounded-xl flex items-center gap-2.5"
+                style={{ background: '#F5F4F0' }}
+              >
+                <span className="text-xs font-medium" style={{ color: '#78716C' }}>Multiplier</span>
+                <span className="text-xs font-bold" style={{ color: '#B0ADA4' }}>×</span>
+                <input
+                  type="number"
+                  min="0.1"
+                  max="10"
+                  step="0.1"
+                  value={implMultiplier}
+                  onChange={(e) => setImplMultiplier(parseFloat(e.target.value) || 1)}
+                  className="w-16 rounded-lg px-2 py-1.5 text-sm font-bold text-center outline-none transition-colors bg-white border-2"
+                  style={{ borderColor: '#E8E3DC', color: '#1C1917' }}
+                  onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                  onBlur={e => (e.currentTarget.style.borderColor = '#E8E3DC')}
+                  data-testid="input-impl-multiplier"
+                />
+                <span className="text-xs" style={{ color: '#A09C96' }}>
+                  = {((currentImplementations[implementation as keyof typeof currentImplementations]?.hours || 0) * implMultiplier).toFixed(0)} hrs
+                </span>
+                <span className="ml-auto text-sm font-bold" style={{ color: '#017E84', fontVariantNumeric: 'tabular-nums' }}>
+                  {formatCurrency((currentImplementations[implementation as keyof typeof currentImplementations]?.price || 0) * implMultiplier)}
+                </span>
+              </div>
+            )}
+          </SidebarSection>
+
+          {/* ── Odoo SH Hosting ── */}
+          <SidebarSection>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Server className="w-3.5 h-3.5" style={{ color: '#714B67' }} />
+                <span className="text-sm font-semibold" style={{ color: '#1C1917' }}>Odoo SH Hosting</span>
+              </div>
+              <button
+                onClick={() => setShEnabled(!shEnabled)}
+                data-testid="button-toggle-sh"
+                className="relative rounded-full transition-all duration-300 flex-shrink-0 focus:outline-none"
+                style={{ width: '44px', height: '24px', background: shEnabled ? '#714B67' : '#D6D3CE' }}
+              >
+                <span
+                  className="absolute top-[2px] left-[2px] w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300"
+                  style={{ transform: shEnabled ? 'translateX(20px)' : 'translateX(0px)' }}
+                />
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {shEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-4 space-y-3">
+                    {/* Shared / Dedicated toggle */}
+                    <div className="flex rounded-xl overflow-hidden" style={{ border: '1.5px solid #E8E3DC' }}>
+                      {(['shared', 'dedicated'] as const).map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            setShHostingType(type);
+                            if (type === 'shared') {
+                              setShWorkers(Math.min(Math.max(shWorkers, 1), 8));
+                              setShStorage(Math.min(shStorage, 512));
+                            } else {
+                              setShWorkers(Math.max(shWorkers, 4));
+                            }
+                          }}
+                          data-testid={`button-sh-${type}`}
+                          className="flex-1 py-2 text-xs font-bold transition-all capitalize"
+                          style={{
+                            background: shHostingType === type ? '#714B67' : 'white',
+                            color: shHostingType === type ? 'white' : '#78716C',
+                          }}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Workers / Storage / Staging */}
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {[
+                        { label: 'Workers', value: shWorkers, min: shLimits.workerMin, max: shLimits.workerMax, set: (v: number) => setShWorkers(v), testid: 'input-sh-workers' },
+                        { label: 'Storage GB', value: shStorage, min: shLimits.storageMin, max: shLimits.storageMax, set: (v: number) => setShStorage(v), testid: 'input-sh-storage' },
+                        { label: 'Staging', value: shStaging, min: shLimits.stagingMin, max: shLimits.stagingMax, set: (v: number) => setShStaging(v), testid: 'input-sh-staging' },
+                      ].map(({ label, value, min, max, set, testid }) => (
+                        <div key={label}>
+                          <div className="text-[11px] font-semibold mb-1.5" style={{ color: '#78716C' }}>{label}</div>
+                          <input
+                            type="number"
+                            min={min}
+                            max={max}
+                            value={value}
+                            onChange={(e) => set(Math.min(Math.max(parseInt(e.target.value) || min, min), max))}
+                            className="w-full rounded-lg px-2 py-2 text-sm font-bold text-center outline-none border-2 transition-colors bg-white"
+                            style={{ borderColor: '#E8E3DC', color: '#1C1917', fontVariantNumeric: 'tabular-nums' }}
+                            onFocus={e => (e.currentTarget.style.borderColor = '#714B67')}
+                            onBlur={e => (e.currentTarget.style.borderColor = '#E8E3DC')}
+                            data-testid={testid}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* SH cost preview */}
+                    <div
+                      className="flex items-center justify-between p-3 rounded-xl text-xs font-medium"
+                      style={{ background: '#F5F4F0' }}
+                    >
+                      <span style={{ color: '#78716C' }}>Monthly cost</span>
+                      <div className="flex items-center gap-3">
+                        <span style={{ color: '#714B67', fontVariantNumeric: 'tabular-nums' }}>
+                          {formatCurrency(calculateShMonthlyCost(true))}/mo
+                          <span className="ml-1 font-normal" style={{ color: '#A09C96' }}>annual</span>
+                        </span>
+                        <span style={{ color: '#D6D3CE' }}>·</span>
+                        <span style={{ color: '#714B67', fontVariantNumeric: 'tabular-nums' }}>
+                          {formatCurrency(calculateShMonthlyCost(false))}/mo
+                          <span className="ml-1 font-normal" style={{ color: '#A09C96' }}>monthly</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </SidebarSection>
+
+          {/* ── Terms ── */}
+          <SidebarSection>
+            <SectionLabel icon={Calendar} label="Terms to Compare" />
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(selectedTerms).map((term) => (
+                <button
+                  key={term}
+                  onClick={() => setSelectedTerms(prev => ({ ...prev, [term]: !prev[term as TermKey] }))}
+                  data-testid={`button-term-${term}`}
+                  className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-150"
+                  style={{
+                    border: selectedTerms[term as TermKey] ? '2px solid #714B67' : '1.5px solid #E8E3DC',
+                    background: selectedTerms[term as TermKey] ? 'rgba(113,75,103,0.07)' : 'white',
+                    color: selectedTerms[term as TermKey] ? '#714B67' : '#78716C',
+                  }}
+                >
+                  {termDisplayLabel(term)}
+                </button>
+              ))}
+            </div>
+          </SidebarSection>
+
+          {/* ── Discounts ── */}
+          {activeTerms.length > 0 && (
+            <div className="px-5 py-4">
+              <SectionLabel icon={Percent} label="Discounts" />
+              <div className="rounded-xl overflow-hidden" style={{ border: '1.5px solid #E8E3DC' }}>
+                <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#F5F4F0' }}>
+                      <th
+                        className="text-left text-[10px] font-bold px-3 py-2.5 uppercase tracking-wider"
+                        style={{ color: '#A09C96', borderBottom: '1px solid #E8E3DC' }}
+                      />
+                      {activeTerms.map(term => (
+                        <th
+                          key={term}
+                          className="text-center text-[10px] font-black px-2 py-2.5 uppercase tracking-wider"
+                          style={{ color: '#714B67', borderBottom: '1px solid #E8E3DC', borderLeft: '1px solid #E8E3DC' }}
+                        >
+                          {term === 'monthly' ? 'Mo' : term.replace('year', 'Y')}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { label: 'Plan %', key: 'plan' as const },
+                      { label: 'Impl %', key: 'impl' as const },
+                    ].map(({ label, key }, rowIdx) => (
+                      <tr key={key} style={{ background: rowIdx % 2 === 0 ? 'white' : '#FDFCFB' }}>
+                        <td
+                          className="text-xs font-semibold px-3 py-2"
+                          style={{ color: '#78716C', borderBottom: rowIdx === 0 ? '1px solid #F0EDE7' : 'none' }}
+                        >
+                          {label}
+                        </td>
+                        {activeTerms.map(term => (
+                          <td
+                            key={term}
+                            className="px-1 py-1"
+                            style={{ borderLeft: '1px solid #E8E3DC', borderBottom: rowIdx === 0 ? '1px solid #F0EDE7' : 'none' }}
+                          >
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={termDiscounts[term]?.[key] || ''}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                setTermDiscounts(prev => ({ ...prev, [term]: { ...prev[term], [key]: val } }));
+                              }}
+                              className="w-full rounded-md px-1.5 py-1.5 text-xs font-bold text-center outline-none transition-all"
+                              style={{ border: '1.5px solid transparent', color: '#1C1917', background: 'transparent' }}
+                              onFocus={e => { e.currentTarget.style.borderColor = '#714B67'; e.currentTarget.style.background = 'white'; e.currentTarget.style.borderRadius = '6px'; }}
+                              onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }}
+                              data-testid={`input-${key}-discount-${term}`}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </aside>
+
+        {/* ── RIGHT: Main content ── */}
+        <main className="flex-1 overflow-y-auto" style={{ background: '#F5F4F0' }}>
+
+          {/* ── Sticky summary bar ── */}
+          <div
+            className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm flex items-center justify-between px-6 py-3"
+            style={{ borderBottom: '1px solid #E8E3DC' }}
+          >
+            <span className="text-sm font-medium" style={{ color: '#78716C' }} data-testid="text-config-summary">
+              {configSummary}
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium" style={{ color: '#A09C96' }}>
+                {activeTerms.length} {activeTerms.length === 1 ? 'term' : 'terms'} selected
+              </span>
+              <button
+                data-testid="toggle-payout-view"
+                onClick={() => setShowPayoutView(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+                style={{
+                  border: showPayoutView ? '2px solid #D97706' : '1.5px solid #E8E3DC',
+                  background: showPayoutView ? '#FEF3C7' : 'white',
+                  color: showPayoutView ? '#92400E' : '#78716C',
+                }}
+                title="Toggle partner payout view"
+              >
+                <DollarSign className="w-3.5 h-3.5" />
+                Payouts
+              </button>
+            </div>
+          </div>
+
+          {/* ── Quote table or empty state ── */}
+          <div className="p-6">
+            {activeTerms.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                {(() => {
+                  const hasAnySH = allQuoteData.some(q => q.data.shTotalCost > 0);
+                  const hasAnyImpl = allQuoteData.some(q => q.data.implementationCost > 0);
+                  const hasAnyFinancing = allQuoteData.some(q => q.data.financingLow > 0);
+                  const hasAnySavings = allQuoteData.some(q => q.data.totalSavings > 0);
+                  const colCount = allQuoteData.length;
+
+                  const cellBorder: React.CSSProperties = { borderLeft: '1px solid #F0EDE7' };
+
+                  return (
+                    <div
+                      className="rounded-2xl overflow-hidden"
+                      style={{ border: '1px solid #DDD9D2', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}
+                      data-testid="table-quote-comparison"
+                    >
+                      <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+
+                        {/* ── Table header ── */}
+                        <thead>
+                          <tr>
+                            <th
+                              className="text-left pl-6 pr-4 py-5"
+                              style={{ background: '#714B67', minWidth: '200px' }}
+                            >
+                              <div className="text-[10px] font-bold uppercase tracking-[0.25em]" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                                Quote Breakdown
+                              </div>
+                              <div className="text-xs mt-1 font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                                {users} users · {plan === 'standard' ? 'Standard' : 'Custom'}
+                              </div>
+                            </th>
+                            {allQuoteData.map(({ term, data }) => (
+                              <th
+                                key={term}
+                                className="text-center px-5 py-5"
+                                style={{ background: '#714B67', borderLeft: '1px solid rgba(255,255,255,0.08)', minWidth: '160px' }}
+                              >
+                                <div className="text-lg font-black text-white tracking-tight">{data.termLabel}</div>
+                                <div className="text-[9px] font-medium mt-1 uppercase tracking-[0.12em]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                                  {term === 'monthly' ? 'Pay as you go' : `${data.years}yr commitment`}
+                                </div>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+
+                        <tbody>
+
+                          {/* Software License */}
+                          <tr style={{ background: 'white' }}>
+                            <td className="pl-6 pr-4 py-4 text-sm font-medium" style={{ color: '#57534E', borderBottom: '1px solid #F0EDE7' }}>
+                              <div className="flex items-center gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#714B67' }} />
+                                Software License
+                              </div>
+                            </td>
+                            {allQuoteData.map(({ term, data }) => (
+                              <td key={term} className="text-right px-5 py-4 text-sm font-semibold" style={{ ...cellBorder, color: '#1C1917', borderBottom: '1px solid #F0EDE7', fontVariantNumeric: 'tabular-nums' }}>
+                                {formatCurrency(data.totalSoftwareCost)}
+                              </td>
+                            ))}
+                          </tr>
+
+                          {/* Implementation */}
+                          {hasAnyImpl && (
+                            <tr style={{ background: '#FDFCFB' }}>
+                              <td className="pl-6 pr-4 py-4 text-sm font-medium" style={{ color: '#57534E', borderBottom: '1px solid #F0EDE7' }}>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#017E84' }} />
+                                  Implementation
+                                </div>
+                              </td>
+                              {allQuoteData.map(({ term, data }) => (
+                                <td key={term} className="text-right px-5 py-4 text-sm font-semibold" style={{ ...cellBorder, color: '#1C1917', borderBottom: '1px solid #F0EDE7', fontVariantNumeric: 'tabular-nums' }}>
+                                  {data.implementationCost > 0 ? formatCurrency(data.implementationCost) : <span style={{ color: '#D6D3CE' }}>—</span>}
+                                </td>
+                              ))}
+                            </tr>
+                          )}
+
+                          {/* Odoo SH Hosting */}
+                          {hasAnySH && (
+                            <tr style={{ background: 'white' }}>
+                              <td className="pl-6 pr-4 py-4 text-sm font-medium" style={{ color: '#57534E', borderBottom: '1px solid #F0EDE7' }}>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#714B67' }} />
+                                  Odoo SH Hosting
+                                </div>
+                              </td>
+                              {allQuoteData.map(({ term, data }) => (
+                                <td key={term} className="text-right px-5 py-4 text-sm font-semibold" style={{ ...cellBorder, color: '#1C1917', borderBottom: '1px solid #F0EDE7', fontVariantNumeric: 'tabular-nums' }}>
+                                  {data.shTotalCost > 0 ? formatCurrency(data.shTotalCost) : <span style={{ color: '#D6D3CE' }}>—</span>}
+                                </td>
+                              ))}
+                            </tr>
+                          )}
+
+                          {/* ── Total Contract ── */}
+                          <tr>
+                            <td
+                              className="pl-6 pr-4 py-5"
+                              style={{ background: '#F9F8F6', borderTop: '2px solid #DDD9D2', borderBottom: '2px solid #DDD9D2' }}
+                            >
+                              <div className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: '#714B67' }}>Total Contract</div>
+                            </td>
+                            {allQuoteData.map(({ term, data }) => (
+                              <td
+                                key={term}
+                                className="text-right px-5 py-5"
+                                style={{ background: '#F9F8F6', borderTop: '2px solid #DDD9D2', borderBottom: '2px solid #DDD9D2', ...cellBorder, fontVariantNumeric: 'tabular-nums' }}
+                              >
+                                <span className="text-xl font-extrabold tracking-tight" style={{ color: '#1C1917' }}>
+                                  {formatCurrency(data.totalCost)}
+                                </span>
+                              </td>
+                            ))}
+                          </tr>
+
+                          {/* ── You Save ── */}
+                          {hasAnySavings && (
+                            <tr style={{ background: '#F0FDF4' }}>
+                              <td className="pl-6 pr-4 py-4 text-sm font-semibold" style={{ color: '#16A34A', borderBottom: '1px solid #DCFCE7' }}>
+                                <div className="flex items-center gap-2.5">
+                                  <TrendingUp className="w-4 h-4" />
+                                  You Save
+                                </div>
+                              </td>
+                              {allQuoteData.map(({ term, data }) => (
+                                <td key={term} className="text-right px-5 py-4" style={{ borderBottom: '1px solid #DCFCE7', borderLeft: '1px solid #DCFCE7', fontVariantNumeric: 'tabular-nums' }}>
+                                  {data.totalSavings > 0 ? (
+                                    <span className="text-sm font-bold" style={{ color: '#16A34A' }}>
+                                      {formatCurrency(data.totalSavings)}
+                                    </span>
+                                  ) : (
+                                    <span style={{ color: '#BBF7D0' }}>—</span>
+                                  )}
+                                </td>
+                              ))}
+                            </tr>
+                          )}
+
+                          {/* Monthly Amortized */}
+                          <tr style={{ background: 'white' }}>
+                            <td className="pl-6 pr-4 py-4 text-sm font-medium" style={{ color: '#57534E', borderBottom: '1px solid #F0EDE7' }}>
+                              Monthly Amortized
+                            </td>
+                            {allQuoteData.map(({ term, data }) => (
+                              <td key={term} className="text-right px-5 py-4" style={{ ...cellBorder, borderBottom: '1px solid #F0EDE7', fontVariantNumeric: 'tabular-nums' }}>
+                                <span className="text-sm font-bold" style={{ color: '#714B67' }}>
+                                  {formatCurrency(data.amortizedMonthly)}
+                                </span>
+                                <span className="text-xs font-normal ml-0.5" style={{ color: '#A09C96' }}>/mo</span>
+                              </td>
+                            ))}
+                          </tr>
+
+                          {/* ── Catalyst Finance ── */}
+                          {hasAnyFinancing && (
+                            <>
+                              <tr style={{ background: '#1E3A5F' }}>
+                                <td colSpan={colCount + 1} className="px-6 py-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                                      <span className="text-white font-black text-[8px]">CF</span>
+                                    </div>
+                                    <span className="text-xs font-bold text-white/90 uppercase tracking-[0.15em]">Catalyst Finance</span>
+                                    <span className="text-xs font-medium ml-auto" style={{ color: 'rgba(147,197,253,0.7)' }}>
+                                      {CATALYST_APR_LOW * 100}–{CATALYST_APR_HIGH * 100}% APR
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr style={{ background: '#EFF6FF' }}>
+                                <td className="pl-6 pr-4 py-4 text-sm font-medium" style={{ color: '#1E40AF', borderBottom: '1px solid #DBEAFE' }}>
+                                  Best Rate
+                                  <span className="text-xs font-normal ml-1.5" style={{ color: '#93C5FD' }}>({CATALYST_APR_LOW * 100}%)</span>
+                                </td>
+                                {allQuoteData.map(({ term, data }) => (
+                                  <td key={term} className="text-right px-5 py-4 text-sm font-semibold" style={{ color: '#1E40AF', borderBottom: '1px solid #DBEAFE', borderLeft: '1px solid #DBEAFE', fontVariantNumeric: 'tabular-nums' }}>
+                                    {data.financingLow > 0 ? (
+                                      <>
+                                        {formatCurrency(data.financingLow)}
+                                        <span className="text-xs font-normal ml-0.5" style={{ color: '#93C5FD' }}>/mo</span>
+                                      </>
+                                    ) : <span style={{ color: '#BFDBFE' }}>—</span>}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr style={{ background: '#EFF6FF' }}>
+                                <td className="pl-6 pr-4 py-4 text-sm font-medium" style={{ color: '#1E40AF' }}>
+                                  Standard Rate
+                                  <span className="text-xs font-normal ml-1.5" style={{ color: '#93C5FD' }}>({CATALYST_APR_HIGH * 100}%)</span>
+                                </td>
+                                {allQuoteData.map(({ term, data }) => (
+                                  <td key={term} className="text-right px-5 py-4 text-sm font-semibold" style={{ color: '#1E40AF', borderLeft: '1px solid #DBEAFE', fontVariantNumeric: 'tabular-nums' }}>
+                                    {data.financingHigh > 0 ? (
+                                      <>
+                                        {formatCurrency(data.financingHigh)}
+                                        <span className="text-xs font-normal ml-0.5" style={{ color: '#93C5FD' }}>/mo</span>
+                                      </>
+                                    ) : <span style={{ color: '#BFDBFE' }}>—</span>}
+                                  </td>
+                                ))}
+                              </tr>
+                            </>
+                          )}
+
+                          {/* ── Partner Payouts ── */}
+                          {showPayoutView && (
+                            <>
+                              <tr style={{ background: '#78350F' }}>
+                                <td colSpan={colCount + 1} className="px-6 py-3">
+                                  <div className="flex items-center gap-3">
+                                    <DollarSign className="w-4 h-4 text-amber-300" />
+                                    <span className="text-xs font-bold text-amber-100 uppercase tracking-[0.15em]">Partner Payouts</span>
+                                    <span className="text-[9px] bg-white/15 text-amber-200 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ml-auto">
+                                      Internal
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr style={{ background: '#FFFBEB' }}>
+                                <td className="pl-6 pr-4 py-4 text-sm font-medium" style={{ color: '#78350F', borderBottom: '1px solid #FDE68A' }}>
+                                  MRR
+                                </td>
+                                {allQuoteData.map(({ term, data }) => {
+                                  const isMonthly = term === 'monthly';
+                                  const recurringBase = data.totalSoftwareCost + data.shTotalCost;
+                                  const mrr = isMonthly ? recurringBase * 0.8 : recurringBase / 12;
+                                  return (
+                                    <td key={term} className="text-right px-5 py-4 text-sm font-semibold" style={{ color: '#78350F', borderBottom: '1px solid #FDE68A', borderLeft: '1px solid #FDE68A', fontVariantNumeric: 'tabular-nums' }}>
+                                      {formatCurrency(mrr)}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              {hasAnyImpl && (
+                                <tr style={{ background: '#FFFBEB' }}>
+                                  <td className="pl-6 pr-4 py-4 text-sm font-medium" style={{ color: '#78350F' }}>
+                                    NRR
+                                  </td>
+                                  {allQuoteData.map(({ term, data }) => (
+                                    <td key={term} className="text-right px-5 py-4 text-sm font-semibold" style={{ color: '#78350F', borderLeft: '1px solid #FDE68A', fontVariantNumeric: 'tabular-nums' }}>
+                                      {data.implementationCost > 0 ? formatCurrency(data.implementationCost) : <span style={{ color: '#FDE68A' }}>—</span>}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )}
+                            </>
+                          )}
+
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+              </motion.div>
+            ) : (
+              /* Empty state */
+              <div
+                className="flex flex-col items-center justify-center rounded-2xl"
+                style={{
+                  height: 'calc(100vh - 180px)',
+                  border: '2px dashed #E8E3DC',
+                  background: 'white',
+                }}
+              >
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: '#F5F4F0' }}
+                >
+                  <ChevronDown className="w-7 h-7" style={{ color: '#C9C5BE' }} />
+                </div>
+                <p className="text-base font-semibold mb-1.5" style={{ color: '#78716C' }}>
+                  No terms selected
+                </p>
+                <p className="text-sm" style={{ color: '#A09C96' }}>
+                  Choose one or more terms in the sidebar to build your quote
+                </p>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
