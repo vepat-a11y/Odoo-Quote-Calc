@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Save, FileText, TrendingUp, DollarSign, Info } from 'lucide-react';
+import { FileText, TrendingUp, DollarSign, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button, Select } from '@/components/ui-custom';
-import { useCreateQuote } from '@/hooks/use-quotes';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 
@@ -151,7 +150,6 @@ function Segmented<T extends string>({ options, value, onChange, testPrefix }: {
 
 export default function Calculator() {
   const { toast } = useToast();
-  const createQuote = useCreateQuote();
 
   const [showPayoutView, setShowPayoutView] = useState(false);
   const [country, setCountry] = useState<Country>('US');
@@ -260,13 +258,6 @@ export default function Calculator() {
       termKey, years, totalSoftwareCost, implementationCost, shTotalCost,
       totalCost, amortizedMonthly, totalSavings, financingLow, financingHigh,
     };
-  };
-
-  const handleSaveQuote = () => {
-    createQuote.mutate({ users, plan, implementation, termDiscounts, selectedTerms }, {
-      onSuccess: () => toast({ title: 'Quote Saved', description: 'Configuration saved successfully.' }),
-      onError: (err) => toast({ title: 'Error', description: err.message, variant: 'destructive' }),
-    });
   };
 
   const activeTerms = Object.keys(selectedTerms).filter(k => selectedTerms[k as TermKey]) as TermKey[];
@@ -559,15 +550,6 @@ export default function Calculator() {
             <FileText style={{ width: 13, height: 13 }} />
             Export PDF
           </button>
-          <Button
-            onClick={handleSaveQuote}
-            isLoading={createQuote.isPending}
-            className="text-[11px] font-bold px-3 py-1.5 rounded-md"
-            data-testid="button-save-quote"
-          >
-            <Save style={{ width: 12, height: 12, marginRight: 5 }} />
-            Save Quote
-          </Button>
         </div>
       </header>
 
