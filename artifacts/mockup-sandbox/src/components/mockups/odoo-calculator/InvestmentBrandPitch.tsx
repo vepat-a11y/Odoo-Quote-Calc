@@ -18,6 +18,7 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
+  Download,
 } from "lucide-react";
 
 // ─── Pricing data (mirrored from InvestmentCompact) ─────────────────────────
@@ -410,19 +411,47 @@ export function InvestmentBrandPitch() {
       className="min-h-screen flex flex-col"
       style={{ background: BRAND.paper, color: BRAND.ink, fontFamily: FONT_BODY }}
     >
+      {/* Print stylesheet — Export PDF / browser print (v6-scoped) */}
+      <style>{`
+        @media print {
+          @page { size: A4 landscape; margin: 14mm; }
+          .v6-no-print { display: none !important; }
+          .v6-body {
+            display: block !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .v6-main,
+          .v6-main * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+          .v6-main {
+            overflow: visible !important;
+            padding: 0 !important;
+            background: #FFFFFF !important;
+            width: 100% !important;
+          }
+          .v6-card { break-inside: avoid; page-break-inside: avoid; }
+          .v6-print-only { display: block !important; }
+        }
+        .v6-print-only { display: none; }
+      `}</style>
+
       {/* ── HEADER ── */}
       <header
-        className="flex-shrink-0 h-14 px-6 flex items-center justify-between sticky top-0 z-30"
+        className="v6-no-print flex-shrink-0 h-14 px-6 flex items-center justify-between sticky top-0 z-30"
         style={{ background: BRAND.paper, borderBottom: "1px solid #ECECEC" }}
       >
         <div className="flex items-center gap-3">
-          <span
-            className="text-2xl"
-            style={{ fontFamily: FONT_BRUSH, color: BRAND.purple, letterSpacing: "-0.01em" }}
-          >
-            odoo
-          </span>
-          <span className="text-xs uppercase tracking-[0.25em] text-stone-400 font-medium">
+          <img
+            src="/__mockup/images/odoo-brand/odoo_logo.png"
+            alt="Odoo"
+            className="h-5"
+          />
+          <div className="w-px h-5 bg-stone-200" />
+          <span className="text-[11px] uppercase tracking-[0.25em] text-stone-400 font-semibold">
             Pricing Pitch
           </span>
         </div>
@@ -441,20 +470,23 @@ export function InvestmentBrandPitch() {
             Internal
           </button>
           <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white"
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white transition-all hover:opacity-90"
             style={{ background: BRAND.purple }}
+            data-testid="button-export-pdf"
           >
+            <Download className="w-3.5 h-3.5" />
             Export PDF
           </button>
         </div>
       </header>
 
       {/* ── BODY ── */}
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
+      <div className="v6-body flex flex-1 overflow-hidden h-[calc(100vh-56px)]">
 
         {/* ── LEFT SIDEBAR ── */}
         <aside
-          className="w-[340px] overflow-y-auto flex-shrink-0 px-5 py-6"
+          className="v6-no-print w-[340px] overflow-y-auto flex-shrink-0 px-5 py-6"
           style={{ background: BRAND.paper, borderRight: "1px solid #ECECEC" }}
         >
           {/* Sidebar title */}
@@ -711,7 +743,7 @@ export function InvestmentBrandPitch() {
         </aside>
 
         {/* ── MAIN PANEL ── */}
-        <main className="flex-1 overflow-y-auto px-8 py-8" style={{ background: BRAND.paper }}>
+        <main className="v6-main flex-1 overflow-y-auto px-8 py-8" style={{ background: BRAND.paper }}>
 
           {/* Title block (deck-style) */}
           <div className="mb-8 relative">
