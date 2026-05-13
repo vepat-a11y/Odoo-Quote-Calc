@@ -919,11 +919,11 @@ export function InvestmentBrandPitch() {
                   </div>
                   <div>
                     <h3 className="text-xl leading-none" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-                      <Marker color={BRAND.yellow} opacity={0.85} height="45%">Partner</Marker>{" "}
+                      <Marker color={BRAND.yellow} opacity={0.85} height="45%">Payout</Marker>{" "}
                       <span style={{ color: BRAND.purple }}>Recurring Revenue</span>
                     </h3>
                     <p className="text-[11px] text-stone-500 mt-1" style={{ fontFamily: FONT_HAND }}>
-                      Internal only · Partner share {Math.round(PARTNER_RECURRING_PCT * 100)}%
+                      Internal only · Payout share {Math.round(PARTNER_RECURRING_PCT * 100)}%
                     </p>
                   </div>
                 </div>
@@ -935,28 +935,46 @@ export function InvestmentBrandPitch() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-white/60 border border-stone-200 overflow-hidden">
+                {/* Header row — term labels */}
+                <div
+                  className="grid items-center px-4 py-2 border-b border-stone-200"
+                  style={{ gridTemplateColumns: `1.1fr repeat(${quotes.length}, 1fr)` }}
+                >
+                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-stone-400">Metric</span>
+                  {quotes.map((q) => (
+                    <span
+                      key={q.termKey}
+                      className="text-right text-[10px] font-bold tracking-[0.15em] uppercase text-stone-500"
+                    >
+                      {TERM_LABELS[q.termKey].short}
+                    </span>
+                  ))}
+                </div>
                 {[
                   { label: "MRR", icon: Repeat, getValue: (q: TermQuote) => (q.softwareSubtotal + q.shSubtotal) / q.months },
                   { label: "NRR", icon: Wallet, getValue: (q: TermQuote) => ((q.softwareSubtotal + q.shSubtotal) / q.months) * PARTNER_RECURRING_PCT },
-                ].map((row) => (
-                  <div key={row.label} className="rounded-2xl p-4 bg-white/60 border border-stone-200">
-                    <div className="flex items-center gap-1.5 mb-3">
+                ].map((row, idx, arr) => (
+                  <div
+                    key={row.label}
+                    className={`grid items-center px-4 py-3 ${idx < arr.length - 1 ? "border-b border-stone-200/60" : ""}`}
+                    style={{ gridTemplateColumns: `1.1fr repeat(${quotes.length}, 1fr)` }}
+                  >
+                    <div className="flex items-center gap-1.5">
                       <row.icon className="w-3.5 h-3.5" style={{ color: BRAND.purple }} />
                       <span className="text-xs font-bold tracking-[0.2em] uppercase" style={{ color: BRAND.purple }}>
                         {row.label}
                       </span>
                     </div>
-                    <div className="space-y-1">
-                      {quotes.map((q) => (
-                        <div key={q.termKey} className="flex justify-between items-baseline text-sm">
-                          <span className="text-stone-500 text-[11px]">{TERM_LABELS[q.termKey].short}</span>
-                          <span className="font-semibold tabular-nums" style={{ color: BRAND.ink }}>
-                            {fmt0(row.getValue(q))}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    {quotes.map((q) => (
+                      <span
+                        key={q.termKey}
+                        className="text-right text-sm font-semibold tabular-nums"
+                        style={{ color: BRAND.ink }}
+                      >
+                        {fmt0(row.getValue(q))}
+                      </span>
+                    ))}
                   </div>
                 ))}
               </div>
