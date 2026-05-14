@@ -253,6 +253,28 @@ export function Calculator() {
   const [users, setUsers] = useState(1);
   const [plan, setPlan] = useState<PlanKey>("standard");
   const [implementation, setImplementation] = useState("none");
+  const [customHours, setCustomHours] = useState(50);
+
+  // Build a sorted list of paid implementation tiers with their hour counts (parsed from label)
+  const implTiers = useMemo(() => {
+    const entries = Object.entries(IMPLEMENTATIONS[country])
+      .map(([key, v]) => {
+        const m = v.label.match(/\((\d+)\s*h\)/);
+        return m ? { key, hours: parseInt(m[1]), price: v.price, label: v.label } : null;
+      })
+      .filter((x): x is { key: string; hours: number; price: number; label: string } => !!x && x.price > 0)
+      .sort((a, b) => a.hours - b.hours);
+    return entries;
+  }, [country]);
+
+  // Tiered pricing: scale from the lower-bracket package (e.g. 135h = 1.35 × 100h package)
+  const computeCustomImplPrice = (h: number) => {
+    if (h <= 0 || implTiers.length === 0) return 0;
+    let lower = implTiers[0];
+    for (const t of implTiers) if (t.hours <= h) lower = t;
+    return (h / lower.hours) * lower.price;
+  };
+  const customImplPrice = computeCustomImplPrice(customHours);
   const [shEnabled, setShEnabled] = useState(false);
   const [shType, setShType] = useState<ShType>("shared");
   const [shWorkers, setShWorkers] = useState(3);
@@ -279,7 +301,10 @@ export function Calculator() {
   const fmt0 = (n: number) =>
     `${config.symbol}${new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n)}`;
 
-  const implPrice = IMPLEMENTATIONS[country][implementation]?.price ?? 0;
+  const implPrice =
+    implementation === "customHours"
+      ? customImplPrice
+      : IMPLEMENTATIONS[country][implementation]?.price ?? 0;
 
   const shMonthlyAt = (annual: boolean) => {
     if (!shEnabled) return 0;
@@ -364,7 +389,7 @@ export function Calculator() {
 
   const activeTerms = useMemo(() => ALL_TERMS.filter((t) => selected[t]), [selected]);
   const quotes = useMemo(() => activeTerms.map(compute), [
-    activeTerms, country, users, plan, implementation, shEnabled, shType, shWorkers, shStorage, shStaging, discountsEnabled, discounts,
+    activeTerms, country, users, plan, implementation, customHours, shEnabled, shType, shWorkers, shStorage, shStaging, discountsEnabled, discounts,
   ]);
 
   // Find best deal (lowest per-month for non-monthly terms)
@@ -590,9 +615,54 @@ export function Calculator() {
                 {Object.entries(IMPLEMENTATIONS[country]).map(([key, v]) => (
                   <option key={key} value={key}>{v.label} — {fmt0(v.price)}</option>
                 ))}
+                <option value="customHours">Custom hours…</option>
               </select>
               <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: BRAND.ink }} />
             </div>
+            {implementation === "customHours" && (
+              <div className="mt-2">
+                <div
+                  className="flex items-center rounded-full overflow-hidden"
+                  style={{ border: "1px solid rgba(60,50,40,0.12)", height: 36 }}
+                >
+                  <input
+                    type="number"
+                    min={1}
+                    value={customHours || ""}
+                    placeholder="Hours"
+                    onChange={(e) => setCustomHours(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="flex-1 min-w-0 text-center font-semibold text-sm h-full outline-none bg-transparent tabular-nums"
+                    style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
+                    aria-label="Custom implementation hours"
+                    data-testid="input-custom-hours"
+                  />
+                  <span
+                    className="px-3 h-full flex items-center text-[11px] uppercase tracking-wider font-semibold"
+                    style={{ color: "#7A7368", borderLeft: "1px solid rgba(60,50,40,0.10)" }}
+                  >
+                    hrs
+                  </span>
+                </div>
+                <p
+                  className="mt-1.5 text-[10px] text-stone-500 italic px-1"
+                  style={{ fontFamily: FONT_HAND }}
+                  data-testid="text-custom-impl-price"
+                >
+                  {customHours > 0 ? (
+                    <>
+                      ≈ {fmt0(customImplPrice)}
+                      {(() => {
+                        let lower = implTiers[0];
+                        for (const t of implTiers) if (t && t.hours <= customHours) lower = t;
+                        return lower ? ` · scaled from ${lower.hours}h package` : "";
+                      })()}
+                    </>
+                  ) : (
+                    "Enter hours to estimate price"
+                  )}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* SH Hosting */}
