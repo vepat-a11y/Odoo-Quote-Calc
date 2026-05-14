@@ -695,35 +695,64 @@ export function Calculator() {
             {shEnabled && (
               <div className="rounded-xl p-2.5 space-y-2" style={{ background: BRAND.cardAlt }}>
                 <div className="flex gap-1.5">
-                  <PillButton active={shType === "shared"} onClick={() => setShType("shared")} color={BRAND.teal} testId="pill-sh-shared">Shared</PillButton>
+                  <PillButton active={shType === "shared"} onClick={() => { setShType("shared"); if (shWorkers > 8) setShWorkers(8); }} color={BRAND.teal} testId="pill-sh-shared">Shared</PillButton>
                   <PillButton active={shType === "dedicated"} onClick={() => setShType("dedicated")} color={BRAND.teal} testId="pill-sh-dedicated">Dedicated</PillButton>
                 </div>
-                {[
-                  { label: "Workers", key: "workers", v: shWorkers, set: setShWorkers, min: 1 },
-                  { label: "Storage GB", key: "storage", v: shStorage, set: setShStorage, min: 0 },
-                  { label: "Staging", key: "staging", v: shStaging, set: setShStaging, min: 0 },
-                ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between text-xs">
-                    <span className="text-stone-600" style={{ fontFamily: FONT_BODY }}>{row.label}</span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => row.set(Math.max(row.min, row.v - 1))}
-                        className="w-6 h-6 flex items-center justify-center rounded-lg bg-white border border-stone-200"
-                        data-testid={`button-sh-${row.key}-minus`}
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="w-7 text-center font-semibold tabular-nums" data-testid={`text-sh-${row.key}`}>{row.v}</span>
-                      <button
-                        onClick={() => row.set(row.v + 1)}
-                        className="w-6 h-6 flex items-center justify-center rounded-lg bg-white border border-stone-200"
-                        data-testid={`button-sh-${row.key}-plus`}
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                {(() => {
+                  const workersMax = shType === "shared" ? 8 : undefined;
+                  const rows = [
+                    { label: "Workers", key: "workers", v: shWorkers, set: setShWorkers, min: 1, max: workersMax },
+                    { label: "Storage GB", key: "storage", v: shStorage, set: setShStorage, min: 0, max: undefined as number | undefined },
+                    { label: "Staging", key: "staging", v: shStaging, set: setShStaging, min: 0, max: undefined as number | undefined },
+                  ];
+                  return rows.map((row) => {
+                    const clamp = (n: number) => {
+                      let x = Math.max(row.min, Math.floor(n));
+                      if (row.max !== undefined) x = Math.min(row.max, x);
+                      return x;
+                    };
+                    return (
+                      <div key={row.label} className="flex items-center justify-between text-xs">
+                        <span className="text-stone-600" style={{ fontFamily: FONT_BODY }}>
+                          {row.label}
+                          {row.max !== undefined && (
+                            <span className="text-stone-400 ml-1">(max {row.max})</span>
+                          )}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => row.set(clamp(row.v - 1))}
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-white border border-stone-200"
+                            data-testid={`button-sh-${row.key}-minus`}
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <input
+                            type="number"
+                            min={row.min}
+                            max={row.max}
+                            value={row.v}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") { row.set(row.min); return; }
+                              const n = parseInt(raw, 10);
+                              if (!isNaN(n)) row.set(clamp(n));
+                            }}
+                            className="w-12 h-6 text-center font-semibold tabular-nums rounded-lg bg-white border border-stone-200 outline-none focus:border-stone-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            data-testid={`input-sh-${row.key}`}
+                          />
+                          <button
+                            onClick={() => row.set(clamp(row.v + 1))}
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-white border border-stone-200"
+                            data-testid={`button-sh-${row.key}-plus`}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             )}
           </div>
@@ -1276,7 +1305,7 @@ export function Calculator() {
           )}
 
           {/* ── WHAT MAKES ODOO DIFFERENT (deck slide 6) ── */}
-          <div className="v6-no-print mb-6">
+          <div className="mb-6">
             <h2 className="text-2xl mb-4" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
               What Makes Odoo <Marker color={BRAND.blue} underline>Different?</Marker>
             </h2>
@@ -1300,7 +1329,7 @@ export function Calculator() {
           </div>
 
           {/* ── ALL APPS INCLUDED ── */}
-          <div className="v6-no-print mb-6 px-2 py-6">
+          <div className="mb-6 px-2 py-6">
             <p
               className="text-center text-sm mb-5"
               style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
