@@ -265,13 +265,14 @@ export function Calculator() {
     monthly: true, "1year": false, "2year": false, "3year": false, "4year": false, "5year": false,
   });
 
+  const [discountsEnabled, setDiscountsEnabled] = useState(false);
   const [discounts, setDiscounts] = useState<Record<TermKey, { plan: number; impl: number }>>({
-    monthly: { plan: 0, impl: 5 },
-    "1year": { plan: 0, impl: 5 },
-    "2year": { plan: 5, impl: 5 },
-    "3year": { plan: 10, impl: 5 },
-    "4year": { plan: 10, impl: 5 },
-    "5year": { plan: 10, impl: 5 },
+    monthly: { plan: 0, impl: 0 },
+    "1year": { plan: 0, impl: 0 },
+    "2year": { plan: 0, impl: 0 },
+    "3year": { plan: 0, impl: 0 },
+    "4year": { plan: 0, impl: 0 },
+    "5year": { plan: 0, impl: 0 },
   });
 
   const config = COUNTRIES[country];
@@ -293,8 +294,8 @@ export function Calculator() {
     const isMonthly = termKey === "monthly";
     const years = isMonthly ? 0 : parseInt(termKey.replace("year", ""));
     const months = isMonthly ? 1 : years * 12;
-    const planDisc = discounts[termKey].plan;
-    const implDisc = discounts[termKey].impl;
+    const planDisc = discountsEnabled ? discounts[termKey].plan : 0;
+    const implDisc = discountsEnabled ? discounts[termKey].impl : 0;
     const yY1 = PRICING[country][plan].yearly.year1;
     const yY2 = PRICING[country][plan].yearly.year2plus;
     const mY1 = PRICING[country][plan].monthly.year1;
@@ -363,7 +364,7 @@ export function Calculator() {
 
   const activeTerms = useMemo(() => ALL_TERMS.filter((t) => selected[t]), [selected]);
   const quotes = useMemo(() => activeTerms.map(compute), [
-    activeTerms, country, users, plan, implementation, shEnabled, shType, shWorkers, shStorage, shStaging, discounts,
+    activeTerms, country, users, plan, implementation, shEnabled, shType, shWorkers, shStorage, shStaging, discountsEnabled, discounts,
   ]);
 
   // Find best deal (lowest per-month for non-monthly terms)
@@ -674,7 +675,22 @@ export function Calculator() {
 
           {/* Discounts editor — horizontal: rows=Plan/Impl, cols=terms */}
           <div className="mb-5">
-            <SectionLabel icon={TrendingDown} color={BRAND.coral}>Discounts %</SectionLabel>
+            <div className="flex items-center justify-between mb-2">
+              <SectionLabel icon={TrendingDown} color={BRAND.coral}>Discounts %</SectionLabel>
+              <button
+                onClick={() => setDiscountsEnabled(!discountsEnabled)}
+                className="relative w-10 h-5 rounded-full transition-all"
+                style={{ background: discountsEnabled ? BRAND.purple : "#D5D5D5" }}
+                data-testid="switch-discounts"
+                aria-label="Toggle discounts"
+              >
+                <span
+                  className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all"
+                  style={{ left: discountsEnabled ? "22px" : "2px" }}
+                />
+              </button>
+            </div>
+            {discountsEnabled && (
             <div className="rounded-2xl p-3" style={{ background: "transparent", border: "1px solid rgba(60,50,40,0.10)" }}>
               {/* Header: blank cell + term labels */}
               <div
@@ -707,7 +723,8 @@ export function Calculator() {
                       type="number"
                       min={0}
                       max={50}
-                      value={discounts[t].plan}
+                      value={discounts[t].plan || ""}
+                      placeholder="0"
                       onChange={(e) =>
                         setDiscounts({
                           ...discounts,
@@ -745,7 +762,8 @@ export function Calculator() {
                     type="number"
                     min={0}
                     max={50}
-                    value={discounts[t].impl}
+                    value={discounts[t].impl || ""}
+                    placeholder="0"
                     onChange={(e) =>
                       setDiscounts({
                         ...discounts,
@@ -763,6 +781,7 @@ export function Calculator() {
                 Plan % applies years 2+ · Impl % is one-time
               </p>
             </div>
+            )}
           </div>
 
           {/* Financing toggle */}
