@@ -695,14 +695,38 @@ export function Calculator() {
             {shEnabled && (
               <div className="rounded-xl p-2.5 space-y-2" style={{ background: BRAND.cardAlt }}>
                 <div className="flex gap-1.5">
-                  <PillButton active={shType === "shared"} onClick={() => { setShType("shared"); if (shWorkers > 8) setShWorkers(8); }} color={BRAND.teal} testId="pill-sh-shared">Shared</PillButton>
-                  <PillButton active={shType === "dedicated"} onClick={() => setShType("dedicated")} color={BRAND.teal} testId="pill-sh-dedicated">Dedicated</PillButton>
+                  <PillButton
+                    active={shType === "shared"}
+                    onClick={() => {
+                      setShType("shared");
+                      if (shWorkers > 8) setShWorkers(8);
+                      if (shStorage > 512) setShStorage(512);
+                    }}
+                    color={BRAND.teal}
+                    testId="pill-sh-shared"
+                  >
+                    Shared
+                  </PillButton>
+                  <PillButton
+                    active={shType === "dedicated"}
+                    onClick={() => {
+                      setShType("dedicated");
+                      if (shWorkers < 4) setShWorkers(4);
+                    }}
+                    color={BRAND.teal}
+                    testId="pill-sh-dedicated"
+                  >
+                    Dedicated
+                  </PillButton>
                 </div>
                 {(() => {
-                  const workersMax = shType === "shared" ? 8 : undefined;
+                  const isShared = shType === "shared";
+                  const workersMin = isShared ? 1 : 4;
+                  const workersMax = isShared ? 8 : 256;
+                  const storageMax = isShared ? 512 : 4096;
                   const rows = [
-                    { label: "Workers", key: "workers", v: shWorkers, set: setShWorkers, min: 1, max: workersMax },
-                    { label: "Storage GB", key: "storage", v: shStorage, set: setShStorage, min: 0, max: undefined as number | undefined },
+                    { label: "Workers", key: "workers", v: shWorkers, set: setShWorkers, min: workersMin, max: workersMax as number | undefined },
+                    { label: "Storage GB", key: "storage", v: shStorage, set: setShStorage, min: 0, max: storageMax as number | undefined },
                     { label: "Staging", key: "staging", v: shStaging, set: setShStaging, min: 0, max: undefined as number | undefined },
                   ];
                   return rows.map((row) => {
@@ -716,7 +740,9 @@ export function Calculator() {
                         <span className="text-stone-600" style={{ fontFamily: FONT_BODY }}>
                           {row.label}
                           {row.max !== undefined && (
-                            <span className="text-stone-400 ml-1">(max {row.max})</span>
+                            <span className="text-stone-400 ml-1">
+                              ({row.min > 0 ? `${row.min}–${row.max}` : `max ${row.max}`})
+                            </span>
                           )}
                         </span>
                         <div className="flex items-center gap-1">
@@ -738,7 +764,7 @@ export function Calculator() {
                               const n = parseInt(raw, 10);
                               if (!isNaN(n)) row.set(clamp(n));
                             }}
-                            className="w-12 h-6 text-center font-semibold tabular-nums rounded-lg bg-white border border-stone-200 outline-none focus:border-stone-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-14 h-6 text-center font-semibold tabular-nums rounded-lg bg-white border border-stone-200 outline-none focus:border-stone-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             data-testid={`input-sh-${row.key}`}
                           />
                           <button
@@ -1383,8 +1409,8 @@ export function Calculator() {
             </p>
           </div>
 
-          {/* Footer note */}
-          <div className="text-center pt-4 border-t border-stone-100">
+          {/* Footer note (screen only) */}
+          <div className="v6-no-print text-center pt-4 border-t border-stone-100">
             <p className="text-xs text-stone-400" style={{ fontFamily: FONT_HAND }}>
               Estimation only · Final pricing subject to confirmation · Quote valid 30 days
             </p>
