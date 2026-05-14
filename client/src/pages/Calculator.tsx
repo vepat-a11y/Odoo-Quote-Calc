@@ -448,7 +448,8 @@ export function Calculator() {
       {/* Print stylesheet — Export PDF / browser print (v6-scoped) */}
       <style>{`
         @media print {
-          @page { size: A4 portrait; margin: 12mm; }
+          @page { size: A4 portrait; margin: 0; }
+          .v6-main { padding: 12mm !important; }
           .v6-no-print { display: none !important; }
           .v6-body {
             display: block !important;
