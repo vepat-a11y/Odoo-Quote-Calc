@@ -449,7 +449,6 @@ export function Calculator() {
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 0; }
-          .v6-main { padding: 12mm !important; }
           .v6-no-print { display: none !important; }
           .v6-body {
             display: block !important;
@@ -464,7 +463,7 @@ export function Calculator() {
           }
           .v6-main {
             overflow: visible !important;
-            padding: 0 !important;
+            padding: 12mm !important;
             background: #FFFFFF !important;
             width: 100% !important;
             font-size: 11px !important;
