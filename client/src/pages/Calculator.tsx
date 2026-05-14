@@ -19,6 +19,15 @@ import {
   Eye,
   EyeOff,
   Download,
+  BarChart3,
+  ShoppingBag,
+  PenTool,
+  Calculator as CalcIcon,
+  Handshake,
+  Boxes,
+  UserCog,
+  CheckSquare,
+  Store,
 } from "lucide-react";
 
 // ─── Pricing data (mirrored from InvestmentCompact) ─────────────────────────
@@ -1255,6 +1264,56 @@ export function Calculator() {
               </div>
             </div>
           )}
+
+          {/* ── ALL APPS INCLUDED ── */}
+          <div className="mb-6 rounded-3xl p-6" style={{ background: BRAND.cardAlt }}>
+            <p
+              className="text-center text-sm mb-5"
+              style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
+            >
+              The <span className="font-bold">Standard</span> and <span className="font-bold">Custom</span> plans include all apps for a single fee:
+            </p>
+            <div className="grid grid-cols-5 gap-3 sm:gap-4 max-w-3xl mx-auto">
+              {[
+                { label: "Sales", Icon: BarChart3, color: "#F59E0B" },
+                { label: "eCommerce", Icon: ShoppingBag, color: BRAND.purple },
+                { label: "Sign", Icon: PenTool, color: BRAND.blue },
+                { label: "Website", Icon: Globe, color: BRAND.teal },
+                { label: "Accounting", Icon: CalcIcon, color: "#EAB308" },
+                { label: "CRM", Icon: Handshake, color: BRAND.teal },
+                { label: "Inventory", Icon: Boxes, color: BRAND.purple },
+                { label: "HR", Icon: UserCog, color: BRAND.coral },
+                { label: "Project", Icon: CheckSquare, color: BRAND.purple },
+                { label: "POS", Icon: Store, color: "#F59E0B" },
+              ].map(({ label, Icon, color }) => (
+                <div key={label} className="flex flex-col items-center gap-2">
+                  <div
+                    className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center"
+                    style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px -6px rgba(0,0,0,0.08)" }}
+                  >
+                    <Icon className="w-7 h-7" style={{ color }} strokeWidth={1.75} />
+                  </div>
+                  <span className="text-xs text-stone-700 font-medium" style={{ fontFamily: FONT_BODY }}>
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p
+              className="text-center mt-5 text-lg flex items-center justify-center gap-2"
+              style={{ color: BRAND.purple, fontFamily: FONT_BRUSH }}
+            >
+              And many more <ArrowRight className="w-5 h-5" strokeWidth={2} />
+            </p>
+            <p
+              className="text-center mt-4 text-sm text-stone-600 leading-relaxed"
+              style={{ fontFamily: FONT_BODY }}
+            >
+              All our plans include <span className="font-semibold">unlimited support, hosting</span> and <span className="font-semibold">maintenance</span>.
+              <br />
+              With no hidden costs, no limit on features or data: enjoy real transparency!
+            </p>
+          </div>
 
           {/* ── WHAT MAKES ODOO DIFFERENT (deck slide 6) ── */}
           <div className="mb-6">
