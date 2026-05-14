@@ -1407,11 +1407,17 @@ export function Calculator() {
                 </div>
               ))}
             </div>
-            <p
-              className="text-center mt-5 text-lg flex items-center justify-center gap-2"
-              style={{ color: BRAND.purple, fontFamily: FONT_BRUSH }}
-            >
-              And many more <ArrowRight className="w-5 h-5" strokeWidth={2} />
+            <p className="text-center mt-5 text-lg">
+              <a
+                href="https://www.odoo.com/page/all-apps"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
+                style={{ color: BRAND.purple, fontFamily: FONT_BRUSH }}
+                data-testid="link-all-apps"
+              >
+                And many more <ArrowRight className="w-5 h-5" strokeWidth={2} />
+              </a>
             </p>
             <p
               className="text-center mt-4 text-sm text-stone-600 leading-relaxed"
