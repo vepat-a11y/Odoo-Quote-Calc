@@ -1347,7 +1347,7 @@ export function Calculator() {
           {/* ── WHAT MAKES ODOO DIFFERENT (deck slide 6) ── */}
           <div className="mb-6">
             <h2 className="text-2xl mb-4" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
-              What Makes Odoo <Marker color={BRAND.blue} underline>Different?</Marker>
+              What Makes Odoo <Marker color={BRAND.blue} opacity={0.5} height="45%">Different?</Marker>
             </h2>
             <div className="grid grid-cols-3 gap-3">
               {[
