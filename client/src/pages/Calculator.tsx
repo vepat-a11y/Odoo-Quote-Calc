@@ -363,7 +363,10 @@ export function Calculator() {
 
     let savings = 0;
     if (!isMonthly) {
-      const fullMonthlySoftware = years === 1 ? users * mY1 * 12 : users * mY2 * months;
+      const fullMonthlySoftware =
+        years === 1
+          ? users * mY1 * 12
+          : users * mY1 * 12 + users * mY2 * (months - 12);
       const fullMonthlySh = shEnabled ? shMonthlyMo * months : 0;
       savings = (fullMonthlySoftware - softwareSubtotal) + (fullMonthlySh - shSubtotal) + implDiscount;
     }
@@ -402,7 +405,7 @@ export function Calculator() {
   // ─── Sidebar atoms (marker-pitch style) ───────────────────────────────
 
   const SectionLabel = ({ children, icon: Icon }: {
-    children: React.ReactNode; icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; color?: string;
+    children: React.ReactNode; icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties; strokeWidth?: number | string }>; color?: string;
   }) => (
     <div className="flex items-center gap-2 mb-2.5">
       {Icon && <Icon className="w-3.5 h-3.5" style={{ color: "#9A938A" }} strokeWidth={1.75} />}
@@ -735,7 +738,7 @@ export function Calculator() {
           {/* Discounts editor — horizontal: rows=Plan/Impl, cols=terms */}
           <div className="mb-5">
             <div className="flex items-center justify-between mb-2">
-              <SectionLabel icon={TrendingDown} color={BRAND.coral}>Discounts %</SectionLabel>
+              <SectionLabel icon={TrendingDown} color={BRAND.coral}>Discounts</SectionLabel>
               <button
                 onClick={() => setDiscountsEnabled(!discountsEnabled)}
                 className="relative w-10 h-5 rounded-full transition-all"
@@ -879,7 +882,7 @@ export function Calculator() {
               Your <Marker color={BRAND.blue} opacity={0.7} height="55%">Odoo Pricing</Marker>
             </h1>
             <p className="mt-3 text-xs font-bold text-stone-700" style={{ fontFamily: FONT_BODY }}>
-              {users} users · {plan === "standard" ? "Standard" : "Custom"} plan · {config.label}
+              {users} {users === 1 ? "user" : "users"} · {plan === "standard" ? "Standard" : "Custom"} plan · {config.label}
             </p>
           </div>
 
@@ -939,7 +942,7 @@ export function Calculator() {
                     <Marker color={BRAND.blue} opacity={0.7} height="40%">Software</Marker> License
                   </h3>
                   <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
-                    {users} users × {plan} plan
+                    {users} {users === 1 ? "user" : "users"} × {plan === "standard" ? "Standard" : "Custom"} plan
                   </span>
                 </div>
                 <div className="grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
