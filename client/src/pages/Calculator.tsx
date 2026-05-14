@@ -479,6 +479,9 @@ export function Calculator() {
           .v6-main .mb-4 { margin-bottom: 8px !important; }
           .v6-card { break-inside: avoid; page-break-inside: avoid; }
           .v6-print-only { display: block !important; }
+          .v6-main a[href]::after,
+          .v6-main a[href]:after { content: "" !important; }
+          .v6-main a[href] { text-decoration: none !important; color: inherit !important; }
         }
         .v6-print-only { display: none; }
       `}</style>
