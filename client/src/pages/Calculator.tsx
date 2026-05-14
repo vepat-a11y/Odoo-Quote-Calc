@@ -463,20 +463,36 @@ export function Calculator() {
           }
           .v6-main {
             overflow: visible !important;
-            padding: 12mm !important;
+            padding: 10mm !important;
             background: #FFFFFF !important;
             width: 100% !important;
-            font-size: 11px !important;
+            font-size: 9px !important;
+            line-height: 1.25 !important;
           }
-          .v6-main h1 { font-size: 28px !important; }
-          .v6-main h2 { font-size: 20px !important; }
-          .v6-main h3 { font-size: 15px !important; }
-          .v6-main .text-2xl { font-size: 16px !important; }
-          .v6-main .text-xl  { font-size: 14px !important; }
-          .v6-main .rounded-3xl { padding: 12px 14px !important; border-radius: 14px !important; }
-          .v6-main .mb-8 { margin-bottom: 14px !important; }
-          .v6-main .mb-6 { margin-bottom: 10px !important; }
-          .v6-main .mb-4 { margin-bottom: 8px !important; }
+          .v6-main h1 { font-size: 22px !important; margin-bottom: 4px !important; }
+          .v6-main h2 { font-size: 16px !important; }
+          .v6-main h3 { font-size: 12px !important; }
+          .v6-main .text-2xl { font-size: 13px !important; }
+          .v6-main .text-xl  { font-size: 11px !important; }
+          .v6-main .text-lg  { font-size: 10px !important; }
+          .v6-main .text-base { font-size: 9px !important; }
+          .v6-main .text-sm  { font-size: 8.5px !important; }
+          .v6-main .text-xs  { font-size: 8px !important; }
+          .v6-main .rounded-3xl { padding: 8px 10px !important; border-radius: 10px !important; }
+          .v6-main .p-6 { padding: 8px !important; }
+          .v6-main .p-5 { padding: 6px !important; }
+          .v6-main .p-4 { padding: 6px !important; }
+          .v6-main .py-4 { padding-top: 4px !important; padding-bottom: 4px !important; }
+          .v6-main .py-3 { padding-top: 3px !important; padding-bottom: 3px !important; }
+          .v6-main .py-2 { padding-top: 2px !important; padding-bottom: 2px !important; }
+          .v6-main .mb-8 { margin-bottom: 8px !important; }
+          .v6-main .mb-6 { margin-bottom: 6px !important; }
+          .v6-main .mb-4 { margin-bottom: 4px !important; }
+          .v6-main .mb-3 { margin-bottom: 3px !important; }
+          .v6-main .mb-2 { margin-bottom: 2px !important; }
+          .v6-main .mt-4 { margin-top: 4px !important; }
+          .v6-main table { font-size: 8.5px !important; }
+          .v6-main td, .v6-main th { padding: 3px 5px !important; }
           .v6-card { break-inside: avoid; page-break-inside: avoid; }
           .v6-print-only { display: block !important; }
           .v6-main a[href]::after,
@@ -1206,9 +1222,9 @@ export function Calculator() {
             </div>
           )}
 
-          {/* ── CATALYST FINANCE — pitch deck style ── */}
+          {/* ── CATALYST FINANCE — pitch deck style (never printed) ── */}
           {showFinancing && quotes.some((q) => q.finLow > 0) && (
-            <div className="mb-8 rounded-3xl p-6" style={{ background: BRAND.cardAlt }}>
+            <div className="v6-no-print mb-8 rounded-3xl p-6" style={{ background: BRAND.cardAlt }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div
@@ -1260,7 +1276,7 @@ export function Calculator() {
           )}
 
           {/* ── WHAT MAKES ODOO DIFFERENT (deck slide 6) ── */}
-          <div className="mb-6">
+          <div className="v6-no-print mb-6">
             <h2 className="text-2xl mb-4" style={{ fontFamily: FONT_BRUSH, color: BRAND.ink }}>
               What Makes Odoo <Marker color={BRAND.blue} underline>Different?</Marker>
             </h2>
@@ -1284,7 +1300,7 @@ export function Calculator() {
           </div>
 
           {/* ── ALL APPS INCLUDED ── */}
-          <div className="mb-6 px-2 py-6">
+          <div className="v6-no-print mb-6 px-2 py-6">
             <p
               className="text-center text-sm mb-5"
               style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
