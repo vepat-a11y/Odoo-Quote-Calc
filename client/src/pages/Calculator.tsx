@@ -1288,7 +1288,7 @@ export function Calculator() {
             >
               The <span className="font-bold">Standard</span> and <span className="font-bold">Custom</span> plans include all apps for a single fee:
             </p>
-            <div className="grid grid-cols-5 gap-3 sm:gap-4 max-w-3xl mx-auto">
+            <div className="flex flex-nowrap items-start justify-between gap-2 w-full">
               {[
                 { label: "Sales", module: "sale_management" },
                 { label: "eCommerce", module: "website_sale" },
@@ -1301,19 +1301,19 @@ export function Calculator() {
                 { label: "Project", module: "project" },
                 { label: "POS", module: "point_of_sale" },
               ].map(({ label, module }) => (
-                <div key={label} className="flex flex-col items-center gap-2">
+                <div key={label} className="flex flex-col items-center gap-1.5 flex-shrink-0">
                   <div
-                    className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center overflow-hidden"
+                    className="w-12 h-12 rounded-xl bg-white flex items-center justify-center overflow-hidden"
                     style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px -6px rgba(0,0,0,0.08)" }}
                   >
                     <img
                       src={`https://download.odoocdn.com/icons/${module}/static/description/icon.png`}
                       alt={`Odoo ${label}`}
-                      className="w-12 h-12 object-contain"
+                      className="w-9 h-9 object-contain"
                       loading="lazy"
                     />
                   </div>
-                  <span className="text-xs text-stone-700 font-medium" style={{ fontFamily: FONT_BODY }}>
+                  <span className="text-[11px] text-stone-700 font-medium whitespace-nowrap" style={{ fontFamily: FONT_BODY }}>
                     {label}
                   </span>
                 </div>
