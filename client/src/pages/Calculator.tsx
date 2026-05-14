@@ -891,14 +891,26 @@ export function Calculator() {
                     </div>
                   ))}
                 </div>
-                {quotes.some((q) => q.year1Promo > 0 || q.multiYearSoftware > 0) && (
+                {quotes.some((q) => q.year1Promo > 0) && (
                   <div className="mt-2 pt-2 border-t border-stone-200/70 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
                     <span className="text-sm font-semibold" style={{ color: BRAND.blue, fontFamily: FONT_HAND }}>
-                      Multi-year savings
+                      Year 1 promo
                     </span>
                     {quotes.map((q) => (
                       <div key={q.termKey} className="text-right tabular-nums text-sm font-semibold" style={{ color: BRAND.blue }}>
-                        {q.year1Promo + q.multiYearSoftware > 0 ? `−${fmt0(q.year1Promo + q.multiYearSoftware)}` : dash}
+                        {q.year1Promo > 0 ? `−${fmt0(q.year1Promo)}` : dash}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {discountsEnabled && quotes.some((q) => q.multiYearSoftware > 0) && (
+                  <div className="mt-2 pt-2 border-t border-stone-200/70 grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
+                    <span className="text-sm font-semibold" style={{ color: BRAND.blue, fontFamily: FONT_HAND }}>
+                      Multi-year discount
+                    </span>
+                    {quotes.map((q) => (
+                      <div key={q.termKey} className="text-right tabular-nums text-sm font-semibold" style={{ color: BRAND.blue }}>
+                        {q.multiYearSoftware > 0 ? `−${fmt0(q.multiYearSoftware)}` : dash}
                       </div>
                     ))}
                   </div>
