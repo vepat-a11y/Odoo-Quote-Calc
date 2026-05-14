@@ -493,6 +493,21 @@ export function Calculator() {
           .v6-main .mt-4 { margin-top: 4px !important; }
           .v6-main table { font-size: 8.5px !important; }
           .v6-main td, .v6-main th { padding: 3px 5px !important; }
+          /* Compact "All apps included" section for print */
+          .v6-apps { padding: 4px 0 !important; margin-bottom: 4px !important; }
+          .v6-apps p { margin-bottom: 4px !important; }
+          .v6-apps .gap-2, .v6-apps .gap-3, .v6-apps .gap-4 { gap: 4px !important; }
+          .v6-apps .mt-5, .v6-apps .mt-4 { margin-top: 4px !important; }
+          .v6-apps .mb-5 { margin-bottom: 4px !important; }
+          .v6-apps > div > div { gap: 2px !important; }
+          .v6-apps img { width: 24px !important; height: 24px !important; }
+          .v6-apps .w-12 { width: 30px !important; }
+          .v6-apps .h-12 { height: 30px !important; }
+          .v6-apps .rounded-xl { border-radius: 6px !important; }
+          .v6-apps br { display: none !important; }
+          .v6-apps span { font-size: 7.5px !important; }
+          /* Tighter "What Makes Different" cards for print */
+          .v6-main .grid.grid-cols-3 > div { padding: 6px !important; }
           .v6-card { break-inside: avoid; page-break-inside: avoid; }
           .v6-print-only { display: block !important; }
           .v6-main a[href]::after,
@@ -1354,7 +1369,7 @@ export function Calculator() {
           </div>
 
           {/* ── ALL APPS INCLUDED ── */}
-          <div className="mb-6 px-2 py-6">
+          <div className="v6-apps mb-6 px-2 py-6">
             <p
               className="text-center text-sm mb-5"
               style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
