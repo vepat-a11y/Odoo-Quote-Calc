@@ -701,6 +701,8 @@ export function Calculator() {
                       setShType("shared");
                       if (shWorkers > 8) setShWorkers(8);
                       if (shStorage > 512) setShStorage(512);
+                      if (shStorage < 1) setShStorage(1);
+                      if (shStaging > 20) setShStaging(20);
                     }}
                     color={BRAND.teal}
                     testId="pill-sh-shared"
@@ -712,6 +714,8 @@ export function Calculator() {
                     onClick={() => {
                       setShType("dedicated");
                       if (shWorkers < 4) setShWorkers(4);
+                      if (shStorage < 1) setShStorage(1);
+                      if (shStaging > 20) setShStaging(20);
                     }}
                     color={BRAND.teal}
                     testId="pill-sh-dedicated"
@@ -726,8 +730,8 @@ export function Calculator() {
                   const storageMax = isShared ? 512 : 4096;
                   const rows = [
                     { label: "Workers", key: "workers", v: shWorkers, set: setShWorkers, min: workersMin, max: workersMax as number | undefined },
-                    { label: "Storage GB", key: "storage", v: shStorage, set: setShStorage, min: 0, max: storageMax as number | undefined },
-                    { label: "Staging", key: "staging", v: shStaging, set: setShStaging, min: 0, max: undefined as number | undefined },
+                    { label: "Storage GB", key: "storage", v: shStorage, set: setShStorage, min: 1, max: storageMax as number | undefined },
+                    { label: "Staging", key: "staging", v: shStaging, set: setShStaging, min: 0, max: 20 as number | undefined },
                   ];
                   return rows.map((row) => {
                     const clamp = (n: number) => {
@@ -739,11 +743,6 @@ export function Calculator() {
                       <div key={row.label} className="flex items-center justify-between text-xs">
                         <span className="text-stone-600" style={{ fontFamily: FONT_BODY }}>
                           {row.label}
-                          {row.max !== undefined && (
-                            <span className="text-stone-400 ml-1">
-                              ({row.min > 0 ? `${row.min}–${row.max}` : `max ${row.max}`})
-                            </span>
-                          )}
                         </span>
                         <div className="flex items-center gap-1">
                           <button
