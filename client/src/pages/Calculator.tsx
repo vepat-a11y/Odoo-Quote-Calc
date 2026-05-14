@@ -1001,7 +1001,7 @@ export function Calculator() {
                       <Marker color={BRAND.yellow} opacity={0.85} height="40%">Implementation</Marker>
                     </h3>
                     <span className="text-xs text-stone-500" style={{ fontFamily: FONT_HAND }}>
-                      one-time · {IMPLEMENTATIONS[country][implementation].label}
+                      one-time · {implementation === "customHours" ? `Custom (${customHours}h)` : IMPLEMENTATIONS[country][implementation]?.label}
                     </span>
                   </div>
                   <div className="grid gap-2" style={{ gridTemplateColumns: `1.4fr repeat(${quotes.length}, 1fr)` }}>
