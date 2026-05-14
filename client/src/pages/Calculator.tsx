@@ -648,18 +648,7 @@ export function Calculator() {
                   style={{ fontFamily: FONT_HAND }}
                   data-testid="text-custom-impl-price"
                 >
-                  {customHours > 0 ? (
-                    <>
-                      ≈ {fmt0(customImplPrice)}
-                      {(() => {
-                        let lower = implTiers[0];
-                        for (const t of implTiers) if (t && t.hours <= customHours) lower = t;
-                        return lower ? ` · scaled from ${lower.hours}h package` : "";
-                      })()}
-                    </>
-                  ) : (
-                    "Enter hours to estimate price"
-                  )}
+                  {customHours > 0 ? null : "Enter hours to estimate price"}
                 </p>
               </div>
             )}
