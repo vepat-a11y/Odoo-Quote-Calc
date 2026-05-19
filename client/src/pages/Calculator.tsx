@@ -1260,7 +1260,14 @@ export function Calculator() {
                   const fx = country === "CA" ? CAD_TO_USD : 1;
                   const hasImpl = quotes.some((q) => q.implSubtotal > 0);
                   const rows = [
-                    { label: "MRR", icon: Repeat, getValue: (q: TermQuote) => ((q.softwareSubtotal + q.shSubtotal) / q.months) * fx },
+                    {
+                      label: "MRR",
+                      icon: Repeat,
+                      getValue: (q: TermQuote) => {
+                        const base = q.softwareSubtotal + q.shSubtotal;
+                        return (q.isMonthly ? base * 0.8 : base / 12) * fx;
+                      },
+                    },
                     ...(hasImpl ? [{ label: "NRR", icon: Wallet, getValue: (q: TermQuote) => q.implSubtotal * fx }] : []),
                   ];
                   return rows;
