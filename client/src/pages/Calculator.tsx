@@ -1003,12 +1003,12 @@ export function Calculator() {
                       {TERM_LABELS[q.termKey].sub}
                     </p>
                     <p
-                      className="text-2xl font-bold tabular-nums"
-                      style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
-                    >
-                      {q.isMonthly ? fmt0(q.softwareList) : fmt0(q.perMonth)}
-                      <span className="text-xs font-normal text-stone-500">/mo</span>
-                    </p>
+  className="text-2xl font-bold tabular-nums"
+  style={{ color: BRAND.ink, fontFamily: FONT_BODY }}
+>
+  {q.isMonthly ? fmt0(q.softwareSubtotal + q.shSubtotal) : fmt0(q.perMonth)}
+  <span className="text-xs font-normal text-stone-500">/mo</span>
+</p>
                   </div>
                 ))}
               </div>
